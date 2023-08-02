@@ -1,0 +1,29 @@
+@using System
+@using System.Collections.Generic
+@using System.Linq
+@using LuckerGame.Entities
+@using Sandbox
+@using Sandbox.UI
+@namespace LuckerGame.UI.HudComponents
+@attribute [StyleSheet]
+@inherits Panel
+
+<root>
+    <div class="scoreboard-panel">
+        @foreach (var player in Luckers)
+        {
+            <label>@player.Name</label>
+        }
+    </div>
+</root>
+
+@code {
+
+    private IReadOnlyCollection<Lucker> Luckers => Entity.All.OfType<Lucker>().ToList();
+
+    protected override int BuildHash()
+    {
+        return HashCode.Combine(Luckers.Select(player => player.Name).ToList());
+    }
+
+}

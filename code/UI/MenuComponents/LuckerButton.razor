@@ -1,0 +1,26 @@
+@using System
+@using Sandbox.Razor
+@using Sandbox.UI
+
+@inherits Panel
+@attribute [StyleSheet]
+@namespace LuckerGame.UI.MenuComponents
+
+<root>
+    <div class="lucker-button">
+        @ChildContent
+    </div>
+</root>
+
+@code {
+
+    private RenderFragment _childContent;
+
+    public RenderFragment ChildContent
+    {
+        get { return _childContent; }
+        set { _childContent = value; StateHasChanged(); }
+    }
+    
+
+}

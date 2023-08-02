@@ -1,0 +1,15 @@
+LuckerButton {
+  div {
+    &.lucker-button {
+      z-index: 11;
+      cursor: pointer;
+      background-color: gray;
+      padding: 5px;
+      border-radius: 10px;
+      
+      :hover {
+        opacity: 0.7;
+      }
+    }
+  }
+}

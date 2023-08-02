@@ -1,0 +1,27 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using LuckerGame.UI.HudComponents
+@using LuckerGame.UI.Menus
+
+@namespace LuckerGame.UI
+@inherits RootPanel
+@attribute [StyleSheet]
+
+<root>
+    <ChatBox/>
+    <VoiceList/>
+        <VotingLobby/>
+    <Scoreboard/>
+
+    <div class="pointer-visible" />
+    
+</root>
+
+@code
+{
+    public override void Tick()
+    {
+        var devCam = Game.LocalClient.Components.Get<DevCamera>();
+        SetClass( "camera-movement", Input.UsingController || Input.Down( "attack2" ) || devCam is not null );
+    }
+}

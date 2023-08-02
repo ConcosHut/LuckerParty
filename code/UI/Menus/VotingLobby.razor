@@ -1,0 +1,77 @@
+@using System
+@using System.Collections.Generic
+@using System.Linq
+@using LuckerGame.Entities
+@using LuckerGame.Enums
+@using Sandbox.UI;
+@using Sandbox;
+@using LuckerGame.UI.MenuComponents
+
+@inherits Panel
+@attribute [StyleSheet]
+@namespace LuckerGame.UI.Menus
+@if (RoundManager == null)
+{
+    <root>
+        <div class="voting-panel primary-color-translucent-background">
+            <LuckerSpinner/>
+        </div>
+    </root>
+    return;
+}
+@if (RoundManager.RoundState == RoundState.InProgress)
+{
+    return;
+}
+<root>
+    <div class="voting-panel primary-color-translucent-background">
+        @if (RoundManager.RoundState == RoundState.NotStarted)
+        {
+            <label class="header">Waiting for players...</label>
+        }
+        else
+        {
+            if (@RoundManager.SecondsLeftInCountdown > 0)
+            {
+                <label class="header">@RoundManager.SecondsLeftInCountdown</label>
+            }
+            else
+            {
+                <label class="header">Good luck!</label>
+            }
+        }
+        <div class="voters">
+            @foreach (var lucker in Luckers)
+            {
+                <div class="voter">
+                    <label>@lucker.Name </label><label class="material-icon">@(lucker.Ready ? "done" : "close")</label>
+                </div>
+            }
+        </div>
+        <LuckerButton @onclick=@ReadyButtonPressed>
+            <ChildContent>
+                <label>@(Ready ? "Unready" : "Ready")</label>
+            </ChildContent>
+        </LuckerButton>
+    </div>
+</root>
+
+@code {
+
+    private List<Lucker> Luckers => Entity.All.OfType<Lucker>().ToList();
+    private RoundManager RoundManager => Entity.All.OfType<RoundManager>().FirstOrDefault();
+    private Lucker ThisLucker => Game.LocalClient.Pawn as Lucker;
+    private bool Ready => ThisLucker.Ready;
+
+    protected override int BuildHash()
+    {
+        return HashCode.Combine(Luckers.Select(lucker => lucker.Ready), Ready, RoundManager?.SecondsLeftInCountdown);
+    }
+
+    private void ReadyButtonPressed()
+    {
+        ConsoleSystem.Run("set_ready", !ThisLucker.Ready);
+        StateHasChanged();
+    }
+
+}

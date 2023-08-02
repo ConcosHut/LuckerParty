@@ -1,0 +1,43 @@
+VotingLobby {
+  z-index: 10;
+  .label {
+    text-align: center;
+  }
+  .voting-panel {
+    gap: 10px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    backdrop-filter: blur(10px);
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: all;
+    
+    .header {
+      position: absolute;
+      top: 0;
+    }
+    LuckerButton {
+       position: absolute;
+       bottom: 0;
+       margin-bottom: 10px;
+     }
+  }
+  .voters {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .voter {
+    width: 100vw;
+    .label {
+      width: 100%;
+    }
+  }
+}
