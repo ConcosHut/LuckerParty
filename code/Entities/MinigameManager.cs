@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using LuckerGame.Minigames;
+using LuckerGame.Minigames.RussianRoulette;
 using Sandbox;
 using Sandbox.UI;
 
@@ -21,19 +23,27 @@ public partial class MinigameManager : Entity
 		FindMinigames();
 	}
 
-	public void StartRandomMinigame(List<Lucker> players)
+	public void StartMinigame(List<Lucker> players, string minigameName = null)
+	{
+		if (CheckForMinigames())
+		{
+			LoadedMinigame = string.IsNullOrEmpty( minigameName ) ? AvailableMinigames.OrderBy( _ => Guid.NewGuid() ).FirstOrDefault() : TypeLibrary.Create<Minigame>( minigameName );
+			ChatBox.AddInformation( To.Everyone, $"Starting {LoadedMinigame.Name}" );
+			LoadedMinigame.Initialize( players );
+		}
+	}
+
+	private bool CheckForMinigames()
 	{
 		if ( (AvailableMinigames?.Count ?? 0) == 0 )
 		{
 			Log.Error( "Attempted to start minigame, but none available" );
-			return;
+			return false;
 		}
 
-		LoadedMinigame = AvailableMinigames.OrderBy( _ => Guid.NewGuid() ).FirstOrDefault();
-		ChatBox.AddInformation( To.Everyone, $"Starting {LoadedMinigame.Name}" );
-		LoadedMinigame.Initialize( players );
+		return true;
 	}
-
+	
 	private void FindMinigames()
 	{
 		AvailableMinigames = TypeLibrary.GetTypes<Minigame>()
