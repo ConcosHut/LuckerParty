@@ -21,7 +21,8 @@ public abstract class Minigame : Entity
 	/// <summary>
 	/// Once a minigame is loaded and initialized, this method is called once per server tick.
 	/// </summary>
-	public abstract void Tick();
+	/// <returns>true if the minigame has ended, false otherwise</returns>
+	public abstract bool Tick();
 	
 	/// <summary>
 	/// Cleans up any entities and components created by this minigame.

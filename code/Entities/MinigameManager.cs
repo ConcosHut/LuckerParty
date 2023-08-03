@@ -14,6 +14,7 @@ public partial class MinigameManager : Entity
 {
 	[Net] public Minigame LoadedMinigame { get; private set; }
 	private List<Minigame> AvailableMinigames { get; set; }
+	private List<Lucker> InvolvedPlayers { get; set; }
 
 	public override void Spawn()
 	{
@@ -23,6 +24,7 @@ public partial class MinigameManager : Entity
 
 	public void StartMinigame(List<Lucker> players, string minigameName = null)
 	{
+		InvolvedPlayers = players.ToList();
 		if (CheckForMinigames())
 		{
 			LoadedMinigame = string.IsNullOrEmpty( minigameName ) ? AvailableMinigames.OrderBy( _ => Guid.NewGuid() ).FirstOrDefault() : TypeLibrary.Create<Minigame>( minigameName );
@@ -54,13 +56,35 @@ public partial class MinigameManager : Entity
 	{
 		FindMinigames();
 	}
+
+	private void cleanupPlayerPawns()
+	{
+		InvolvedPlayers.ForEach( player =>
+		{
+			player.Pawn.Delete();
+			player.Pawn = null;
+		} );
+	}
 	
-	public void Tick()
+	/// <summary>
+	/// Called once per tick by the RoundManager. Ticks any running minigame.
+	/// </summary>
+	/// <returns>true if the current minigame has ended, else false</returns>
+	public bool Tick()
 	{
 		if ( LoadedMinigame is not { IsValid: true } )
 		{
-			return;
+			return false;
 		}
-		LoadedMinigame.Tick();
+		var ended = LoadedMinigame.Tick();
+		if ( !ended )
+		{
+			return false;
+		}
+
+		LoadedMinigame.Cleanup();
+		LoadedMinigame = null;
+		return true;
+
 	}
 }

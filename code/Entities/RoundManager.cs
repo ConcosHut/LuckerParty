@@ -76,7 +76,19 @@ public partial class RoundManager : Entity
 
 		if ( RoundState == RoundState.InProgress )
 		{
-			MinigameManager.Tick();
+			var ended = MinigameManager.Tick();
+			if ( ended )
+			{
+				MinigamesLeftInRound--;
+				if ( MinigamesLeftInRound > 0 )
+				{
+					MinigameManager.StartMinigame( Players );
+				}
+				else
+				{
+					RoundState = RoundState.NotStarted;
+				}
+			}
 		}
 	}
 
@@ -120,6 +132,11 @@ public partial class RoundManager : Entity
 
 		RoundState = RoundState.InProgress;
 		Players = All.OfType<Lucker>().ToList();
+		Players.ForEach( player =>
+		{
+			player.Ready = false;
+		} );
+		MinigamesLeftInRound = MinigamesPerRound;
 		MinigameManager.StartMinigame( Players, minigameName );
 	}
 

@@ -16,8 +16,10 @@ public class RussianRouletteMinigame : Minigame
 	public override string Name => "Russian Roulette";
 	private List<Lucker> Players { get; set; }
 	private Pawn Shooter { get; set; }
+	
 	private const float ShooterDistance = 80f;
 	private const float TimeBetweenShots = 7f;
+	private const float TimeBetweenDeathAndEnd = 5f;
 	private int Taunted = 0;
 
 	private List<Pawn> DeadVictims => Players
@@ -26,6 +28,7 @@ public class RussianRouletteMinigame : Minigame
 		.ToList();
 
 	private TimeSince TimeSinceShot { get; set; }
+	private TimeSince TimeSinceDeadVictim { get; set; }
 
 	public override void Initialize( List<Lucker> players )
 	{
@@ -60,7 +63,7 @@ public class RussianRouletteMinigame : Minigame
 		TimeSinceShot = 0;
 	}
 
-	public override void Tick()
+	public override bool Tick()
 	{
 		if ( DeadVictims.Any() )
 		{
@@ -68,10 +71,14 @@ public class RussianRouletteMinigame : Minigame
 			{
 				ChatBox.AddChatEntry( To.Everyone, "Shooter", "Heh, nothing personnel, kid." );
 				Taunted = int.MaxValue;
+				TimeSinceDeadVictim = 0;
 			}
-			return;
+			else if(TimeSinceDeadVictim > TimeBetweenDeathAndEnd)
+			{
+				return true;
+			}
 		}
-		if ( TimeSinceShot > TimeBetweenShots )
+		else if ( TimeSinceShot > TimeBetweenShots )
 		{
 			TimeSinceShot = 0;
 			Taunted = 0;
@@ -95,6 +102,8 @@ public class RussianRouletteMinigame : Minigame
 			ChatBox.AddChatEntry( To.Everyone, "Shooter", "Im gettin' ready!" );
 			Taunted++;
 		}
+
+		return false;
 	}
 
 	public override void Cleanup()
