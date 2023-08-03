@@ -9,6 +9,7 @@ namespace LuckerGame.Components.Lucker.Cameras;
 /// </summary>
 public partial class RTSCamera : AbstractCamera, ISingletonComponent
 {
+	public override bool ShouldShowCursor => true;
 	private const float MaxDistance = 400f;
 	private const float MinDistance = 200f;
 	private const float Speed = 4f;

@@ -46,4 +46,13 @@ public partial class MinigameManager : Entity
 	{
 		FindMinigames();
 	}
+	
+	public void Tick()
+	{
+		if ( LoadedMinigame is not { IsValid: true } )
+		{
+			return;
+		}
+		LoadedMinigame.Tick();
+	}
 }

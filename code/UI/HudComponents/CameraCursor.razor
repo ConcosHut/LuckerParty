@@ -1,0 +1,16 @@
+@using LuckerGame.Components.Lucker.Cameras
+@using Sandbox
+@using Sandbox.UI
+@namespace LuckerGame.UI.HudComponents
+@attribute [StyleSheet]
+@inherits Panel
+
+@if (ShouldShowCursor)
+{
+    <root/>
+}
+
+
+@code {
+    private bool ShouldShowCursor => Game.LocalClient.Pawn?.Components.Get<AbstractCamera>()?.ShouldShowCursor ?? false;
+}

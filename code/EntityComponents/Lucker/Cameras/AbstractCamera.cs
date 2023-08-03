@@ -3,8 +3,9 @@ using Sandbox;
 
 namespace LuckerGame.Components.Lucker.Cameras;
 
-public abstract class AbstractCamera : EntityComponent<Entities.Lucker>
+public abstract class AbstractCamera : EntityComponent<Entities.Lucker>, ISingletonComponent
 {
+	public virtual bool ShouldShowCursor => false;
 	protected Vector3 CameraPosition { get; set; }
 	protected Rotation CameraRotation { get; set; }
 	protected float FieldOfView { get; set; }

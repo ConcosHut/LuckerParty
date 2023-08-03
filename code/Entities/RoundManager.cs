@@ -73,6 +73,11 @@ public partial class RoundManager : Entity
 			Log.Info( "Starting round" );
 			StartRound();
 		}
+
+		if ( RoundState == RoundState.InProgress )
+		{
+			MinigameManager.Tick();
+		}
 	}
 
 	/// <summary>
@@ -116,5 +121,11 @@ public partial class RoundManager : Entity
 		RoundState = RoundState.InProgress;
 		Players = All.OfType<Lucker>().ToList();
 		MinigameManager.StartRandomMinigame( Players );
+	}
+
+	[ConCmd.Server("start_round")]
+	public static void ForceStart()
+	{
+		Entity.All.OfType<RoundManager>().FirstOrDefault()?.StartRound();
 	}
 }

@@ -7,12 +7,21 @@ namespace LuckerGame.Minigames;
 
 public abstract class Minigame : Entity
 {
-	public abstract string Name { get; }
 	/// <summary>
-	/// Initializes the minigame with a list of luckers playing it
+	/// The name of this minigame
+	/// </summary>
+	public abstract string Name { get; }
+	
+	/// <summary>
+	/// Initializes the minigame with a list of luckers playing it.
 	/// </summary>
 	/// <param name="players">the players who made it into the minigame</param>
 	public abstract void Initialize(List<Lucker> players);
+
+	/// <summary>
+	/// Once a minigame is loaded and initialized, this method is called once per server tick.
+	/// </summary>
+	public abstract void Tick();
 	
 	/// <summary>
 	/// Cleans up any entities and components created by this minigame.

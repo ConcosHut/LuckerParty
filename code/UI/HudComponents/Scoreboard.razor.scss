@@ -1,3 +1,6 @@
 Scoreboard {
   z-index: 0;
+  .scoreboard-panel {
+    flex-direction: column;
+  }
 }
