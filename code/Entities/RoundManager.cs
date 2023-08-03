@@ -120,15 +120,7 @@ public partial class RoundManager : Entity
 
 		RoundState = RoundState.InProgress;
 		Players = All.OfType<Lucker>().ToList();
-
-		if ( string.IsNullOrEmpty( minigameName ) )
-		{
-			MinigameManager.StartMinigame( Players );
-		}
-		else
-		{
-			MinigameManager.StartMinigame( Players, minigameName );
-		}
+		MinigameManager.StartMinigame( Players, minigameName );
 	}
 
 	[ConCmd.Server( "start_round" )]
