@@ -49,7 +49,8 @@ public partial class RoundManager : Entity
 
 	private const int MinigamesPerRound = 1;
 
-	private int MinigamesLeftInRound { get; set; }
+	[ConVar.Replicated("lucker_minigames_per_round")]
+	public static int MinigamesLeftInRound { get; set; }
 
 	private List<Lucker> Players { get; set; }
 	#endregion

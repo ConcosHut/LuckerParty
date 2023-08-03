@@ -57,8 +57,16 @@ public partial class MinigameManager : Entity
 		FindMinigames();
 	}
 
-	private void cleanupPlayerPawns()
+	/// <summary>
+	/// Goes through the players included in the loaded minigame and deletes and nulls out any pawns assigned to them
+	/// </summary>
+	private void CleanupPlayerPawns()
 	{
+		if ( LoadedMinigame is not { IsValid: true } || InvolvedPlayers == null)
+		{
+			Log.Warning( "Attempted to clean up players without a minigame loaded!" );
+			return;
+		}
 		InvolvedPlayers.ForEach( player =>
 		{
 			player.Pawn.Delete();
