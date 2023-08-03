@@ -1,31 +1,38 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using LuckerGame.Components.Lucker.Cameras;
+using LuckerGame.Components.Pawn;
 using LuckerGame.Entities;
 using Sandbox;
+using Sandbox.UI;
 
 namespace LuckerGame.Minigames.RussianRoulette;
 
+[Library("mg_russian_roulette")]
 public class RussianRouletteMinigame : Minigame
 {
 	public override string Name => "Russian Roulette";
 	private List<Lucker> Players { get; set; }
 	private Pawn Shooter { get; set; }
-	private const float ShooterDistance = 50f;
-	private const int CardinalDirections = 4;
+	private const float ShooterDistance = 80f;
+	private const float TimeBetweenShots = 7f;
+	private int Taunted = 0;
+
+	private List<Pawn> DeadVictims => Players
+		.Select( player => player.Pawn as Pawn )
+		.Where( pawn => !pawn.IsValid || pawn.LifeState != LifeState.Alive )
+		.ToList();
+
+	private TimeSince TimeSinceShot { get; set; }
 
 	public override void Initialize( List<Lucker> players )
 	{
 		Players = players;
 		Shooter = new Pawn();
-
-		/*// Spawn shooter at a random spawnpoint
-		var spawnpoints = Entity.All.OfType<SpawnPoint>();
-		var randomSpawnPoint = spawnpoints.OrderBy( x => Guid.NewGuid() ).FirstOrDefault();
-		var tx = randomSpawnPoint.Transform;
-		tx.Position = tx.Position + Vector3.Up * 50.0f; // raise it up
-		Shooter.Position = tx.Position;*/
+		var shooterInventory = Shooter.Components.Create<PawnInventory>();
+		shooterInventory.AddWeapon( new RussianPistol() );
 
 		// Setup cameras for players
 		Players.ForEach( player =>
@@ -39,18 +46,55 @@ public class RussianRouletteMinigame : Minigame
 			var player = pair.Player;
 			var index = pair.Index;
 			var pawn = new Pawn();
+			pawn.Name = player.Name;
+			pawn.Tags.Add( "victim" );
+			pawn.Health = 1;
 			player.Pawn = pawn;
 			pawn.DressFromClient( player.Client );
 
 			var pawnOffset = ShooterDistance * (index % 2 == 0 ? Vector3.Forward : Vector3.Right) * (index % 4 >= 2 ? -1 : 1);
 			
 			player.Pawn.Position = Shooter.Position + pawnOffset;
+			pawn.LookAt(Shooter.Position);
 		} );
+		TimeSinceShot = 0;
 	}
 
 	public override void Tick()
 	{
-		return;
+		if ( DeadVictims.Any() )
+		{
+			if ( Taunted != int.MaxValue )
+			{
+				ChatBox.AddChatEntry( To.Everyone, "Shooter", "Heh, nothing personnel, kid." );
+				Taunted = int.MaxValue;
+			}
+			return;
+		}
+		if ( TimeSinceShot > TimeBetweenShots )
+		{
+			TimeSinceShot = 0;
+			Taunted = 0;
+			Shooter.Inventory.ActiveWeapon.PrimaryAttack();
+			if ( !DeadVictims.Any() )
+			{
+				ChatBox.AddChatEntry( To.Everyone, "Shooter", "Fucking lag..." );
+			}
+		}
+		else if ( TimeSinceShot > TimeBetweenShots * .8f && Taunted == 1)
+		{
+			var victim = Players.Select( player => player.Pawn as Pawn )
+				.OrderBy( _ => Guid.NewGuid() )
+				.FirstOrDefault();
+			Shooter.LookAt( victim.Position );
+			ChatBox.AddChatEntry( To.Everyone, "Shooter", $"I'm gonna eat you up, {victim.Name}" );
+			Taunted++;
+		}
+		else if ( TimeSinceShot > TimeBetweenShots / 2  && Taunted == 0)
+		{
+			ChatBox.AddChatEntry( To.Everyone, "Shooter", "Im gettin' ready!" );
+			Taunted++;
+		}
 	}
 
 	public override void Cleanup()

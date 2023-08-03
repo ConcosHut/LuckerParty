@@ -26,7 +26,7 @@ public partial class RoundManager : Entity
 	/// <summary>
 	/// The number of seconds from the timer starting before the round starts
 	/// </summary>
-	private const float RoundStartCountdownSeconds = 10f;
+	private const float RoundStartCountdownSeconds = 5f;
 	
 	/// <summary>
 	/// The state of the current round

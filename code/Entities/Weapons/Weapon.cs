@@ -1,3 +1,4 @@
+using System;
 using Sandbox;
 using System.Collections.Generic;
 
@@ -26,6 +27,9 @@ public partial class Weapon : AnimatedEntity
 	public virtual string ReloadAnimPath => "reload";
 	public virtual string WeaponName => "weapon";
 	public virtual float ReloadDuration => 4f;
+	public virtual CitizenAnimationHelper.HoldTypes HoldType { get; }
+	protected virtual List<string> HitTags => new List<string> { "solid", "player", "npc" };
+	protected virtual float Damage => 20f;
 	private bool Reloading => TimeSinceReloadStarted < ReloadDuration;
 
 	/// <summary>
@@ -68,6 +72,7 @@ public partial class Weapon : AnimatedEntity
 		SetParent( pawn, true );
 		EnableDrawing = true;
 		CreateViewModel( To.Single( pawn ) );
+		pawn.SetAnimParameter( "holdtype", (int)HoldType );
 	}
 
 	/// <summary>
@@ -77,6 +82,7 @@ public partial class Weapon : AnimatedEntity
 	{
 		EnableDrawing = false;
 		DestroyViewModel( To.Single( Owner ) );
+		Pawn.SetAnimParameter( "holdtype", (int)CitizenAnimationHelper.HoldTypes.None );
 	}
 
 	/// <summary>
@@ -128,7 +134,7 @@ public partial class Weapon : AnimatedEntity
 	/// <returns></returns>
 	public virtual bool CanPrimaryAttack()
 	{
-		if ( !Owner.IsValid() || !Input.Down( "attack1" ) || Ammo == 0 || Reloading ) return false;
+		if ( !Owner.IsValid() || !Input.Down( "attack1" ) || (Ammo == 0 && MaxAmmo != 0) || Reloading ) return false;
 
 		var rate = PrimaryRate;
 		if ( rate <= 0 ) return true;
@@ -138,7 +144,7 @@ public partial class Weapon : AnimatedEntity
 
 	private void ReduceAmmoAndPrimaryAttack()
 	{
-		Ammo--;
+		Ammo = Math.Max(0, Ammo -1);
 		PrimaryAttack();
 	}
 
@@ -166,7 +172,7 @@ public partial class Weapon : AnimatedEntity
 
 		var trace = Trace.Ray( start, end )
 				.UseHitboxes()
-				.WithAnyTags( "solid", "player", "npc" )
+				.WithAnyTags( HitTags.ToArray() )
 				.Ignore( this )
 				.Size( radius );
 

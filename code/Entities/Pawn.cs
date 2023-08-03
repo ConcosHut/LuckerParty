@@ -58,6 +58,7 @@ public partial class Pawn : AnimatedEntity
 
 	[BindComponent] public UserPawnController Controller { get; }
 	[BindComponent] public PawnAnimator Animator { get; }
+	[BindComponent] public PawnInventory Inventory { get; }
 
 	public override Ray AimRay => new Ray( EyePosition, EyeRotation.Forward );
 
@@ -71,12 +72,7 @@ public partial class Pawn : AnimatedEntity
 		EnableDrawing = true;
 		EnableHideInFirstPerson = true;
 		EnableShadowInFirstPerson = true;
-	}
-
-	public void Respawn()
-	{
-		Components.Create<UserPawnController>();
-		Components.Create<PawnAnimator>();
+		SetupPhysicsFromModel( PhysicsMotionType.Keyframed );
 	}
 
 	public void DressFromClient( IClient cl )
@@ -91,6 +87,7 @@ public partial class Pawn : AnimatedEntity
 		SimulateRotation();
 		Controller?.Simulate( cl );
 		Animator?.Simulate();
+		Inventory?.ActiveWeapon?.Simulate( cl );
 	}
 
 	public override void BuildInput()
@@ -129,5 +126,16 @@ public partial class Pawn : AnimatedEntity
 		var idealRotation = ViewAngles.ToRotation();
 		EyeRotation = Rotation.Slerp( Rotation, idealRotation, Time.Delta * 10f );
 		Rotation = EyeRotation;
+	}
+
+	public void LookAt( Vector3 position )
+	{
+		Rotation = Rotation.LookAt( (position - this.Position).Normal, Vector3.Up );
+		EyePosition = position;
+	}
+
+	public override void TakeDamage( DamageInfo info )
+	{
+		base.TakeDamage( info );
 	}
 }

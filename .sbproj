@@ -33,7 +33,7 @@
         "Name": "My New Config",
         "GameIdent": "local.are_you___lucker#local",
         "MapName": "voximity.flat_plane",
-        "MaxPlayers": 1,
+        "MaxPlayers": 4,
         "GameSettings": {},
         "Addons": "",
         "PreLaunchCommand": "",
