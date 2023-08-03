@@ -41,7 +41,7 @@ public partial class RussianPistol : Weapon
 		}
 		else
 		{
-			Pawn.PlaySound( "denyundo" );
+			Pawn.PlaySound( "player_use_fail" );
 		}
 		Ammo--;
 	}
