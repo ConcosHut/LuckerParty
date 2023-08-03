@@ -13,7 +13,7 @@ namespace LuckerGame.Entities;
 public partial class MinigameManager : Entity
 {
 	[Net] public Minigame LoadedMinigame { get; private set; }
-	private List<Minigame> AvailableMinigames { get; set; }
+	private List<TypeDescription> AvailableMinigames { get; set; }
 	private List<Lucker> InvolvedPlayers { get; set; }
 
 	public override void Spawn()
@@ -27,7 +27,7 @@ public partial class MinigameManager : Entity
 		InvolvedPlayers = players.ToList();
 		if (CheckForMinigames())
 		{
-			LoadedMinigame = string.IsNullOrEmpty( minigameName ) ? AvailableMinigames.OrderBy( _ => Guid.NewGuid() ).FirstOrDefault() : TypeLibrary.Create<Minigame>( minigameName );
+			LoadedMinigame = string.IsNullOrEmpty( minigameName ) ? TypeLibrary.Create<Minigame>(AvailableMinigames.OrderBy( _ => Guid.NewGuid() ).FirstOrDefault().TargetType) : TypeLibrary.Create<Minigame>( minigameName );
 			ChatBox.AddInformation( To.Everyone, $"Starting {LoadedMinigame.Name}" );
 			LoadedMinigame.Initialize( players );
 		}
@@ -48,7 +48,7 @@ public partial class MinigameManager : Entity
 	{
 		AvailableMinigames = TypeLibrary.GetTypes<Minigame>()
 			.Where( type => !type.IsAbstract && !type.IsInterface )
-			.Select( td => TypeLibrary.Create<Minigame>( td.TargetType ) ).ToList();
+			.ToList();
 	}
 
 	[Event.Hotload]

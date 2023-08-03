@@ -61,6 +61,7 @@ public class RussianRouletteMinigame : Minigame
 			pawn.LookAt(Shooter.Position);
 		} );
 		TimeSinceShot = 0;
+		Taunted = 0;
 	}
 
 	public override bool Tick()
