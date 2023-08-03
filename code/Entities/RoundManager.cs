@@ -17,7 +17,7 @@ public partial class RoundManager : Entity
 	/// The minigame manager we should be using to manage minigames
 	/// </summary>
 	private MinigameManager MinigameManager { get; set; }
-	
+
 	/// <summary>
 	/// This percentage of the lobby must be ready to start the countdown for round start
 	/// </summary>
@@ -27,30 +27,30 @@ public partial class RoundManager : Entity
 	/// The number of seconds from the timer starting before the round starts
 	/// </summary>
 	private const float RoundStartCountdownSeconds = 5f;
-	
+
 	/// <summary>
 	/// The state of the current round
 	/// </summary>
 	[Net] public RoundState RoundState { get; private set; }
-	
+
 	#region Countdown State
 	/// <summary>
 	/// How long since we started counting down to game start. Only useful if in the StartCountdown state.
 	/// </summary>
 	[Net] public TimeSince TimeSinceCountdownStarted { get; set; }
-	
+
 	/// <summary>
 	/// The number of seconds left in the countdown. Only useful if in the StartCountdown state.
 	/// </summary>
 	public int SecondsLeftInCountdown => (int)Math.Ceiling( RoundStartCountdownSeconds - TimeSinceCountdownStarted );
 	#endregion
-	
+
 	#region In Progress State
 
 	private const int MinigamesPerRound = 1;
-	
+
 	private int MinigamesLeftInRound { get; set; }
-	
+
 	private List<Lucker> Players { get; set; }
 	#endregion
 
@@ -110,7 +110,7 @@ public partial class RoundManager : Entity
 		}
 	}
 
-	private void StartRound()
+	private void StartRound( string minigameName = null )
 	{
 		if ( RoundState == RoundState.InProgress )
 		{
@@ -120,12 +120,12 @@ public partial class RoundManager : Entity
 
 		RoundState = RoundState.InProgress;
 		Players = All.OfType<Lucker>().ToList();
-		MinigameManager.StartRandomMinigame( Players );
+		MinigameManager.StartMinigame( Players, minigameName );
 	}
 
-	[ConCmd.Server("start_round")]
-	public static void ForceStart()
+	[ConCmd.Server( "start_round" )]
+	public static void ForceStart( string minigameName = null )
 	{
-		Entity.All.OfType<RoundManager>().FirstOrDefault()?.StartRound();
+		Entity.All.OfType<RoundManager>().FirstOrDefault()?.StartRound( minigameName );
 	}
 }
