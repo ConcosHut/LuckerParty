@@ -80,7 +80,7 @@ public partial class MinigameManager : Entity
 		}
 		InvolvedPlayers.ForEach( player =>
 		{
-			player.Pawn.Delete();
+			player.Pawn?.Delete();
 			player.Pawn = null;
 		} );
 	}
@@ -102,6 +102,7 @@ public partial class MinigameManager : Entity
 		}
 
 		LoadedMinigame.Cleanup();
+		CleanupPlayerPawns();
 		LoadedMinigame = null;
 		return true;
 

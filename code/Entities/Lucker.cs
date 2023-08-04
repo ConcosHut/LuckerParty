@@ -25,7 +25,10 @@ public partial class Lucker : Entity
 		set
 		{
 			InternalPawn = value;
-			value.Owner = this;
+			if ( value != null )
+			{
+				value.Owner = this;
+			}
 		}
 	}
 

@@ -20,11 +20,13 @@ public class RussianRouletteMinigame : Minigame
 	private const float ShooterDistance = 80f;
 	private const float TimeBetweenShots = 7f;
 	private const float TimeBetweenDeathAndEnd = 5f;
+	private const string ShooterName = "The Russian";
 	private int Taunted = 0;
+	private Pawn ShooterTarget;
 
 	private List<Pawn> DeadVictims => Players
 		.Select( player => player.Pawn as Pawn )
-		.Where( pawn => !pawn.IsValid || pawn.LifeState != LifeState.Alive )
+		.Where( pawn => pawn is not { IsValid: true } || pawn.LifeState != LifeState.Alive )
 		.ToList();
 
 	private TimeSince TimeSinceShot { get; set; }
@@ -34,6 +36,7 @@ public class RussianRouletteMinigame : Minigame
 	{
 		Players = players;
 		Shooter = new Pawn();
+		Shooter.Name = ShooterName;
 		var shooterInventory = Shooter.Components.Create<PawnInventory>();
 		shooterInventory.AddWeapon( new RussianPistol() );
 
@@ -66,11 +69,12 @@ public class RussianRouletteMinigame : Minigame
 
 	public override bool Tick()
 	{
+		// Someone is dead, we're getting ready to end
 		if ( DeadVictims.Any() )
 		{
 			if ( Taunted != int.MaxValue )
 			{
-				ChatBox.AddChatEntry( To.Everyone, "Shooter", "Heh, nothing personnel, kid." );
+				ChatBox.AddChatEntry( To.Everyone, Shooter.Name, "Heh, nothing personnel, kid." );
 				Taunted = int.MaxValue;
 				TimeSinceDeadVictim = 0;
 			}
@@ -86,21 +90,22 @@ public class RussianRouletteMinigame : Minigame
 			Shooter.Inventory.ActiveWeapon.PrimaryAttack();
 			if ( !DeadVictims.Any() )
 			{
-				ChatBox.AddChatEntry( To.Everyone, "Shooter", "Fucking lag..." );
+				ChatBox.AddChatEntry( To.Everyone, Shooter.Name, "Fucking lag..." );
 			}
 		}
 		else if ( TimeSinceShot > TimeBetweenShots * .8f && Taunted == 1)
 		{
-			var victim = Players.Select( player => player.Pawn as Pawn )
+			ShooterTarget = Players.Select( player => player.Pawn as Pawn )
 				.OrderBy( _ => Guid.NewGuid() )
 				.FirstOrDefault();
-			Shooter.LookAt( victim.Position );
-			ChatBox.AddChatEntry( To.Everyone, "Shooter", $"I'm gonna eat you up, {victim.Name}" );
+			Shooter.LookAt( ShooterTarget.Position );
+			var chance = 1f / Shooter.Inventory.ActiveWeapon.Ammo;
+			ChatBox.AddChatEntry( To.Everyone, Shooter.Name, $"Good luck, {ShooterTarget.Name}! You have a {chance:P0} chance to die!" );
 			Taunted++;
 		}
 		else if ( TimeSinceShot > TimeBetweenShots / 2  && Taunted == 0)
 		{
-			ChatBox.AddChatEntry( To.Everyone, "Shooter", "Im gettin' ready!" );
+			ChatBox.AddChatEntry( To.Everyone, Shooter.Name, "Im gettin' ready!" );
 			Taunted++;
 		}
 
