@@ -12,8 +12,19 @@ namespace LuckerGame.Entities;
 /// </summary>
 public partial class MinigameManager : Entity
 {
+	/// <summary>
+	/// The currently loaded minigame
+	/// </summary>
 	[Net] public Minigame LoadedMinigame { get; private set; }
+	
+	/// <summary>
+	/// A cached list of available minigames. Gets reloaded on a hotreload
+	/// </summary>
 	private List<TypeDescription> AvailableMinigames { get; set; }
+	
+	/// <summary>
+	/// The players involved in the current minigame
+	/// </summary>
 	private List<Lucker> InvolvedPlayers { get; set; }
 
 	public override void Spawn()

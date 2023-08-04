@@ -1,4 +1,5 @@
 using LuckerGame.Components.Lucker.Cameras;
+using LuckerGame.EntityComponents.Lucker;
 using LuckerGame.Events;
 using Sandbox;
 
@@ -11,9 +12,22 @@ namespace LuckerGame.Entities;
 public partial class Lucker : Entity
 {
 	/// <summary>
-	/// The entity this Player currently controls
+	/// The entity this player controls. This value is networked and should be accessed through <see cref="Pawn"/>.
 	/// </summary>
-	public Entity Pawn { get; set; }
+	[Net] private Entity InternalPawn { get; set; }
+
+	/// <summary>
+	/// Accesses or sets the entity this player current controls
+	/// </summary>
+	public Entity Pawn
+	{
+		get => InternalPawn;
+		set
+		{
+			InternalPawn = value;
+			value.Owner = this;
+		}
+	}
 
 	/// <summary>
 	/// Before the round has started, this player indicated they were ready
@@ -24,6 +38,8 @@ public partial class Lucker : Entity
 	/// This Lucker's camera
 	/// </summary>
 	[BindComponent] public AbstractCamera Camera { get; }
+	
+	[BindComponent] public LuckerStats Stats { get; }
 
 	/// <summary>
 	/// Creates and properly sets up a Player entity for a given client
@@ -37,6 +53,7 @@ public partial class Lucker : Entity
 		player.Owner = client as Entity;
 		player.Name = client.Name;
 		var camera = player.Components.Create<RTSCamera>();
+		var stats = player.Components.Create<LuckerStats>();
 
 		return player;
 	}
