@@ -3,7 +3,7 @@ using Sandbox;
 
 namespace LuckerGame.Components.Lucker.Cameras;
 
-public abstract class AbstractCamera : EntityComponent<Entities.Lucker>, ISingletonComponent
+public abstract partial class AbstractCamera : EntityComponent<Entities.Lucker>, ISingletonComponent
 {
 	public virtual bool ShouldShowCursor => false;
 	protected Vector3 CameraPosition { get; set; }
@@ -16,11 +16,11 @@ public abstract class AbstractCamera : EntityComponent<Entities.Lucker>, ISingle
 	/// Handles any input-independent camera updates (ie following a pawn)
 	/// </summary>
 	protected abstract void UpdateCameraParameters();
-	
+
 	/// <summary>
 	/// Handles any input dependent camera updates (ie moving around a top down cam)
 	/// </summary>
-	public abstract void BuildInput();
+	public virtual void BuildInput() { }
 
 	/// <summary>
 	/// Applies Camera parameters to the static Camera

@@ -15,6 +15,7 @@ public class TerryRaces : Minigame
 {
 	public override string Name => "Terry Races";
 	private List<Lucker> Players { get; set; }
+	private FixedCamera camera;
 
 	public override void Initialize( List<Lucker> players )
 	{
@@ -22,7 +23,9 @@ public class TerryRaces : Minigame
 		// Setup cameras for players
 		Players.ForEach( player =>
 		{
-			player.Components.Create<RTSCamera>();
+			camera = player.Components.Create<FixedCamera>();
+			camera.LookAt( new Vector3( -110f, 4f, 180f ), Rotation.FromPitch( 45 ) );
+			camera.FieldOfViewValue = 120f;
 		} );
 
 		Players.Select( ( player, i ) => (Player: player, Index: i) ).ToList().ForEach( pair =>
@@ -41,7 +44,6 @@ public class TerryRaces : Minigame
 
 	public override void Tick()
 	{
-
 	}
 
 	public override void Cleanup()
