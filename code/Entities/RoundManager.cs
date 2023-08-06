@@ -47,11 +47,20 @@ public partial class RoundManager : Entity
 
 	#region In Progress State
 
-	private const int MinigamesPerRound = 1;
-
+	/// <summary>
+	/// The number of minigames that should be played per round, settable via a convar
+	/// </summary>
 	[ConVar.Replicated("lucker_minigames_per_round")]
-	public static int MinigamesLeftInRound { get; set; }
+	private static int MinigamesPerRound { get; set; }
 
+	/// <summary>
+	/// The number of minigames left in the current round
+	/// </summary>
+	public int MinigamesLeftInRound { get; set; }
+
+	/// <summary>
+	/// The luckers playing in the current round
+	/// </summary>
 	private List<Lucker> Luckers { get; set; }
 	#endregion
 
