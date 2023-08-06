@@ -46,7 +46,7 @@
         "Choices": [],
         "ConVarName": "lucker_minigames_per_round",
         "DisplayName": "Minigames Per Round",
-        "DefaultValue": "0",
+        "DefaultValue": "1",
         "Description": "The number of minigames played per round",
         "Group": "Other",
         "Minimum": 1,

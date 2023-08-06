@@ -6,18 +6,18 @@ using Sandbox;
 namespace LuckerGame.Entities;
 
 /// <summary>
-/// Represents a Player.
+/// Represents a person playing the game.
 /// This could belong to a Client or a Bot and represents a common entity to operate on for games and keeping score
 /// </summary>
 public partial class Lucker : Entity
 {
 	/// <summary>
-	/// The entity this player controls. This value is networked and should be accessed through <see cref="Pawn"/>.
+	/// The entity this lucker controls. This value is networked and should be accessed through <see cref="Pawn"/>.
 	/// </summary>
 	[Net] private Entity InternalPawn { get; set; }
 
 	/// <summary>
-	/// Accesses or sets the entity this player current controls
+	/// Accesses or sets the entity this lucker currently controls
 	/// </summary>
 	public Entity Pawn
 	{
@@ -33,7 +33,7 @@ public partial class Lucker : Entity
 	}
 
 	/// <summary>
-	/// Before the round has started, this player indicated they were ready
+	/// Before the round has started, this lucker indicated they were ready
 	/// </summary>
 	[Net] public bool Ready { get; set; }
 	
@@ -45,20 +45,20 @@ public partial class Lucker : Entity
 	[BindComponent] public LuckerStats Stats { get; }
 
 	/// <summary>
-	/// Creates and properly sets up a Player entity for a given client
+	/// Creates and properly sets up a <see cref="Lucker"/> entity for a given client
 	/// </summary>
-	/// <param name="client">the client to own the player</param>
-	/// <returns>the newly created player</returns>
+	/// <param name="client">the client to own the lucker</param>
+	/// <returns>the newly created lucker</returns>
 	public static Lucker CreateLuckerForClient( IClient client )
 	{
-		var player = new Lucker();
-		client.Pawn = player;
-		player.Owner = client as Entity;
-		player.Name = client.Name;
-		var camera = player.Components.Create<RTSCamera>();
-		var stats = player.Components.Create<LuckerStats>();
+		var lucker = new Lucker();
+		client.Pawn = lucker;
+		lucker.Owner = client as Entity;
+		lucker.Name = client.Name;
+		lucker.Components.Create<RTSCamera>();
+		lucker.Components.Create<LuckerStats>();
 
-		return player;
+		return lucker;
 	}
 
 	/// <summary>
@@ -69,12 +69,12 @@ public partial class Lucker : Entity
 	public static void ReadyUpCommand(bool readyState)
 	{
 		var client = ConsoleSystem.Caller;
-		var player = client.Pawn as Lucker;
-		player.SetReady( readyState );
+		var lucker = client.Pawn as Lucker;
+		lucker.SetReady( readyState );
 	}
 
 	/// <summary>
-	/// Sets this player's ready state
+	/// Sets this lucker's ready state
 	/// </summary>
 	/// <param name="ready">the ready state being set</param>
 	public void SetReady(bool ready)
@@ -82,7 +82,7 @@ public partial class Lucker : Entity
 		Ready = ready;
 		if ( Game.IsServer )
 		{
-			Event.Run( LuckerEvent.PlayerReady, this, ready );
+			Event.Run( LuckerEvent.LuckerReady, this, ready );
 		}
 	}
 

@@ -52,7 +52,7 @@ public partial class RoundManager : Entity
 	[ConVar.Replicated("lucker_minigames_per_round")]
 	public static int MinigamesLeftInRound { get; set; }
 
-	private List<Lucker> Players { get; set; }
+	private List<Lucker> Luckers { get; set; }
 	#endregion
 
 	/// <inheritdoc/>
@@ -83,7 +83,7 @@ public partial class RoundManager : Entity
 				MinigamesLeftInRound--;
 				if ( MinigamesLeftInRound > 0 )
 				{
-					MinigameManager.StartMinigame( Players );
+					MinigameManager.StartMinigame( Luckers );
 				}
 				else
 				{
@@ -94,11 +94,12 @@ public partial class RoundManager : Entity
 	}
 
 	/// <summary>
-	/// Is triggered whenever a player readies up
+	/// Is triggered whenever a lucker readies up or readies down
 	/// </summary>
-	/// <param name="readyLucker">the player that readied up, discarded</param>
-	[LuckerEvent.PlayerReady]
-	public void HandlePlayerReady( Lucker readyLucker, bool ready )
+	/// <param name="readyLucker">the lucker that readied up</param>
+	/// <param name="ready">the lucker's ready state</param>
+	[LuckerEvent.LuckerReady]
+	public void HandleLuckerReady( Lucker readyLucker, bool ready )
 	{
 		if ( RoundState != RoundState.NotStarted && RoundState != RoundState.StartCountdown )
 		{
@@ -107,9 +108,9 @@ public partial class RoundManager : Entity
 		Log.Info( $"{readyLucker.Client.Name} set ready to {ready}" );
 		var message = $"{readyLucker.Client.Name} is {(ready ? "now ready." : "no longer ready.")}";
 		ChatBox.AddInformation( To.Everyone, message );
-		var players = All.OfType<Lucker>().ToList();
-		var readiedCount = players.Count( player => player.Ready );
-		var totalCount = players.Count;
+		var luckers = All.OfType<Lucker>().ToList();
+		var readiedCount = luckers.Count( lucker => lucker.Ready );
+		var totalCount = luckers.Count;
 		if ( (float)readiedCount / totalCount > RequiredReadyPercent && RoundState == RoundState.NotStarted )
 		{
 			Log.Info( "Countdown started" );
@@ -132,13 +133,13 @@ public partial class RoundManager : Entity
 		}
 
 		RoundState = RoundState.InProgress;
-		Players = All.OfType<Lucker>().ToList();
-		Players.ForEach( player =>
+		Luckers = All.OfType<Lucker>().ToList();
+		Luckers.ForEach( lucker =>
 		{
-			player.Ready = false;
+			lucker.Ready = false;
 		} );
 		MinigamesLeftInRound = MinigamesPerRound;
-		MinigameManager.StartMinigame( Players, minigameName );
+		MinigameManager.StartMinigame( Luckers, minigameName );
 	}
 
 	[ConCmd.Server( "start_round" )]

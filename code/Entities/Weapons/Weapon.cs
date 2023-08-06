@@ -76,7 +76,7 @@ public partial class Weapon : AnimatedEntity
 	}
 
 	/// <summary>
-	/// Called when the weapon is either removed from the player, or holstered.
+	/// Called when the weapon is either removed from the pawn, or holstered.
 	/// </summary>
 	public void OnHolster()
 	{

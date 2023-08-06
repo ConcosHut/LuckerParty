@@ -23,9 +23,9 @@ public partial class MinigameManager : Entity
 	private List<TypeDescription> AvailableMinigames { get; set; }
 	
 	/// <summary>
-	/// The players involved in the current minigame
+	/// The luckers involved in the current minigame
 	/// </summary>
-	private List<Lucker> InvolvedPlayers { get; set; }
+	private List<Lucker> InvolvedLuckers { get; set; }
 
 	public override void Spawn()
 	{
@@ -33,14 +33,17 @@ public partial class MinigameManager : Entity
 		FindMinigames();
 	}
 
-	public void StartMinigame(List<Lucker> players, string minigameName = null)
+	public void StartMinigame(List<Lucker> luckers, string minigameName = null)
 	{
-		InvolvedPlayers = players.ToList();
+		InvolvedLuckers = luckers.ToList();
 		if (CheckForMinigames())
 		{
-			LoadedMinigame = string.IsNullOrEmpty( minigameName ) ? TypeLibrary.Create<Minigame>(AvailableMinigames.OrderBy( _ => Guid.NewGuid() ).FirstOrDefault().TargetType) : TypeLibrary.Create<Minigame>( minigameName );
+			LoadedMinigame = string.IsNullOrEmpty( minigameName )
+				? TypeLibrary.Create<Minigame>( AvailableMinigames.OrderBy( _ => Guid.NewGuid() ).FirstOrDefault()
+					.TargetType )
+				: TypeLibrary.Create<Minigame>( minigameName );
 			ChatBox.AddInformation( To.Everyone, $"Starting {LoadedMinigame.Name}" );
-			LoadedMinigame.Initialize( players );
+			LoadedMinigame.Initialize( luckers );
 		}
 	}
 
@@ -69,19 +72,19 @@ public partial class MinigameManager : Entity
 	}
 
 	/// <summary>
-	/// Goes through the players included in the loaded minigame and deletes and nulls out any pawns assigned to them
+	/// Goes through the luckers included in the loaded minigame and deletes and nulls out any pawns assigned to them
 	/// </summary>
-	private void CleanupPlayerPawns()
+	private void CleanupLuckerPawns()
 	{
-		if ( LoadedMinigame is not { IsValid: true } || InvolvedPlayers == null)
+		if ( LoadedMinigame is not { IsValid: true } || InvolvedLuckers == null)
 		{
 			Log.Warning( "Attempted to clean up players without a minigame loaded!" );
 			return;
 		}
-		InvolvedPlayers.ForEach( player =>
+		InvolvedLuckers.ForEach( lucker =>
 		{
-			player.Pawn?.Delete();
-			player.Pawn = null;
+			lucker.Pawn?.Delete();
+			lucker.Pawn = null;
 		} );
 	}
 	
@@ -100,11 +103,16 @@ public partial class MinigameManager : Entity
 		{
 			return false;
 		}
-
-		LoadedMinigame.Cleanup();
-		CleanupPlayerPawns();
-		LoadedMinigame = null;
+		EndMinigame();
 		return true;
+	}
 
+	private void EndMinigame()
+	{
+		LoadedMinigame.Cleanup();
+		CleanupLuckerPawns();
+		LoadedMinigame.Delete();
+		LoadedMinigame = null;
+		InvolvedLuckers = null;
 	}
 }

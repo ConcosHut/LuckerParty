@@ -10,9 +10,9 @@
 
 <root>
     <div class="scoreboard-panel">
-        @foreach (var player in Luckers)
+        @foreach (var lucker in Luckers)
         {
-            <label>@player.Name</label>
+            <label>@lucker.Name</label>
         }
     </div>
 </root>
@@ -23,7 +23,7 @@
 
     protected override int BuildHash()
     {
-        return HashCode.Combine(Luckers.Select(player => player.Name).ToList());
+        return HashCode.Combine(Luckers.Select(lucker => lucker.Name).ToList());
     }
 
 }
