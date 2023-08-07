@@ -6,7 +6,7 @@ namespace LuckerGame.Components.Lucker.Cameras;
 public abstract partial class AbstractCamera : EntityComponent<Entities.Lucker>, ISingletonComponent
 {
 	public virtual bool ShouldShowCursor => false;
-	protected Vector3 CameraPosition { get; set; }
+	public Vector3 CameraPosition { get; set; }
 	protected Rotation CameraRotation { get; set; }
 	protected float FieldOfView { get; set; }
 	protected IEntity FirstPersonViewer { get; set; }

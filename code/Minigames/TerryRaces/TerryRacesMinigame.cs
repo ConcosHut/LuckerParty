@@ -6,6 +6,7 @@ using LuckerGame.Components.Lucker.Cameras;
 using LuckerGame.Components.Pawn;
 using LuckerGame.Entities;
 using Sandbox;
+using Sandbox.Minigames.TerryRaces;
 using Sandbox.UI;
 
 namespace LuckerGame.Minigames.TerryRaces;
@@ -15,31 +16,38 @@ public class TerryRaces : Minigame
 {
 	public override string Name => "Terry Races";
 	private List<Lucker> Players { get; set; }
-	private FixedCamera camera;
+	private FixedCamera Camera;
+	private List<Racer> Racers { get; set; }
+	private float StartingY = 290f;
+	private float StartingX = 90f;
+	private float RacerXOffset = 60f;
+	private int NumberOfRacers = 4;
 
 	public override void Initialize( List<Lucker> players )
 	{
 		Players = players;
+		
 		// Setup cameras for players
 		Players.ForEach( player =>
 		{
-			camera = player.Components.Create<FixedCamera>();
-			camera.LookAt( new Vector3( -110f, 4f, 180f ), Rotation.FromPitch( 45 ) );
-			camera.FieldOfViewValue = 120f;
+			Camera = player.Components.Create<FixedCamera>();
+			Camera.LookAt( Constants.TOPDOWN_CAMERA_POSITION, Rotation.FromPitch( -270 ) );
+			Camera.FieldOfViewValue = 100f;
 		} );
 
-		Players.Select( ( player, i ) => (Player: player, Index: i) ).ToList().ForEach( pair =>
+		// SpawnRacers();
+	}
+	
+	private void SpawnRacers()
+	{
+		for ( int i = 0; i < NumberOfRacers; i++ )
 		{
-			var player = pair.Player;
-			var index = pair.Index;
-			var pawn = new Pawn();
-			pawn.Name = player.Name;
-			pawn.Tags.Add( "victim" );
-			pawn.Health = 1;
-			player.Pawn = pawn;
-			pawn.DressFromClient( player.Client );
-
-		} );
+			var racer = new Racer();
+			var x = StartingX - RacerXOffset * i;
+			racer.Position = new Vector3( x, StartingY, 0 );
+			racer.Rotation = Rotation.FromPitch( -90 );
+			Racers.Add( racer ); 
+		}
 	}
 
 	public override void Tick()
