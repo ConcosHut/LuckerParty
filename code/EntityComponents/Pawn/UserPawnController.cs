@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace LuckerGame.Components.Pawn;
 
-public class UserPawnController : EntityComponent<Entities.Pawn>
+public class UserPawnController : EntityComponent<Entities.Racer>
 {
 	public int StepSize => 24;
 	public int GroundAngle => 45;

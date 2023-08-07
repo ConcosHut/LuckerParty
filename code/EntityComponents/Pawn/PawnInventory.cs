@@ -5,7 +5,7 @@ using Sandbox;
 
 namespace LuckerGame.Components.Pawn;
 
-public partial class PawnInventory : EntityComponent<Entities.Pawn>
+public partial class PawnInventory : EntityComponent<Entities.Racer>
 {
 	[Net] private List<Weapon> Weapons { get; set; } = new List<Weapon>();
 	[Net, Predicted] public Weapon ActiveWeapon { get; private set; }

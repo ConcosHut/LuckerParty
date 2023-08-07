@@ -15,13 +15,13 @@ public class RussianRouletteMinigame : Minigame
 {
 	public override string Name => "Russian Roulette";
 	private List<Lucker> Players { get; set; }
-	private Pawn Shooter { get; set; }
+	private Entities.Racer Shooter { get; set; }
 	private const float ShooterDistance = 80f;
 	private const float TimeBetweenShots = 7f;
 	private int Taunted = 0;
 
-	private List<Pawn> DeadVictims => Players
-		.Select( player => player.Pawn as Pawn )
+	private List<Entities.Racer> DeadVictims => Players
+		.Select( player => player.Pawn as Entities.Racer )
 		.Where( pawn => !pawn.IsValid || pawn.LifeState != LifeState.Alive )
 		.ToList();
 
@@ -30,7 +30,7 @@ public class RussianRouletteMinigame : Minigame
 	public override void Initialize( List<Lucker> players )
 	{
 		Players = players;
-		Shooter = new Pawn();
+		Shooter = new Entities.Racer();
 		var shooterInventory = Shooter.Components.Create<PawnInventory>();
 		shooterInventory.AddWeapon( new RussianPistol() );
 
@@ -45,7 +45,7 @@ public class RussianRouletteMinigame : Minigame
 		{
 			var player = pair.Player;
 			var index = pair.Index;
-			var pawn = new Pawn();
+			var pawn = new Entities.Racer();
 			pawn.Name = player.Name;
 			pawn.Tags.Add( "victim" );
 			pawn.Health = 1;
@@ -83,7 +83,7 @@ public class RussianRouletteMinigame : Minigame
 		}
 		else if ( TimeSinceShot > TimeBetweenShots * .8f && Taunted == 1)
 		{
-			var victim = Players.Select( player => player.Pawn as Pawn )
+			var victim = Players.Select( player => player.Pawn as Racer )
 				.OrderBy( _ => Guid.NewGuid() )
 				.FirstOrDefault();
 			Shooter.LookAt( victim.Position );

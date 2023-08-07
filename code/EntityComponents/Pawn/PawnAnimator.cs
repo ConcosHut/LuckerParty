@@ -3,7 +3,7 @@ using System;
 
 namespace LuckerGame.Components.Pawn;
 
-public class PawnAnimator : EntityComponent<Entities.Pawn>, ISingletonComponent
+public class PawnAnimator : EntityComponent<Entities.Racer>, ISingletonComponent
 {
 	public void Simulate()
 	{

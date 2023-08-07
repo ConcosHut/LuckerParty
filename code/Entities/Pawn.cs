@@ -7,7 +7,7 @@ namespace LuckerGame.Entities;
 /// <summary>
 /// Represents an entity in the world. Could be controlled by a Lucker or a minigame
 /// </summary>
-public partial class Pawn : AnimatedEntity
+public partial class Racer : AnimatedEntity
 {
 	[ClientInput]
 	public Vector3 InputDirection { get; set; }
