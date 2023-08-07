@@ -15,13 +15,14 @@ public abstract class Minigame : Entity
 	/// <summary>
 	/// Initializes the minigame with a list of luckers playing it.
 	/// </summary>
-	/// <param name="players">the players who made it into the minigame</param>
-	public abstract void Initialize(List<Lucker> players);
+	/// <param name="luckers">the luckers who made it into the minigame</param>
+	public abstract void Initialize(List<Lucker> luckers);
 
 	/// <summary>
 	/// Once a minigame is loaded and initialized, this method is called once per server tick.
 	/// </summary>
-	public abstract void Tick();
+	/// <returns>true if the minigame has ended, false otherwise</returns>
+	public abstract bool Tick();
 	
 	/// <summary>
 	/// Cleans up any entities and components created by this minigame.

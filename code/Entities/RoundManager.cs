@@ -47,11 +47,21 @@ public partial class RoundManager : Entity
 
 	#region In Progress State
 
-	private const int MinigamesPerRound = 1;
+	/// <summary>
+	/// The number of minigames that should be played per round, settable via a convar
+	/// </summary>
+	[ConVar.Replicated("lucker_minigames_per_round")]
+	private static int MinigamesPerRound { get; set; }
 
-	private int MinigamesLeftInRound { get; set; }
+	/// <summary>
+	/// The number of minigames left in the current round
+	/// </summary>
+	public int MinigamesLeftInRound { get; set; }
 
-	private List<Lucker> Players { get; set; }
+	/// <summary>
+	/// The luckers playing in the current round
+	/// </summary>
+	private List<Lucker> Luckers { get; set; }
 	#endregion
 
 	/// <inheritdoc/>
@@ -76,16 +86,29 @@ public partial class RoundManager : Entity
 
 		if ( RoundState == RoundState.InProgress )
 		{
-			MinigameManager.Tick();
+			var ended = MinigameManager.Tick();
+			if ( ended )
+			{
+				MinigamesLeftInRound--;
+				if ( MinigamesLeftInRound > 0 )
+				{
+					MinigameManager.StartMinigame( Luckers );
+				}
+				else
+				{
+					RoundState = RoundState.NotStarted;
+				}
+			}
 		}
 	}
 
 	/// <summary>
-	/// Is triggered whenever a player readies up
+	/// Is triggered whenever a lucker readies up or readies down
 	/// </summary>
-	/// <param name="readyLucker">the player that readied up, discarded</param>
-	[LuckerEvent.PlayerReady]
-	public void HandlePlayerReady( Lucker readyLucker, bool ready )
+	/// <param name="readyLucker">the lucker that readied up</param>
+	/// <param name="ready">the lucker's ready state</param>
+	[LuckerEvent.LuckerReady]
+	public void HandleLuckerReady( Lucker readyLucker, bool ready )
 	{
 		if ( RoundState != RoundState.NotStarted && RoundState != RoundState.StartCountdown )
 		{
@@ -94,9 +117,9 @@ public partial class RoundManager : Entity
 		Log.Info( $"{readyLucker.Client.Name} set ready to {ready}" );
 		var message = $"{readyLucker.Client.Name} is {(ready ? "now ready." : "no longer ready.")}";
 		ChatBox.AddInformation( To.Everyone, message );
-		var players = All.OfType<Lucker>().ToList();
-		var readiedCount = players.Count( player => player.Ready );
-		var totalCount = players.Count;
+		var luckers = All.OfType<Lucker>().ToList();
+		var readiedCount = luckers.Count( lucker => lucker.Ready );
+		var totalCount = luckers.Count;
 		if ( (float)readiedCount / totalCount > RequiredReadyPercent && RoundState == RoundState.NotStarted )
 		{
 			Log.Info( "Countdown started" );
@@ -119,8 +142,13 @@ public partial class RoundManager : Entity
 		}
 
 		RoundState = RoundState.InProgress;
-		Players = All.OfType<Lucker>().ToList();
-		MinigameManager.StartMinigame( Players, minigameName );
+		Luckers = All.OfType<Lucker>().ToList();
+		Luckers.ForEach( lucker =>
+		{
+			lucker.Ready = false;
+		} );
+		MinigamesLeftInRound = MinigamesPerRound;
+		MinigameManager.StartMinigame( Luckers, minigameName );
 	}
 
 	[ConCmd.Server( "start_round" )]

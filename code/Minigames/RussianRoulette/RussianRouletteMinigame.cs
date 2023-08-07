@@ -14,87 +14,102 @@ namespace LuckerGame.Minigames.RussianRoulette;
 public class RussianRouletteMinigame : Minigame
 {
 	public override string Name => "Russian Roulette";
-	private List<Lucker> Players { get; set; }
+	private List<Lucker> Luckers { get; set; }
 	private Pawn Shooter { get; set; }
+	
 	private const float ShooterDistance = 80f;
 	private const float TimeBetweenShots = 7f;
+	private const float TimeBetweenDeathAndEnd = 5f;
+	private const string ShooterName = "The Russian";
 	private int Taunted = 0;
+	private Pawn ShooterTarget;
 
-	private List<Pawn> DeadVictims => Players
-		.Select( player => player.Pawn as Pawn )
-		.Where( pawn => !pawn.IsValid || pawn.LifeState != LifeState.Alive )
+	private List<Pawn> DeadVictims => Luckers
+		.Select( lucker => lucker.Pawn as Pawn )
+		.Where( pawn => pawn is not { IsValid: true } || pawn.LifeState != LifeState.Alive )
 		.ToList();
 
 	private TimeSince TimeSinceShot { get; set; }
+	private TimeSince TimeSinceDeadVictim { get; set; }
 
-	public override void Initialize( List<Lucker> players )
+	public override void Initialize( List<Lucker> luckers )
 	{
-		Players = players;
+		Luckers = luckers;
 		Shooter = new Pawn();
+		Shooter.Name = ShooterName;
 		var shooterInventory = Shooter.Components.Create<PawnInventory>();
 		shooterInventory.AddWeapon( new RussianPistol() );
 
-		// Setup cameras for players
-		Players.ForEach( player =>
+		// Setup cameras for luckers
+		Luckers.ForEach( lucker =>
 		{
-			player.Components.Create<RTSCamera>();
-			player.Position = Shooter.Position;
+			lucker.Components.Create<RTSCamera>();
+			lucker.Position = Shooter.Position;
 		} );
 
-		Players.Select((player, i) => (Player: player, Index: i)  ).ToList().ForEach( pair =>
+		Luckers.Select((lucker, i) => (Lucker: lucker, Index: i)  ).ToList().ForEach( pair =>
 		{
-			var player = pair.Player;
+			var lucker = pair.Lucker;
 			var index = pair.Index;
 			var pawn = new Pawn();
-			pawn.Name = player.Name;
+			pawn.Name = lucker.Name;
 			pawn.Tags.Add( "victim" );
 			pawn.Health = 1;
-			player.Pawn = pawn;
-			pawn.DressFromClient( player.Client );
+			lucker.Pawn = pawn;
+			pawn.DressFromClient( lucker.Client );
 
 			var pawnOffset = ShooterDistance * (index % 2 == 0 ? Vector3.Forward : Vector3.Right) * (index % 4 >= 2 ? -1 : 1);
 			
-			player.Pawn.Position = Shooter.Position + pawnOffset;
+			lucker.Pawn.Position = Shooter.Position + pawnOffset;
 			pawn.LookAt(Shooter.Position);
 		} );
 		TimeSinceShot = 0;
+		Taunted = 0;
 	}
 
-	public override void Tick()
+	public override bool Tick()
 	{
+		// Someone is dead, we're getting ready to end
 		if ( DeadVictims.Any() )
 		{
 			if ( Taunted != int.MaxValue )
 			{
-				ChatBox.AddChatEntry( To.Everyone, "Shooter", "Heh, nothing personnel, kid." );
+				ChatBox.AddChatEntry( To.Everyone, Shooter.Name, "Heh, nothing personnel, kid." );
 				Taunted = int.MaxValue;
+				TimeSinceDeadVictim = 0;
 			}
-			return;
+			else if(TimeSinceDeadVictim > TimeBetweenDeathAndEnd)
+			{
+				return true;
+			}
 		}
-		if ( TimeSinceShot > TimeBetweenShots )
+		else if ( TimeSinceShot > TimeBetweenShots )
 		{
 			TimeSinceShot = 0;
 			Taunted = 0;
 			Shooter.Inventory.ActiveWeapon.PrimaryAttack();
 			if ( !DeadVictims.Any() )
 			{
-				ChatBox.AddChatEntry( To.Everyone, "Shooter", "Fucking lag..." );
+				ChatBox.AddChatEntry( To.Everyone, Shooter.Name, "Fucking lag..." );
 			}
 		}
 		else if ( TimeSinceShot > TimeBetweenShots * .8f && Taunted == 1)
 		{
-			var victim = Players.Select( player => player.Pawn as Pawn )
+			ShooterTarget = Luckers.Select( lucker => lucker.Pawn as Pawn )
 				.OrderBy( _ => Guid.NewGuid() )
 				.FirstOrDefault();
-			Shooter.LookAt( victim.Position );
-			ChatBox.AddChatEntry( To.Everyone, "Shooter", $"I'm gonna eat you up, {victim.Name}" );
+			Shooter.LookAt( ShooterTarget.Position );
+			var chance = 1f / Shooter.Inventory.ActiveWeapon.Ammo;
+			ChatBox.AddChatEntry( To.Everyone, Shooter.Name, $"Good luck, {ShooterTarget.Name}! You have a {chance:P0} chance to die!" );
 			Taunted++;
 		}
 		else if ( TimeSinceShot > TimeBetweenShots / 2  && Taunted == 0)
 		{
-			ChatBox.AddChatEntry( To.Everyone, "Shooter", "Im gettin' ready!" );
+			ChatBox.AddChatEntry( To.Everyone, Shooter.Name, "Im gettin' ready!" );
 			Taunted++;
 		}
+
+		return false;
 	}
 
 	public override void Cleanup()
