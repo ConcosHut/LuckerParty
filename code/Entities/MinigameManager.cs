@@ -12,8 +12,20 @@ namespace LuckerGame.Entities;
 /// </summary>
 public partial class MinigameManager : Entity
 {
+	/// <summary>
+	/// The currently loaded minigame
+	/// </summary>
 	[Net] public Minigame LoadedMinigame { get; private set; }
-	private List<Minigame> AvailableMinigames { get; set; }
+	
+	/// <summary>
+	/// A cached list of available minigames. Gets reloaded on a hotreload
+	/// </summary>
+	private List<TypeDescription> AvailableMinigames { get; set; }
+	
+	/// <summary>
+	/// The luckers involved in the current minigame
+	/// </summary>
+	private List<Lucker> InvolvedLuckers { get; set; }
 
 	public override void Spawn()
 	{
@@ -21,13 +33,17 @@ public partial class MinigameManager : Entity
 		FindMinigames();
 	}
 
-	public void StartMinigame(List<Lucker> players, string minigameName = null)
+	public void StartMinigame(List<Lucker> luckers, string minigameName = null)
 	{
+		InvolvedLuckers = luckers.ToList();
 		if (CheckForMinigames())
 		{
-			LoadedMinigame = string.IsNullOrEmpty( minigameName ) ? AvailableMinigames.OrderBy( _ => Guid.NewGuid() ).FirstOrDefault() : TypeLibrary.Create<Minigame>( minigameName );
+			LoadedMinigame = string.IsNullOrEmpty( minigameName )
+				? TypeLibrary.Create<Minigame>( AvailableMinigames.OrderBy( _ => Guid.NewGuid() ).FirstOrDefault()
+					.TargetType )
+				: TypeLibrary.Create<Minigame>( minigameName );
 			ChatBox.AddInformation( To.Everyone, $"Starting {LoadedMinigame.Name}" );
-			LoadedMinigame.Initialize( players );
+			LoadedMinigame.Initialize( luckers );
 		}
 	}
 
@@ -46,7 +62,7 @@ public partial class MinigameManager : Entity
 	{
 		AvailableMinigames = TypeLibrary.GetTypes<Minigame>()
 			.Where( type => !type.IsAbstract && !type.IsInterface )
-			.Select( td => TypeLibrary.Create<Minigame>( td.TargetType ) ).ToList();
+			.ToList();
 	}
 
 	[Event.Hotload]
@@ -54,13 +70,49 @@ public partial class MinigameManager : Entity
 	{
 		FindMinigames();
 	}
+
+	/// <summary>
+	/// Goes through the luckers included in the loaded minigame and deletes and nulls out any pawns assigned to them
+	/// </summary>
+	private void CleanupLuckerPawns()
+	{
+		if ( LoadedMinigame is not { IsValid: true } || InvolvedLuckers == null)
+		{
+			Log.Warning( "Attempted to clean up players without a minigame loaded!" );
+			return;
+		}
+		InvolvedLuckers.ForEach( lucker =>
+		{
+			lucker.Pawn?.Delete();
+			lucker.Pawn = null;
+		} );
+	}
 	
-	public void Tick()
+	/// <summary>
+	/// Called once per tick by the RoundManager. Ticks any running minigame.
+	/// </summary>
+	/// <returns>true if the current minigame has ended, else false</returns>
+	public bool Tick()
 	{
 		if ( LoadedMinigame is not { IsValid: true } )
 		{
-			return;
+			return false;
 		}
-		LoadedMinigame.Tick();
+		var ended = LoadedMinigame.Tick();
+		if ( !ended )
+		{
+			return false;
+		}
+		EndMinigame();
+		return true;
+	}
+
+	private void EndMinigame()
+	{
+		LoadedMinigame.Cleanup();
+		CleanupLuckerPawns();
+		LoadedMinigame.Delete();
+		LoadedMinigame = null;
+		InvolvedLuckers = null;
 	}
 }

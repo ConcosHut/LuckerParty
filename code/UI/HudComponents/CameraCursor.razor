@@ -5,10 +5,13 @@
 @attribute [StyleSheet]
 @inherits Panel
 
-@if (ShouldShowCursor)
-{
-    <root/>
-}
+<root>
+   @if (ShouldShowCursor)
+   {
+       <div class="camera-cursor"/>
+   } 
+</root>
+
 
 
 @code {
