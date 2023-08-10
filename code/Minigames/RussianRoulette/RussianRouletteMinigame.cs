@@ -15,13 +15,13 @@ public class RussianRouletteMinigame : Minigame
 {
 	public override string Name => "Russian Roulette";
 	private List<Lucker> Players { get; set; }
-	private Entities.Racer Shooter { get; set; }
+	private Entities.Pawn Shooter { get; set; }
 	private const float ShooterDistance = 80f;
 	private const float TimeBetweenShots = 7f;
 	private int Taunted = 0;
 
-	private List<Entities.Racer> DeadVictims => Players
-		.Select( player => player.Pawn as Entities.Racer )
+	private List<Entities.Pawn> DeadVictims => Players
+		.Select( player => player.Pawn as Entities.Pawn )
 		.Where( pawn => !pawn.IsValid || pawn.LifeState != LifeState.Alive )
 		.ToList();
 
@@ -30,7 +30,7 @@ public class RussianRouletteMinigame : Minigame
 	public override void Initialize( List<Lucker> players )
 	{
 		Players = players;
-		Shooter = new Entities.Racer();
+		Shooter = new Entities.Pawn();
 		var shooterInventory = Shooter.Components.Create<PawnInventory>();
 		shooterInventory.AddWeapon( new RussianPistol() );
 
@@ -45,7 +45,7 @@ public class RussianRouletteMinigame : Minigame
 		{
 			var player = pair.Player;
 			var index = pair.Index;
-			var pawn = new Entities.Racer();
+			var pawn = new Entities.Pawn();
 			pawn.Name = player.Name;
 			pawn.Tags.Add( "victim" );
 			pawn.Health = 1;

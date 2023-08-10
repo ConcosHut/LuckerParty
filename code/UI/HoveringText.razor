@@ -1,0 +1,30 @@
+@using Sandbox;
+@using Sandbox.UI;
+
+@namespace LuckerGame.UI
+@attribute [StyleSheet]
+@inherits WorldPanel
+
+<root class="card">
+    <label class="text">@Text</label>
+</root>
+
+@code {
+    private Entity TargetEntity;
+    private string Text;
+
+    public HoveringText(string text, Entity targetEntity)
+    {
+        Text = text;
+        TargetEntity = targetEntity;
+    }
+
+    [GameEvent.Client.Frame]
+    private void OnFrame()
+    {
+        if (!TargetEntity.IsValid()) return;
+        Log.Info($"{Text} to {TargetEntity.Position}");
+        Position = TargetEntity.Position + Vector3.Up * 65f;
+        Rotation = Rotation.LookAt(-Screen.GetDirection(new Vector2(Screen.Width * 0.5f, Screen.Height * 0.5f)));
+    }
+}

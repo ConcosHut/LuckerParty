@@ -14,7 +14,7 @@ public partial class Weapon : AnimatedEntity
 	/// <summary>
 	/// An accessor to grab our Pawn.
 	/// </summary>
-	public Racer Pawn => Owner as Racer;
+	public Pawn Pawn => Owner as Pawn;
 
 	/// <summary>
 	/// This'll decide which entity to fire effects from. If we're in first person, the View Model, otherwise, this.
@@ -63,10 +63,10 @@ public partial class Weapon : AnimatedEntity
 	}
 
 	/// <summary>
-	/// Called when <see cref="Racer.SetActiveWeapon(Weapon)"/> is called for this weapon.
+	/// Called when <see cref="Pawn.SetActiveWeapon(Weapon)"/> is called for this weapon.
 	/// </summary>
 	/// <param name="pawn"></param>
-	public void OnEquip( Racer pawn )
+	public void OnEquip( Pawn pawn )
 	{
 		Owner = pawn;
 		SetParent( pawn, true );
@@ -86,7 +86,7 @@ public partial class Weapon : AnimatedEntity
 	}
 
 	/// <summary>
-	/// Called from <see cref="Racer.Simulate(IClient)"/>.
+	/// Called from <see cref="Pawn.Simulate(IClient)"/>.
 	/// </summary>
 	/// <param name="player"></param>
 	public override void Simulate( IClient player )

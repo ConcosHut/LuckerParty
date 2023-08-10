@@ -16,6 +16,7 @@ public class TerryRaces : Minigame
 {
 	public override string Name => "Terry Races";
 	private Random random = new Random();
+	private HoveringTextCreator NameTag { get; set; }
 	private Racer WinningRacer = null;
 	private FixedCamera Camera;
 	private List<Lucker> Players { get; set; }
@@ -51,23 +52,18 @@ public class TerryRaces : Minigame
 
 	public override void Tick()
 	{
-		if ( Racers != null )
+		Racers.ForEach( racer =>
 		{
-			Racers.ForEach( racer =>
+			if (WinningRacer == null)
 			{
-				if ( WinningRacer == null )
-				{
-					// Log.Info( $"{racer.Name} is racing" );
-					GetWinningRacer();
-					racer.ContinueRacing();
-				}
-				else
-				{
-					// Log.Info( $"{racer.Name} is stopping." );
-					racer.StopRacing();
-				}
-			} );
-		}
+				GetWinningRacer();
+				racer.ContinueRacing();
+			}
+			else
+			{
+				racer.StopRacing();
+			}
+		} );
 	}
 
 	public override void Cleanup()
@@ -79,7 +75,7 @@ public class TerryRaces : Minigame
 		for ( int i = 0; i < RacerNames.Count; i++ )
 		{
 			var clothing = new ClothingContainer();
-			var racer = new Racer();
+			var racer = new Racer(random);
 			var x = StartingX - RacerXOffset * i;
 
 			clothing.Toggle( GetRandomBottomClothing() );
@@ -89,7 +85,7 @@ public class TerryRaces : Minigame
 			racer.Name = RacerNames[i];
 			racer.Position = new Vector3( x, StartingY, 0 );
 			racer.Rotation = Rotation.FromYaw( -90 );
-			racer.GenerateSpeed( random, MinimumSpeed, MaximumSpeed );
+			racer.GenerateSpeed(MinimumSpeed, MaximumSpeed );
 
 			Racers.Add( racer );
 		}
