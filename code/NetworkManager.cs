@@ -5,10 +5,16 @@ namespace LuckerParty;
 /// </summary>
 public sealed class NetworkManager : Component, Component.INetworkListener
 {
-	[Property] private GameObject ClientGroup { get; set; }
+	/// <summary>
+	///     A GameObject used for organizational grouping of Clients
+	/// </summary>
+	[Property]
+	private GameObject ClientGroup { get; set; }
 
 	public void OnActive( Connection channel )
 	{
+		ClientGroup ??= new GameObject( Scene.Root );
+
 		var gameObject = new GameObject( ClientGroup ) { Name = $"{channel.DisplayName} ({channel.SteamId})" };
 		gameObject.NetworkSpawn( channel );
 
