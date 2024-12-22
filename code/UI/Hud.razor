@@ -1,0 +1,27 @@
+@using System
+@inherits PanelComponent
+@namespace LuckerParty.UI
+
+<root>
+	<div class="title">Hello, @_name</div>
+</root>
+
+@code
+{
+
+	private string _name;
+
+	protected override void OnAwake()
+	{
+		base.OnAwake();
+		_name = GameObject.GetComponent<Client>().Connection.DisplayName;
+	}
+
+	/// <summary>
+	///     the hash determines if the system should be rebuilt. If it changes, it will be rebuilt
+	/// </summary>
+	protected override int BuildHash()
+	{
+		return HashCode.Combine( _name );
+	}
+}
