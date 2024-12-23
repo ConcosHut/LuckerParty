@@ -1,3 +1,5 @@
+using System.Collections.Immutable;
+
 namespace LuckerParty;
 
 /// <summary>
@@ -10,10 +12,14 @@ public sealed class NetworkManager : Component, Component.INetworkListener
 	/// </summary>
 	private readonly Dictionary<Connection, GameObject> _clientMap = new();
 
+	private readonly List<Client> _clients = new();
+
 	/// <summary>
 	///     A GameObject used for organizational grouping of Clients
 	/// </summary>
 	private GameObject _clientGroup;
+
+	public ImmutableList<Client> Clients => _clients.ToImmutableList();
 
 	public void OnActive( Connection channel )
 	{
@@ -25,6 +31,9 @@ public sealed class NetworkManager : Component, Component.INetworkListener
 
 		// Spawn it on remote clients
 		gameObject.NetworkSpawn( channel );
+
+		_clients.Add( client );
+		IClientEvent.Post( e => e.OnConnected( client ) );
 	}
 
 	public void OnDisconnected( Connection channel )
@@ -35,8 +44,12 @@ public sealed class NetworkManager : Component, Component.INetworkListener
 			return;
 		}
 
+		var client = clientGameObject.GetComponent<Client>();
+		IClientEvent.Post( e => e.OnDisconnected( client ) );
+
 		clientGameObject.Destroy();
 		_clientMap.Remove( channel );
+		_clients.Remove( client );
 	}
 
 	protected override void OnAwake()
@@ -47,5 +60,14 @@ public sealed class NetworkManager : Component, Component.INetworkListener
 	protected override void OnDestroy()
 	{
 		_clientGroup.Destroy();
+	}
+
+	public interface IClientEvent : ISceneEvent<IClientEvent>
+	{
+		void OnConnected( Client client )
+		{
+		}
+
+		void OnDisconnected( Client client ) { }
 	}
 }
