@@ -11,6 +11,7 @@ bin
 Properties/*
 code/obj/*
 code/Properties/*
+*.sln.DotSettings.user
 
 # Auto-generated asset related files
 .sbox/*
