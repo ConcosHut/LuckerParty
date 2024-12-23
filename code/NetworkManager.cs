@@ -13,12 +13,12 @@ public sealed class NetworkManager : Component, Component.INetworkListener
 	/// <summary>
 	///     A GameObject used for organizational grouping of Clients
 	/// </summary>
-	private GameObject ClientGroup { get; set; }
+	private GameObject _clientGroup;
 
 	public void OnActive( Connection channel )
 	{
 		// Set up the Client GameObject
-		var gameObject = new GameObject( ClientGroup ) { Name = $"{channel.DisplayName} ({channel.SteamId})" };
+		var gameObject = new GameObject( _clientGroup ) { Name = $"{channel.DisplayName} ({channel.SteamId})" };
 		_clientMap.Add( channel, gameObject );
 		var client = gameObject.AddComponent<Client>();
 		client.Connection = channel;
@@ -41,11 +41,11 @@ public sealed class NetworkManager : Component, Component.INetworkListener
 
 	protected override void OnAwake()
 	{
-		ClientGroup = new GameObject( Scene.Root );
+		_clientGroup = new GameObject( Scene.Root ) { Name = "Clients", NetworkMode = NetworkMode.Object };
 	}
 
 	protected override void OnDestroy()
 	{
-		ClientGroup.Destroy();
+		_clientGroup.Destroy();
 	}
 }

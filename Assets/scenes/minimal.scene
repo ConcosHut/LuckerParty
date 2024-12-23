@@ -49,21 +49,40 @@
           "Components": [
             {
               "__type": "LuckerParty.NetworkManager",
-              "__guid": "66cfc3ad-f9a2-49fa-b72b-cf0498aadfad",
-              "ClientGroup": {
-                "_type": "gameobject",
-                "go": "3a8c9a1d-2623-4041-bb55-40bce397cd02"
-              }
+              "__guid": "beaf09d7-3c2d-4ce3-9607-24ee3b4e5617"
+            }
+          ]
+        },
+        {
+          "__guid": "c1903bc9-6a9f-41b5-bed7-b4fb2d50fcde",
+          "Flags": 0,
+          "Name": "Game Manager",
+          "Enabled": true,
+          "Components": [
+            {
+              "__type": "LuckerParty.GameManager",
+              "__guid": "053898a9-71a7-48a7-9ebc-3c57d6ec5ca4"
+            }
+          ]
+        },
+        {
+          "__guid": "076002c4-f60b-4ccc-8306-416e80d700df",
+          "Flags": 0,
+          "Name": "UI Root",
+          "Enabled": true,
+          "Components": [
+            {
+              "__type": "Sandbox.ScreenPanel",
+              "__guid": "f6380618-4c54-4bdc-9dee-ab8705b685cf",
+              "AutoScreenScale": true,
+              "Opacity": 1,
+              "Scale": 1,
+              "ScaleStrategy": "ConsistentHeight",
+              "ZIndex": 100
             }
           ]
         }
       ]
-    },
-    {
-      "__guid": "3a8c9a1d-2623-4041-bb55-40bce397cd02",
-      "Flags": 0,
-      "Name": "Clients",
-      "Enabled": true
     },
     {
       "__guid": "97cb86cc-36d4-46cf-8506-c1bc373ed142",

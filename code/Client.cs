@@ -1,4 +1,4 @@
-using LuckerParty.UI;
+using System;
 
 namespace LuckerParty;
 
@@ -10,9 +10,10 @@ public sealed class Client : Component
 {
 	public Connection Connection { get; set; }
 
+	public string Name => Connection.DisplayName;
+	public DateTimeOffset ConnectionTime => Connection.ConnectionTime;
+
 	protected override void OnStart()
 	{
-		GameObject.AddComponent<ScreenPanel>();
-		GameObject.AddComponent<Hud>();
 	}
 }
