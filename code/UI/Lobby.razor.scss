@@ -1,0 +1,66 @@
+﻿@import "styles.scss";
+
+#lobby-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: stretch;
+  width: 75%;
+  height: 75%;
+  background-color: $primary-lighter;
+  border-radius: 20px;
+  box-shadow: 0 0 50px 10px rgba(0, 0, 0, 0.4);
+}
+
+.title {
+  margin: 10px;
+  font-weight: bold;
+  font-size: 4rem;
+  align-self: center;
+}
+
+.divider {
+  height: 5px;
+  border: 3px solid $primary;
+  border-radius: 100%;
+  margin: 5px 25px;
+}
+
+#player-list {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  border-width: 1px;
+}
+
+.player-item {
+  font-size: 1.5rem;
+  margin: 15px;
+  border-width: 1px;
+}
+
+.player-item.debug {
+  color: red;
+}
+
+button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+  box-shadow: 5px 5px 20px black;
+  font-size: 80px;
+  color: #aaffaa;
+  text-shadow: 2px 2px 5px black;
+  padding: 20px;
+  border-radius: 100%;
+  background: $primary;
+}
+
+button:hover {
+  background-color: $primary-dark;
+}
+
+button:active {
+  background-color: $primary-darker;
+}
