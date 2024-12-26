@@ -2,41 +2,43 @@
 @inherits PanelComponent
 @using System
 @using System.Collections.Immutable
+@using System.Diagnostics
 @implements NetworkManager.IClientEvent
 
 <root>
 	<div class="title">This is the Lobby</div>
 	@foreach ( var client in _clients )
 	{
-		<div>@client.Name</div>
+		<div>@client.DisplayName,</div>
 	}
 </root>
 
 @code
 {
-	private ImmutableList<Client> _clients;
-	private NetworkManager _networkManager;
+	private IEnumerable<Connection> _clients = Connection.All;
 
 	protected override void OnStart()
 	{
 		base.OnStart();
-		_networkManager = Scene.GetComponentInChildren<NetworkManager>();
 		UpdateClients();
 	}
-
+	
+	[Rpc.Broadcast]
 	void NetworkManager.IClientEvent.OnConnected( Client client )
 	{
 		UpdateClients();
 	}
-
+	
+	[Rpc.Broadcast]
 	void NetworkManager.IClientEvent.OnDisconnected( Client client )
 	{
 		UpdateClients();
 	}
-
+	
 	private void UpdateClients()
 	{
-		_clients = _networkManager.Clients.Sort( ( clientA, clientB ) => DateTimeOffset.Compare( clientA.ConnectionTime, clientB.ConnectionTime ) );
+		_clients = Connection.All;
+		// _clients = _networkManager.Clients.Sort( ( clientA, clientB ) => DateTimeOffset.Compare( clientA.ConnectionTime, clientB.ConnectionTime ) );
 	}
 
 	/// <summary>
