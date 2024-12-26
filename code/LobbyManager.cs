@@ -18,6 +18,15 @@ public sealed class LobbyManager : Component
 		_panelComponent = null;
 	}
 
+	protected override void OnUpdate()
+	{
+		base.OnUpdate();
+		if ( Input.Released( "Menu" ) )
+		{
+			_panelComponent.Enabled = !_panelComponent.Enabled;
+		}
+	}
+
 	public interface ILobbyEvent : ISceneEvent<ILobbyEvent>
 	{
 		void OnStartGame( RoundConfiguration roundConfiguration );

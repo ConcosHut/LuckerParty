@@ -7,13 +7,12 @@
 <root class="clover-background enable-input full-screen">
 	<div id="lobby-container">
 		<div class="title">Lobby</div>
-		<div class="divider"></div>
 		<div id="player-list">
 			@foreach ( var client in _clients )
 			{
 				<div class="player-item">@client.Name</div>
 			}
-			@for ( var i = 0; i < 5; i++ )
+			@for ( var i = 0; i < 20; i++ )
 			{
 				<div class="player-item debug">Debug Player @i</div>
 			}
