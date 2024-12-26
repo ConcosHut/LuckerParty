@@ -31,22 +31,23 @@
 		base.OnStart();
 		UpdateClients();
 	}
-	
+
 	[Rpc.Broadcast]
 	void NetworkManager.IClientEvent.OnConnected( Client client )
 	{
 		UpdateClients();
 	}
-	
+
 	[Rpc.Broadcast]
 	void NetworkManager.IClientEvent.OnDisconnected( Client client )
 	{
 		UpdateClients();
 	}
-	
+
 	private void UpdateClients()
 	{
-		_connections = Connection.All.OrderBy(connection => connection.ConnectionTime  );
+		Log.Info( "UpdateClients" );
+		_connections = Connection.All.OrderBy( connection => connection.ConnectionTime );
 	}
 
 	private void StartGame()
