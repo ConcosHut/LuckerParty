@@ -1,21 +1,31 @@
 @namespace LuckerParty.UI
 @inherits PanelComponent
 @using System
-@using System.Collections.Immutable
-@using System.Diagnostics
 @implements NetworkManager.IClientEvent
 
-<root>
-	<div class="title">This is the Lobby</div>
-	@foreach ( var client in _clients )
-	{
-		<div>@client.DisplayName,</div>
-	}
+<root class="clover-background enable-input full-screen">
+	<div id="lobby-container">
+		<div class="title">Lobby</div>
+		<div class="divider"></div>
+		<div id="player-list">
+			@foreach ( var connection in _connections )
+			{
+				<div class="player-item">@connection.DisplayName</div>
+			}
+			@for ( var i = 0; i < 5; i++ )
+			{
+				<div class="player-item debug">Debug Player @i</div>
+			}
+		</div>
+		<div id="options">
+			<button onclick="@StartGame">Start Game</button>
+		</div>
+	</div>
 </root>
 
 @code
 {
-	private IEnumerable<Connection> _clients = Connection.All;
+	private IEnumerable<Connection> _connections = Connection.All;
 
 	protected override void OnStart()
 	{
@@ -37,8 +47,12 @@
 	
 	private void UpdateClients()
 	{
-		_clients = Connection.All;
-		// _clients = _networkManager.Clients.Sort( ( clientA, clientB ) => DateTimeOffset.Compare( clientA.ConnectionTime, clientB.ConnectionTime ) );
+		_connections = Connection.All.OrderBy(connection => connection.ConnectionTime  );
+	}
+
+	private void StartGame()
+	{
+		Enabled = false;
 	}
 
 	/// <summary>
@@ -46,6 +60,6 @@
 	/// </summary>
 	protected override int BuildHash()
 	{
-		return HashCode.Combine( _clients );
+		return HashCode.Combine( _connections );
 	}
 }
