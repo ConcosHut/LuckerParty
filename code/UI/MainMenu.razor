@@ -1,0 +1,41 @@
+@using System
+@inherits PanelComponent
+@namespace LuckerParty.UI
+
+@{
+	//
+	// WIP: If we don't set a 1 we get the default one. Until this is ready we should just use that.
+	//
+}
+
+<root id="root" class="clover-background">
+	<div id="game-title">🍀 Lucker Party 🎉</div>
+	<div id="options">
+		<button class="option-button" onclick="@CreateLobby">Create Lobby</button>
+		<button class="option-button" onclick="@ShowServerList">Lobby List</button>
+		<button class="option-button" onclick="@Exit">Exit</button>
+	</div>
+</root>
+
+@code
+{
+	void CreateLobby()
+	{
+		Scene.LoadFromFile( "scenes/minimal.scene" );
+	}
+
+	void ShowServerList()
+	{
+		Log.Warning( "Unimplemented!" );
+	}
+
+	void Exit()
+	{
+		Game.Close();
+	}
+
+	protected override int BuildHash()
+	{
+		return HashCode.Combine( 0 );
+	}
+}
