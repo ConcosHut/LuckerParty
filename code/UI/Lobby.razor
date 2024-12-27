@@ -9,11 +9,9 @@
 		<div id="player-list">
 			@foreach ( var connection in _connections )
 			{
-				<div class="player-item">@connection.DisplayName</div>
-			}
-			@for ( var i = 0; i < 20; i++ )
-			{
-				<div class="player-item debug">Debug Player @i</div>
+				<div class="player-item">
+					<div class=".player-name">@connection.DisplayName</div>
+				</div>
 			}
 		</div>
 		<div id="options">
@@ -52,7 +50,8 @@
 
 	private void StartGame()
 	{
-		Enabled = false;
+		var gameManager = Scene.GetAllComponents<GameManager>().First();
+		gameManager.Transition( GameManager.State.Round );
 	}
 
 	/// <summary>

@@ -1,3 +1,5 @@
+using System;
+
 namespace LuckerParty;
 
 /// <summary>
@@ -12,11 +14,32 @@ public sealed class GameManager : Component
 		Round
 	}
 
+	private Component _currentStateManager;
+
 	public State CurrentState { get; private set; } = State.Lobby;
 
 	protected override void OnStart()
 	{
 		// Start Lobby
-		GameObject.AddComponent<LobbyManager>();
+		_currentStateManager = GameObject.AddComponent<LobbyManager>();
+	}
+
+	public void Transition( State newState )
+	{
+		Log.Info(
+			$"Transitioning to {newState}" );
+		if ( newState == CurrentState )
+		{
+			return;
+		}
+
+		CurrentState = newState;
+		_currentStateManager.Destroy();
+		_currentStateManager = newState switch
+		{
+			State.Lobby => GameObject.AddComponent<LobbyManager>(),
+			State.Round => GameObject.AddComponent<RoundManager>(),
+			_ => throw new ArgumentOutOfRangeException( nameof(newState), newState, null )
+		};
 	}
 }

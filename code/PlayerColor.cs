@@ -36,11 +36,12 @@ public readonly record struct PlayerColor( string Name, Color Color )
 	/// <summary>
 	///     Ordered list of supported colors
 	/// </summary>
-	public static readonly ImmutableArray<PlayerColor> All =
-	[
-		Red, Green, Yellow, Blue, Orange, Purple, Cyan, Magenta, Lime, Pink, Teal, Lavender, Brown, Beige, Maroon, Mint,
-		Olive, Apricot, Navy, Gray, White, Black
-	];
+	// ReSharper disable once RedundantExplicitParamsArrayCreation
+	public static readonly ImmutableList<PlayerColor> All = ImmutableList.Create( new[]
+	{
+		Red, Green, Yellow, Blue, Orange, Purple, Cyan, Magenta, Lime, Pink, Teal, Lavender, Brown, Beige, Maroon,
+		Mint, Olive, Apricot, Navy, Gray, White, Black
+	} );
 
 	/// <summary>
 	///     Set of currently used colors. Used to ensure no two players have the same color

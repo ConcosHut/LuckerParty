@@ -12,8 +12,4 @@ public sealed class Client : Component
 
 	public string Name => Connection.DisplayName;
 	public DateTimeOffset ConnectionTime => Connection.ConnectionTime;
-
-	protected override void OnStart()
-	{
-	}
 }

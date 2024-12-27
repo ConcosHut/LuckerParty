@@ -8,7 +8,7 @@
   width: 75%;
   height: 75%;
   background-color: black;
-  border-color: white;
+  border: 2px solid white;
 }
 
 .title {
@@ -48,6 +48,7 @@
 
 #options {
   flex-shrink: 0;
+  border-top: 2px white solid;
 }
 
 button {
