@@ -9,10 +9,8 @@ public sealed class LobbyManager : Component
 	protected override void OnEnabled()
 	{
 		var screenPanel = Scene.Directory.FindByName( "UI Root" ).First();
-		if ( !screenPanel.GetComponents<Lobby>().Any() )
-		{
-			_panelComponent = screenPanel.AddComponent<Lobby>();
-		}
+		_panelComponent = screenPanel.GetComponent<Lobby>() 
+		                  ?? screenPanel.AddComponent<Lobby>();
 	}
 
 	protected override void OnDisabled()

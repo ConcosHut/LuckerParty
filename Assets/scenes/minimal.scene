@@ -81,19 +81,6 @@
               "ZIndex": 100
             }
           ]
-        },
-        {
-          "__guid": "587fcc16-c326-4ff4-9936-ba61ef7ec8d6",
-          "Flags": 0,
-          "Name": "HUD",
-          "Enabled": true,
-          "NetworkMode": 1,
-          "Components": [
-            {
-              "__type": "LuckerParty.UI.Lobby",
-              "__guid": "3c1f3575-b150-41ef-bf17-fdd95ae18f81"
-            }
-          ]
         }
       ]
     },
