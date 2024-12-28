@@ -15,7 +15,6 @@ public sealed class GameManager : Component
 	}
 
 	private Component _currentStateManager;
-
 	public State CurrentState { get; private set; } = State.Lobby;
 
 	protected override void OnStart()
@@ -24,7 +23,8 @@ public sealed class GameManager : Component
 		_currentStateManager = GameObject.GetComponent<LobbyManager>() 
 		                       ?? GameObject.AddComponent<LobbyManager>();
 	}
-
+	
+	[Rpc.Broadcast]
 	public void Transition( State newState )
 	{
 		Log.Info(

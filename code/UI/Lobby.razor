@@ -48,7 +48,6 @@
 		_connections = Connection.All.OrderBy( connection => connection.ConnectionTime );
 	}
 
-	[Rpc.Broadcast]
 	private void StartGame()
 	{
 		var gameManager = Scene.GetAllComponents<GameManager>().First();
