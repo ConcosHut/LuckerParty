@@ -21,7 +21,11 @@ public sealed class GameManager : Component
 	protected override void OnStart()
 	{
 		// Start Lobby
-		_currentStateManager = GameObject.AddComponent<LobbyManager>();
+		if ( !GameObject.GetComponents<LobbyManager>().Any() )
+		{
+			_currentStateManager = GameObject.AddComponent<LobbyManager>();
+		}
+
 	}
 
 	public void Transition( State newState )

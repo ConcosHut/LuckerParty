@@ -9,11 +9,15 @@ public sealed class LobbyManager : Component
 	protected override void OnEnabled()
 	{
 		var screenPanel = Scene.Directory.FindByName( "UI Root" ).First();
-		_panelComponent = screenPanel.AddComponent<Lobby>();
+		if ( !screenPanel.GetComponents<Lobby>().Any() )
+		{
+			_panelComponent = screenPanel.AddComponent<Lobby>();
+		}
 	}
 
 	protected override void OnDisabled()
 	{
+		Log.Info("Destroying panel component: " + _panelComponent  );
 		_panelComponent.Destroy();
 		_panelComponent = null;
 	}
