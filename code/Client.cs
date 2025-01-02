@@ -8,8 +8,8 @@ namespace LuckerParty;
 /// </summary>
 public sealed class Client : Component
 {
-	public Connection Connection { get; set; }
-
+	[Sync] public Guid ConnectionId { get; set; }
+	public Connection Connection => Connection.Find( ConnectionId );
 	public string Name => Connection.DisplayName;
 	public DateTimeOffset ConnectionTime => Connection.ConnectionTime;
 }

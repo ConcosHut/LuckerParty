@@ -23,7 +23,7 @@ public sealed class NetworkManager : Component, Component.INetworkListener
 		var gameObject = new GameObject( _clientGroup ) { Name = $"{channel.DisplayName} ({channel.SteamId})" };
 		_clientMap.Add( channel, gameObject );
 		var client = gameObject.AddComponent<Client>();
-		client.Connection = channel;
+		client.ConnectionId = channel.Id;
 
 		// Spawn it on remote clients
 		gameObject.NetworkSpawn( channel );

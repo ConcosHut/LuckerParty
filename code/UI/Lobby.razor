@@ -1,6 +1,7 @@
 @namespace LuckerParty.UI
 @inherits PanelComponent
 @using System
+@using System.ComponentModel.Design
 @implements NetworkManager.IClientEvent
 
 <root class="clover-background enable-input full-screen">
@@ -29,8 +30,12 @@
 
 @code
 {
+	// now that we fixed the client connection assignment
+	// we should reference connections via the Client component
+	// rather than the Connection.All
 	private IEnumerable<Connection> _connections = Connection.All;
-
+	private LobbyManager LobbyManager => Game.ActiveScene.Components.GetInDescendants<LobbyManager>(  );
+	
 	protected override void OnStart()
 	{
 		base.OnStart();
@@ -57,14 +62,21 @@
 
 	private void StartGame()
 	{
-		var gameManager = Scene.GetAllComponents<GameManager>().First();
-		gameManager.Transition( GameManager.State.Round );
+		foreach (var client in Game.ActiveScene.GetAllComponents<Client>() )
+		{
+			if ( !client.IsProxy )
+			{
+				Log.Info(client.Connection);
+			}
+		}
+		// var gameManager = Scene.GetAllComponents<GameManager>().First();
+		// gameManager.Transition( GameManager.State.Round );
 	}
 	
 	private void ReadyUp()
 	{
-		Log.Info("Player marked as ready.");
-		// Add logic for the "Ready Up" functionality here
+		var client = Game.ActiveScene.Components.GetAll<Client>().First( client => !client.IsProxy );
+		LobbyManager.ReadyUp( client );
 	}
 	
 	/// <summary>
