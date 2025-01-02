@@ -15,7 +15,14 @@
 			}
 		</div>
 		<div id="options">
-			<button onclick="@StartGame">Start Game</button>
+			@if (Networking.IsHost)
+			{
+				<button onclick="@StartGame">Start Game</button>
+			}
+			else
+			{
+				<button onclick="@ReadyUp">Ready Up</button>
+			}
 		</div>
 	</div>
 </root>
@@ -53,7 +60,13 @@
 		var gameManager = Scene.GetAllComponents<GameManager>().First();
 		gameManager.Transition( GameManager.State.Round );
 	}
-
+	
+	private void ReadyUp()
+	{
+		Log.Info("Player marked as ready.");
+		// Add logic for the "Ready Up" functionality here
+	}
+	
 	/// <summary>
 	///     the hash determines if the system should be rebuilt. If it changes, it will be rebuilt
 	/// </summary>
