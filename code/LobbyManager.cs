@@ -2,16 +2,29 @@
 
 namespace LuckerParty;
 
-public sealed class LobbyManager : Component
+public sealed class LobbyManager : Component, NetworkManager.IClientEvent
 {
 	public const string READY = "Ready";
 	private PanelComponent _panelComponent;
+	public NetworkManager NetworkManager => Scene.Components.GetInDescendantsOrSelf<NetworkManager>();
+
+	void NetworkManager.IClientEvent.OnConnected( Client client )
+	{
+		Log.Info( $"OnConnected: {client}" );
+		client.BecomePlayer();
+	}
 
 	protected override void OnEnabled()
 	{
 		var screenPanel = Scene.Directory.FindByName( "UI Root" ).First();
 		_panelComponent = screenPanel.GetComponent<Lobby>()
 		                  ?? screenPanel.AddComponent<Lobby>();
+
+		// Create Players for all Clients
+		foreach ( var client in NetworkManager.Clients )
+		{
+			client.BecomePlayer();
+		}
 	}
 
 	protected override void OnDisabled()

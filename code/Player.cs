@@ -5,6 +5,6 @@
 /// </summary>
 public class Player : Component
 {
+	public PlayerColor PlayerColor = PlayerColor.Cyan;
 	public Client Client => Components.Get<Client>();
-	public PlayerColor PlayerColor { get; set; }
 }

@@ -11,6 +11,7 @@
   height: 75%;
   background-color: black;
   border: 2px solid white;
+  color: white;
 }
 
 .title {
@@ -18,18 +19,39 @@
   color: white;
   padding: 10px;
   font-weight: bold;
-  font-size: 1rem;
+  font-size: 1.5rem;
   border-bottom: 2px white solid;
 }
 
-#player-list {
+.client-type-container {
+  align-items: center;
+}
+
+.client-type {
+  font-weight: bold;
+  padding: 10px;
+}
+
+.client-type-join {
+  background-color: green;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px;
+}
+
+#client-list-container {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
   overflow: scroll;
 }
 
-.player-item {
+.client-list {
+  flex-direction: column;
+  margin-left: 30px;
+}
+
+.client-item {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -39,15 +61,15 @@
   color: white;
 }
 
-.player-item:nth-child(even) {
+.client-item:nth-child(even) {
   background-color: black;
 }
 
-.player-item:nth-child(odd) {
+.client-item:nth-child(odd) {
   background-color: #202020;
 }
 
-.player-item.debug {
+.client-item.debug {
   color: red;
 }
 
@@ -65,13 +87,12 @@
   align-items: stretch;
 }
 
-button {
+#options button {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-grow: 1;
   flex-basis: 0;
-  color: white;
   padding: 20px;
   background-color: green;
 }
