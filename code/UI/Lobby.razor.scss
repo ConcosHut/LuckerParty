@@ -1,4 +1,6 @@
-﻿@import "styles.scss";
+﻿// Tip: This is a good Flexbox cheatsheet: https://css-tricks.com/snippets/css/a-guide-to-flexbox/
+
+@import "styles.scss";
 
 #lobby-container {
   display: flex;
@@ -28,6 +30,9 @@
 }
 
 .player-item {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
   flex-shrink: 0;
   font-size: 1rem;
   padding: 10px;
@@ -46,9 +51,18 @@
   color: red;
 }
 
+.ready {
+  color: green;
+}
+
+.not-ready {
+  color: red;
+}
+
 #options {
-  flex-shrink: 0;
   border-top: 2px white solid;
+  justify-content: center;
+  align-items: stretch;
 }
 
 button {
@@ -56,9 +70,14 @@ button {
   align-items: center;
   justify-content: center;
   flex-grow: 1;
+  flex-basis: 0;
   color: white;
   padding: 20px;
   background-color: green;
+}
+
+#start-game {
+  border-right: 2px white solid;
 }
 
 button:hover {

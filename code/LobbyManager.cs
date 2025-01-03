@@ -10,13 +10,13 @@ public sealed class LobbyManager : Component
 	protected override void OnEnabled()
 	{
 		var screenPanel = Scene.Directory.FindByName( "UI Root" ).First();
-		_panelComponent = screenPanel.GetComponent<Lobby>() 
+		_panelComponent = screenPanel.GetComponent<Lobby>()
 		                  ?? screenPanel.AddComponent<Lobby>();
 	}
 
 	protected override void OnDisabled()
 	{
-		Log.Info("Destroying panel component: " + _panelComponent  );
+		Log.Info( "Destroying panel component: " + _panelComponent );
 		_panelComponent.Destroy();
 		_panelComponent = null;
 	}
@@ -30,30 +30,38 @@ public sealed class LobbyManager : Component
 		}
 	}
 
-	[Rpc.Broadcast]
-	public void ReadyUp( Client client )
+	[Rpc.Host]
+	public void SetIsReady( Client client, bool isReady )
 	{
-		// when we implement the Player component, we will probably want to
-		// put the stuff on the player gameobject
-		if ( !Networking.IsHost || Rpc.CallerId != client.ConnectionId) return;
-		Log.Info("Toggling ready");
-		ToggleReady(client.GameObject);
-	}
-
-	private void ToggleReady( GameObject gameObject )
-	{
-		if ( GameObject.Tags.Has( READY ) )
+		// Don't allow Clients to set other Clients' ready state
+		if ( Rpc.CallerId != client.ConnectionId )
 		{
-			Log.Info( "Removing ready"  );
-			GameObject.Tags.Remove( READY );
+			return;
+		}
+
+		if ( IsReady( client ) == isReady )
+		{
+			return;
+		}
+
+		Log.Info( $"Setting {client.Name} ready state to {isReady}" );
+		if ( isReady )
+		{
+			client.AddComponent<LobbyReady>();
 		}
 		else
 		{
-			Log.Info( "Adding ready"  );
-			GameObject.Tags.Add( READY );
+			client.GetComponent<LobbyReady>().Destroy();
 		}
+
+		client.Network.Refresh();
 	}
-	
+
+	public bool IsReady( Client client )
+	{
+		return client.Components.Get<LobbyReady>() is not null;
+	}
+
 	public interface ILobbyEvent : ISceneEvent<ILobbyEvent>
 	{
 		void OnStartGame( RoundConfiguration roundConfiguration );

@@ -1,29 +1,32 @@
 @namespace LuckerParty.UI
-@inherits PanelComponent
 @using System
-@using System.ComponentModel.Design
-@implements NetworkManager.IClientEvent
+@inherits PanelComponent
 
 <root class="clover-background enable-input full-screen">
 	<div id="lobby-container">
 		<div class="title">Lobby</div>
 		<div id="player-list">
-			@foreach ( var connection in _connections )
+			@foreach ( var client in Clients )
 			{
 				<div class="player-item">
-					<div class=".player-name">@connection.DisplayName</div>
+					<div class="player-name">@client.Name</div>
+					@if ( LobbyManager.IsReady( client ) )
+					{
+						<div class="ready">Ready</div>
+					}
+					else
+					{
+						<div class="not-ready">Not Ready</div>
+					}
 				</div>
 			}
 		</div>
 		<div id="options">
-			@if (Networking.IsHost)
+			@if ( Networking.IsHost )
 			{
-				<button onclick="@StartGame">Start Game</button>
+				<button id="start-game" onclick="@StartGame">Start Game</button>
 			}
-			else
-			{
-				<button onclick="@ReadyUp">Ready Up</button>
-			}
+			<button id="toggle-ready" onclick="@ToggleReady">@( IsReady ? "Unready" : "Ready" )</button>
 		</div>
 	</div>
 </root>
@@ -33,50 +36,28 @@
 	// now that we fixed the client connection assignment
 	// we should reference connections via the Client component
 	// rather than the Connection.All
-	private IEnumerable<Connection> _connections = Connection.All;
-	private LobbyManager LobbyManager => Game.ActiveScene.Components.GetInDescendants<LobbyManager>(  );
-	
-	protected override void OnStart()
-	{
-		base.OnStart();
-		UpdateClients();
-	}
+	private LobbyManager LobbyManager => Game.ActiveScene.Components.GetInDescendants<LobbyManager>();
+	private IEnumerable<Client> Clients => Game.ActiveScene.Components.GetInDescendants<NetworkManager>().Clients.OrderBy( client => client.ConnectionTime );
+	private bool IsReady => LobbyManager.IsReady( Client.Local );
 
-	[Rpc.Broadcast]
-	void NetworkManager.IClientEvent.OnConnected( Client client )
-	{
-		UpdateClients();
-	}
-
-	[Rpc.Broadcast]
-	void NetworkManager.IClientEvent.OnDisconnected( Client client )
-	{
-		UpdateClients();
-	}
-
-	private void UpdateClients()
-	{
-		Log.Info( "UpdateClients" );
-		_connections = Connection.All.OrderBy( connection => connection.ConnectionTime );
-	}
-
+	// TODO: Network
 	private void StartGame()
 	{
 		var gameManager = Scene.GetAllComponents<GameManager>().First();
 		gameManager.Transition( GameManager.State.Round );
 	}
-	
-	private void ReadyUp()
+
+	private void ToggleReady()
 	{
-		var client = Game.ActiveScene.Components.GetAll<Client>().First( client => !client.IsProxy );
-		LobbyManager.ReadyUp( client );
+		var isReady = LobbyManager.IsReady( Client.Local );
+		LobbyManager.SetIsReady( Client.Local, !isReady );
 	}
-	
+
 	/// <summary>
 	///     the hash determines if the system should be rebuilt. If it changes, it will be rebuilt
 	/// </summary>
 	protected override int BuildHash()
 	{
-		return HashCode.Combine( _connections );
+		return HashCode.Combine( Clients, IsReady );
 	}
 }

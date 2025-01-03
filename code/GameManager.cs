@@ -20,10 +20,10 @@ public sealed class GameManager : Component
 	protected override void OnStart()
 	{
 		// Start Lobby
-		_currentStateManager = GameObject.GetComponent<LobbyManager>() 
+		_currentStateManager = GameObject.GetComponent<LobbyManager>()
 		                       ?? GameObject.AddComponent<LobbyManager>();
 	}
-	
+
 	[Rpc.Broadcast]
 	public void Transition( State newState )
 	{
@@ -42,5 +42,6 @@ public sealed class GameManager : Component
 			State.Round => GameObject.AddComponent<RoundManager>(),
 			_ => throw new ArgumentOutOfRangeException( nameof(newState), newState, null )
 		};
+		Network.Refresh();
 	}
 }

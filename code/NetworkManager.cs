@@ -13,14 +13,15 @@ public sealed class NetworkManager : Component, Component.INetworkListener
 	/// <summary>
 	///     A GameObject used for organizational grouping of Clients
 	/// </summary>
-	private GameObject _clientGroup;
+	[Sync( SyncFlags.FromHost )]
+	private GameObject ClientGroup { get; set; }
 
-	public IEnumerable<Client> Clients => _clientGroup.GetComponentsInChildren<Client>();
+	public IEnumerable<Client> Clients => ClientGroup.GetComponentsInChildren<Client>();
 
 	public void OnActive( Connection channel )
 	{
 		// Set up the Client GameObject
-		var gameObject = new GameObject( _clientGroup ) { Name = $"{channel.DisplayName} ({channel.SteamId})" };
+		var gameObject = new GameObject( ClientGroup ) { Name = $"{channel.DisplayName} ({channel.SteamId})" };
 		_clientMap.Add( channel, gameObject );
 		var client = gameObject.AddComponent<Client>();
 		client.ConnectionId = channel.Id;
@@ -48,12 +49,13 @@ public sealed class NetworkManager : Component, Component.INetworkListener
 
 	protected override void OnAwake()
 	{
-		_clientGroup = new GameObject( Scene.Root ) { Name = "Clients", NetworkMode = NetworkMode.Object };
+		ClientGroup = new GameObject( Scene.Root ) { Name = "Clients" };
+		ClientGroup.NetworkSpawn();
 	}
 
 	protected override void OnDestroy()
 	{
-		_clientGroup.Destroy();
+		ClientGroup.Destroy();
 	}
 
 	public interface IClientEvent : ISceneEvent<IClientEvent>
