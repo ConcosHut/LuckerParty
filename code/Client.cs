@@ -12,4 +12,5 @@ public sealed class Client : Component
 	public Connection Connection => Connection.Find( ConnectionId );
 	public string Name => Connection.DisplayName;
 	public DateTimeOffset ConnectionTime => Connection.ConnectionTime;
+	public static Client Local => Game.ActiveScene.Components.GetAll<Client>().First( client => !client.IsProxy );
 }

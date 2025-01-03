@@ -62,15 +62,8 @@
 
 	private void StartGame()
 	{
-		foreach (var client in Game.ActiveScene.GetAllComponents<Client>() )
-		{
-			if ( !client.IsProxy )
-			{
-				Log.Info(client.Connection);
-			}
-		}
-		// var gameManager = Scene.GetAllComponents<GameManager>().First();
-		// gameManager.Transition( GameManager.State.Round );
+		var gameManager = Scene.GetAllComponents<GameManager>().First();
+		gameManager.Transition( GameManager.State.Round );
 	}
 	
 	private void ReadyUp()
