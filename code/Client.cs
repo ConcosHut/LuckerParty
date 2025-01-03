@@ -29,6 +29,9 @@ public sealed class Client : Component
 	[Rpc.Host]
 	public void BecomePlayer()
 	{
+		// Ignore request if:
+		// 1. The requester is not the host nor Client owner
+		// 2. The Client is already a Player
 		if ( !(Networking.IsHost || Rpc.CallerId == ConnectionId) || CurrentType == Type.Player )
 		{
 			return;
@@ -47,7 +50,10 @@ public sealed class Client : Component
 	[Rpc.Host]
 	public void BecomeSpectator()
 	{
-		if ( !Networking.IsHost || Rpc.CallerId != ConnectionId || CurrentType == Type.Spectator )
+		// Ignore request if:
+		// 1. The requester is not the host nor Client owner
+		// 2. The Client is already a Spectator
+		if ( !(Networking.IsHost || Rpc.CallerId == ConnectionId) || CurrentType == Type.Spectator )
 		{
 			return;
 		}
