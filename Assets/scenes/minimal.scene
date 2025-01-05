@@ -46,6 +46,7 @@
           "Flags": 0,
           "Name": "Network Manager",
           "Enabled": true,
+          "NetworkMode": 1,
           "Components": [
             {
               "__type": "LuckerParty.NetworkManager",
@@ -58,6 +59,7 @@
           "Flags": 0,
           "Name": "Game Manager",
           "Enabled": true,
+          "NetworkMode": 1,
           "Components": [
             {
               "__type": "LuckerParty.GameManager",
