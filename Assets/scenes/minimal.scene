@@ -16,10 +16,19 @@
             {
               "__type": "Sandbox.SceneInformation",
               "__guid": "87d65e65-d9f2-4f20-bd72-434cb9169d2d",
+              "Author": null,
               "Changes": "",
               "Description": "",
+              "Group": null,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
               "SceneTags": "",
-              "Title": "minimal"
+              "Title": "minimal",
+              "Version": null
             }
           ]
         },
@@ -32,6 +41,12 @@
             {
               "__type": "Sandbox.NetworkHelper",
               "__guid": "f434c4dc-4afe-431b-9fcf-7b99f1bdb914",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
               "PlayerPrefab": {
                 "_type": "gameobject",
                 "prefab": "prefabs/player.prefab"
@@ -50,7 +65,13 @@
           "Components": [
             {
               "__type": "LuckerParty.NetworkManager",
-              "__guid": "beaf09d7-3c2d-4ce3-9607-24ee3b4e5617"
+              "__guid": "beaf09d7-3c2d-4ce3-9607-24ee3b4e5617",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null
             }
           ]
         },
@@ -63,24 +84,35 @@
           "Components": [
             {
               "__type": "LuckerParty.GameManager",
-              "__guid": "053898a9-71a7-48a7-9ebc-3c57d6ec5ca4"
+              "__guid": "053898a9-71a7-48a7-9ebc-3c57d6ec5ca4",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null
             }
           ]
         },
         {
-          "__guid": "076002c4-f60b-4ccc-8306-416e80d700df",
+          "__guid": "1e0798c0-3959-489d-9bb0-3c7b7f01b294",
           "Flags": 0,
-          "Name": "UI Root",
+          "Name": "UI Manager",
           "Enabled": true,
           "Components": [
             {
-              "__type": "Sandbox.ScreenPanel",
-              "__guid": "f6380618-4c54-4bdc-9dee-ab8705b685cf",
-              "AutoScreenScale": true,
-              "Opacity": 1,
-              "Scale": 1,
-              "ScaleStrategy": "ConsistentHeight",
-              "ZIndex": 100
+              "__type": "LuckerParty.UiManager",
+              "__guid": "294bfd1e-7f27-414b-9d90-a4bcf1e3285a",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "UiRootPrefab": {
+                "_type": "gameobject",
+                "prefab": "prefabs/ui_root.prefab"
+              }
             }
           ]
         }
@@ -151,6 +183,12 @@
               "FogMode": "Enabled",
               "FogStrength": 1,
               "LightColor": "0.94419,0.97767,1,1",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
               "Shadows": true,
               "SkyColor": "0.2532,0.32006,0.35349,1"
             }
@@ -167,6 +205,12 @@
             {
               "__type": "Sandbox.SkyBox2D",
               "__guid": "de79e9e0-5c37-4c54-ac67-bfcdb1d5483b",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
               "SkyIndirectLighting": true,
               "SkyMaterial": "materials/skybox/skybox_day_01.vmat",
               "Tint": "1,1,1,1"
@@ -183,6 +227,12 @@
               "FrameInterval": 5,
               "MaxDistance": 512,
               "MultiBounce": false,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
               "Projection": "Sphere",
               "RenderDynamically": false,
               "Texture": "textures/cubemaps/default2.vtex",
@@ -206,8 +256,15 @@
               "__guid": "0b6a18bf-fdb8-4661-970e-ef635bfa9baa",
               "BodyGroups": 18446744073709551615,
               "CreateAttachments": false,
+              "MaterialGroup": null,
               "MaterialOverride": "materials/default.vmat",
               "Model": "models/dev/plane.vmdl",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
               "RenderOptions": {
                 "GameLayer": true,
                 "OverlayLayer": false,
@@ -221,9 +278,21 @@
               "__type": "Sandbox.BoxCollider",
               "__guid": "0715cb55-1733-4f5e-8560-c288b8695631",
               "Center": "0,0,-5",
+              "Friction": null,
               "IsTrigger": false,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "OnObjectTriggerEnter": null,
+              "OnObjectTriggerExit": null,
+              "OnTriggerEnter": null,
+              "OnTriggerExit": null,
               "Scale": "100,100,10",
               "Static": false,
+              "Surface": null,
               "SurfaceVelocity": "0,0,0"
             }
           ]
@@ -242,8 +311,15 @@
               "__guid": "b9121ffa-617c-4ccc-a2aa-8acc98727590",
               "BodyGroups": 18446744073709551615,
               "CreateAttachments": false,
+              "MaterialGroup": null,
               "MaterialOverride": "materials/default.vmat",
               "Model": "models/dev/box.vmdl",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
               "RenderOptions": {
                 "GameLayer": true,
                 "OverlayLayer": false,
@@ -257,9 +333,21 @@
               "__type": "Sandbox.BoxCollider",
               "__guid": "8bb3ebcf-1ec9-4b20-bf31-4aece0950008",
               "Center": "0,0,0",
+              "Friction": null,
               "IsTrigger": false,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "OnObjectTriggerEnter": null,
+              "OnObjectTriggerExit": null,
+              "OnTriggerEnter": null,
+              "OnTriggerExit": null,
               "Scale": "50,50,50",
               "Static": false,
+              "Surface": null,
               "SurfaceVelocity": "0,0,0"
             },
             {
@@ -279,6 +367,12 @@
               "MassCenterOverride": "0,0,0",
               "MassOverride": 0,
               "MotionEnabled": true,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
               "OverrideMassCenter": false,
               "RigidbodyFlags": 0,
               "StartAsleep": false
@@ -299,8 +393,15 @@
               "__guid": "9e8a546d-a41d-44b5-9906-22cea00e1066",
               "BodyGroups": 18446744073709551615,
               "CreateAttachments": false,
+              "MaterialGroup": null,
               "MaterialOverride": "materials/default.vmat",
               "Model": "models/dev/box.vmdl",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
               "RenderOptions": {
                 "GameLayer": true,
                 "OverlayLayer": false,
@@ -314,9 +415,21 @@
               "__type": "Sandbox.BoxCollider",
               "__guid": "adf22580-7a25-4d7f-b1c3-3fb8fabf1612",
               "Center": "0,0,0",
+              "Friction": null,
               "IsTrigger": false,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "OnObjectTriggerEnter": null,
+              "OnObjectTriggerExit": null,
+              "OnTriggerEnter": null,
+              "OnTriggerExit": null,
               "Scale": "50,50,50",
               "Static": false,
+              "Surface": null,
               "SurfaceVelocity": "0,0,0"
             },
             {
@@ -336,6 +449,12 @@
               "MassCenterOverride": "0,0,0",
               "MassOverride": 0,
               "MotionEnabled": true,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
               "OverrideMassCenter": false,
               "RigidbodyFlags": 0,
               "StartAsleep": false
@@ -356,8 +475,15 @@
               "__guid": "ac284ab8-cdb7-4ba6-92de-d9be36088b1b",
               "BodyGroups": 18446744073709551615,
               "CreateAttachments": false,
+              "MaterialGroup": null,
               "MaterialOverride": "materials/default.vmat",
               "Model": "models/dev/box.vmdl",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
               "RenderOptions": {
                 "GameLayer": true,
                 "OverlayLayer": false,
@@ -371,9 +497,21 @@
               "__type": "Sandbox.BoxCollider",
               "__guid": "ca4eb284-231e-4c84-9bc4-7ba89962f307",
               "Center": "0,0,0",
+              "Friction": null,
               "IsTrigger": false,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "OnObjectTriggerEnter": null,
+              "OnObjectTriggerExit": null,
+              "OnTriggerEnter": null,
+              "OnTriggerExit": null,
               "Scale": "50,50,50",
               "Static": false,
+              "Surface": null,
               "SurfaceVelocity": "0,0,0"
             },
             {
@@ -393,6 +531,12 @@
               "MassCenterOverride": "0,0,0",
               "MassOverride": 0,
               "MotionEnabled": true,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
               "OverrideMassCenter": false,
               "RigidbodyFlags": 0,
               "StartAsleep": false
@@ -414,6 +558,12 @@
               "ClearFlags": "All",
               "FieldOfView": 60,
               "IsMainCamera": true,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
               "Orthographic": false,
               "OrthographicHeight": 1204,
               "Priority": 1,
@@ -458,6 +608,12 @@
                 }
               ],
               "Mode": "Additive",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
               "Strength": 0.5,
               "Threshold": 0.5,
               "ThresholdWidth": 0.5
@@ -473,11 +629,23 @@
               "MaximumExposure": 2,
               "MinimumExposure": 1,
               "Mode": "Legacy",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
               "Rate": 1
             },
             {
               "__type": "Sandbox.Sharpen",
               "__guid": "0bffee5e-19f2-41c4-88f9-faefbcce6bf4",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
               "Scale": 0.2
             }
           ]

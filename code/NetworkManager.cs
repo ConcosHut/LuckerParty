@@ -1,3 +1,5 @@
+using System;
+
 namespace LuckerParty;
 
 /// <summary>
@@ -6,11 +8,6 @@ namespace LuckerParty;
 public sealed class NetworkManager : Component, Component.INetworkListener
 {
 	/// <summary>
-	///     Map from Connection to Client GameObject
-	/// </summary>
-	private readonly Dictionary<Connection, GameObject> _clientMap = new();
-
-	/// <summary>
 	///     A GameObject used for organizational grouping of Clients
 	/// </summary>
 	[Sync( SyncFlags.FromHost )]
@@ -18,23 +15,28 @@ public sealed class NetworkManager : Component, Component.INetworkListener
 
 	public IEnumerable<Client> Clients => ClientGroup.GetComponentsInChildren<Client>();
 
-	public void OnActive( Connection channel )
+	public void OnConnected( Connection channel )
 	{
+		// Disallow spawning Networked Objects on the client. We are host-authoritative.
+		channel.CanSpawnObjects = false;
+
 		// Set up the Client GameObject
 		var gameObject = new GameObject( ClientGroup ) { Name = $"{channel.DisplayName} ({channel.SteamId})" };
-		_clientMap.Add( channel, gameObject );
 		var client = gameObject.AddComponent<Client>();
 		client.ConnectionId = channel.Id;
 
+		Log.Info( $"NetworkManager::OnConnected: {channel.DisplayName} {channel.Id}" );
+
 		// Spawn it on remote clients
-		gameObject.NetworkSpawn( channel );
+		gameObject.NetworkSpawn();
 
 		IClientEvent.Post( e => e.OnConnected( client ) );
 	}
 
 	public void OnDisconnected( Connection channel )
 	{
-		if ( !_clientMap.TryGetValue( channel, out var clientGameObject ) )
+		var clientGameObject = TryFindClientByConnectionId( channel.Id );
+		if ( clientGameObject == null )
 		{
 			Log.Warning( $"Disconnected client {channel.SteamId} has no associated GameObject." );
 			return;
@@ -44,13 +46,23 @@ public sealed class NetworkManager : Component, Component.INetworkListener
 		IClientEvent.Post( e => e.OnDisconnected( client ) );
 
 		clientGameObject.Destroy();
-		_clientMap.Remove( channel );
+	}
+
+	private Client TryFindClientByConnectionId( Guid connectionId )
+	{
+		return ClientGroup.GetComponentsInChildren<Client>()
+			.FirstOrDefault( client => client.ConnectionId == connectionId );
 	}
 
 	protected override void OnAwake()
 	{
 		ClientGroup = new GameObject( Scene.Root ) { Name = "Clients" };
-		ClientGroup.NetworkSpawn();
+
+		// Hack: Component.INetworkListener.OnConnected does not get called for the host, so fake it here.
+		if ( !IsProxy )
+		{
+			OnConnected( Connection.Local );
+		}
 	}
 
 	protected override void OnDestroy()

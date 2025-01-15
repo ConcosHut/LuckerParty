@@ -15,7 +15,8 @@ public sealed class Client : Component
 		Player
 	}
 
-	public static Client Local => Game.ActiveScene.Components.GetAll<Client>().First( client => !client.IsProxy );
+	public static Client Local => Game.ActiveScene.Components.GetAll<Client>()
+		.First( client => client.ConnectionId == Connection.Local.Id );
 
 	[Sync] public Guid ConnectionId { get; set; }
 	public Connection Connection => Connection.Find( ConnectionId );
@@ -26,34 +27,42 @@ public sealed class Client : Component
 		Components.Get<Player>() != null ? Type.Player :
 		Components.Get<Spectator>() != null ? Type.Spectator : Type.None;
 
+	/// <summary>
+	///     Makes this Client a Player by adding a Player Component to the Client Object.
+	///     Executed on the host, can only be called by the host or the client connection.
+	/// </summary>
 	[Rpc.Host]
 	public void BecomePlayer()
 	{
 		// Ignore request if:
 		// 1. The requester is not the host nor Client owner
 		// 2. The Client is already a Player
-		if ( !(Networking.IsHost || Rpc.CallerId == ConnectionId) || CurrentType == Type.Player )
+		if ( !(Rpc.Caller.IsHost || Rpc.CallerId == ConnectionId) || CurrentType == Type.Player )
 		{
 			return;
 		}
 
-		Log.Info( $"{Name} Becoming player" );
 		if ( CurrentType == Type.Spectator )
 		{
 			Components.Get<Spectator>().Destroy();
 		}
 
+		Log.Info( $"{Name} becoming Player" );
 		GetOrAddComponent<Player>();
 		Network.Refresh();
 	}
 
+	/// <summary>
+	///     Makes this Client a Spectator by adding a Spectator Component to the Client Object.
+	///     Executed on the host, can only be called by the host or the client connection.
+	/// </summary>
 	[Rpc.Host]
 	public void BecomeSpectator()
 	{
 		// Ignore request if:
 		// 1. The requester is not the host nor Client owner
 		// 2. The Client is already a Spectator
-		if ( !(Networking.IsHost || Rpc.CallerId == ConnectionId) || CurrentType == Type.Spectator )
+		if ( !(Rpc.Caller.IsHost || Rpc.CallerId == ConnectionId) || CurrentType == Type.Spectator )
 		{
 			return;
 		}
@@ -63,6 +72,7 @@ public sealed class Client : Component
 			Components.Get<Player>().Destroy();
 		}
 
+		Log.Info( $"{Name} becoming Spectator" );
 		GetOrAddComponent<Spectator>();
 		Network.Refresh();
 	}

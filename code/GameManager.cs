@@ -15,16 +15,28 @@ public sealed class GameManager : Component
 	}
 
 	private Component _currentStateManager;
-	public State CurrentState { get; private set; } = State.Lobby;
 
-	protected override void OnStart()
+	[Sync( SyncFlags.FromHost )] public State CurrentState { get; private set; } = State.Lobby;
+
+	protected override void OnEnabled()
 	{
+		if ( IsProxy )
+		{
+			return;
+		}
+
 		// Start Lobby
 		_currentStateManager = GameObject.GetComponent<LobbyManager>()
 		                       ?? GameObject.AddComponent<LobbyManager>();
+		Network.Refresh();
 	}
 
-	[Rpc.Broadcast]
+	/// <summary>
+	///     Change to a new Game State
+	/// </summary>
+	/// <param name="newState">The new Game State to transition to</param>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when newState is invalid State enum value</exception>
+	[Rpc.Host( NetFlags.HostOnly )]
 	public void Transition( State newState )
 	{
 		Log.Info(

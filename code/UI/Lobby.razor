@@ -2,6 +2,11 @@
 @using System
 @inherits PanelComponent
 
+@{
+	if ( !Client.Local.IsValid() )
+		return;
+}
+
 <root class="clover-background enable-input full-screen">
 	<div id="lobby-container">
 		<div class="title">Lobby</div>
@@ -71,8 +76,8 @@
 	// rather than the Connection.All
 	private LobbyManager LobbyManager => Game.ActiveScene.Components.GetInDescendantsOrSelf<LobbyManager>();
 	private IEnumerable<Client> Clients => Game.ActiveScene.Components.GetInDescendants<NetworkManager>().Clients.OrderBy( client => client.ConnectionTime );
-	private IEnumerable<Client> PlayerClients => Clients.Where( client => client.Components.Get<Player>() is not null );
-	private IEnumerable<Client> SpectatorClients => Clients.Where( client => client.Components.Get<Spectator>() is not null );
+	private IEnumerable<Client> PlayerClients => Clients.Where( client => client.Components.Get<Player>().IsValid() );
+	private IEnumerable<Client> SpectatorClients => Clients.Where( client => client.Components.Get<Spectator>().IsValid() );
 
 	private bool IsReady => LobbyManager.IsReady( Client.Local );
 

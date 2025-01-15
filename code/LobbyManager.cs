@@ -4,27 +4,16 @@ namespace LuckerParty;
 
 public sealed class LobbyManager : Component, NetworkManager.IClientEvent
 {
-	public const string READY = "Ready";
 	private PanelComponent _panelComponent;
-	public NetworkManager NetworkManager => Scene.Components.GetInDescendantsOrSelf<NetworkManager>();
-
-	void NetworkManager.IClientEvent.OnConnected( Client client )
-	{
-		Log.Info( $"OnConnected: {client}" );
-		client.BecomePlayer();
-	}
+	private UiManager UiManager => Scene.Components.GetInDescendantsOrSelf<UiManager>();
 
 	protected override void OnEnabled()
 	{
-		var screenPanel = Scene.Directory.FindByName( "UI Root" ).First();
-		_panelComponent = screenPanel.GetComponent<Lobby>()
-		                  ?? screenPanel.AddComponent<Lobby>();
-
-		// Create Players for all Clients
-		foreach ( var client in NetworkManager.Clients )
-		{
-			client.BecomePlayer();
-		}
+		Client.Local.BecomePlayer();
+		// Show Lobby UI
+		var uiRoot = UiManager.UiRoot;
+		_panelComponent = uiRoot.GetComponent<Lobby>()
+		                  ?? uiRoot.AddComponent<Lobby>();
 	}
 
 	protected override void OnDisabled()
@@ -72,7 +61,7 @@ public sealed class LobbyManager : Component, NetworkManager.IClientEvent
 
 	public bool IsReady( Client client )
 	{
-		return client.Components.Get<LobbyReady>() is not null;
+		return client.Components.Get<LobbyReady>().IsValid();
 	}
 
 	public interface ILobbyEvent : ISceneEvent<ILobbyEvent>
