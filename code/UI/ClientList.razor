@@ -1,0 +1,36 @@
+@using System
+@namespace LuckerParty.UI
+
+<root>
+	<div class="client-type-container">
+		<div class="client-type">@ClientType.ToString()s (@( Clients.Count() ))</div>
+		@if ( Client.Local.CurrentType != ClientType )
+		{
+			<button class="client-type-join" onclick="@JoinTeam">Join</button>
+		}
+	</div>
+	<div class="client-list">
+		@foreach ( var client in Clients )
+		{
+			<div class="client-item">
+				<div>@client.Name</div>
+				@if ( LobbyManager.IsReady( client ) )
+				{
+					<div class="ready">Ready</div>
+				}
+				else
+				{
+					<div class="not-ready">Not Ready</div>
+				}
+			</div>
+		}
+	</div>
+</root>
+
+@code
+{
+	public LobbyManager LobbyManager;
+	public IEnumerable<Client> Clients;
+	public Action JoinTeam;
+	public Client.Type ClientType;
+}

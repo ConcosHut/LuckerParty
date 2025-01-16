@@ -1,0 +1,43 @@
+﻿ClientList {
+  display: flex;
+  flex-direction: column;
+}
+
+.client-type-container {
+  align-items: center;
+}
+
+.client-type {
+  font-weight: bold;
+  padding: 10px;
+}
+
+.client-type-join {
+  background-color: green;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px;
+}
+
+.client-list {
+  flex-direction: column;
+  margin-left: 30px;
+}
+
+.client-item {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  flex-shrink: 0;
+  font-size: 1rem;
+  padding: 10px;
+  color: white;
+}
+
+.ready {
+  color: green;
+}
+
+.not-ready {
+  color: red;
+}

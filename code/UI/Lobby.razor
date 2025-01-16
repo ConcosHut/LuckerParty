@@ -11,53 +11,10 @@
 	<div id="lobby-container">
 		<div class="title">Lobby</div>
 		<div id="client-list-container">
-			<div class="client-type-container">
-				<div class="client-type">Players (@( PlayerClients.Count() ))</div>
-				@if ( Client.Local.CurrentType != Client.Type.Player )
-				{
-					<button class="client-type-join" onclick="@BecomePlayer">Join</button>
-				}
-			</div>
-
-			<div class="client-list">
-				@foreach ( var playerClient in PlayerClients )
-				{
-					<div class="client-item">
-						<div>@playerClient.Name</div>
-						@if ( LobbyManager.IsReady( playerClient ) )
-						{
-							<div class="ready">Ready</div>
-						}
-						else
-						{
-							<div class="not-ready">Not Ready</div>
-						}
-					</div>
-				}
-			</div>
-			<div class="client-type-container">
-				<div class="client-type">Spectators (@( SpectatorClients.Count() ))</div>
-				@if ( Client.Local.CurrentType != Client.Type.Spectator )
-				{
-					<button class="client-type-join" onclick="@BecomeSpectator">Join</button>
-				}
-			</div>
-			<div class="client-list">
-				@foreach ( var spectatorClient in SpectatorClients )
-				{
-					<div class="client-item">
-						<div>@spectatorClient.Name</div>
-						@if ( LobbyManager.IsReady( spectatorClient ) )
-						{
-							<div class="ready">Ready</div>
-						}
-						else
-						{
-							<div class="not-ready">Not Ready</div>
-						}
-					</div>
-				}
-			</div>
+			<ClientList Clients="@PlayerClients" LobbyManager="@LobbyManager" JoinTeam="@BecomePlayer"
+			            ClientType="@Client.Type.Player"></ClientList>
+			<ClientList Clients="@SpectatorClients" LobbyManager="@LobbyManager"
+			            JoinTeam="@BecomeSpectator" ClientType="@Client.Type.Spectator"></ClientList>
 		</div>
 		<div id="options">
 			@if ( Networking.IsHost )
