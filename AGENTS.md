@@ -44,8 +44,14 @@ build, launch it through the interactive Windows task, and read status/logs.
 Keep machine-local keys ignored and preserve active playtests; a `PENDING`
 result requires a later task trigger after the game closes.
 
-The next planned feature is the standalone Velopack launcher. Follow
-[docs/launcher-implementation-plan.md](docs/launcher-implementation-plan.md).
-The user chose public `ConcosHut/LuckerParty`, preserving s&box on `legacy-2`,
-with future Godot `master`/Beta and `release`/Stable branches. The remote migration
-has not happened; this local checkout is still on `main` without a Git remote.
+The standalone C# Avalonia launcher packages the full game with Velopack 1.2.158.
+Follow [docs/releases.md](docs/releases.md) for channels, publishing, and recovery.
+`master` publishes Beta, `release` publishes Stable; `legacy-2` preserves s&box.
+Use `python tools/dev.py pack --target windows` for isolated Dev packages and
+`--profile player` for production IDs. Real installed checks run with
+`python tools/check_distribution.py --target linux` or `--target windows` on the
+matching OS. Build commands own a workspace lock; export platforms sequentially.
+Keep update SDK startup auto-apply disabled, hold the launcher session guard until
+the game exits, and keep preferences/logs outside replaced install files.
+GitHub Actions verifies both platforms and publishes them together in a draft
+before exposing it. Never overwrite a published version; advance version.json.

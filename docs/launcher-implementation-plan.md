@@ -1,7 +1,7 @@
 # Velopack launcher implementation plan
 
-Status: ready for implementation; no launcher code or release hosting has been
-created. September 28, 2026. This is the execution plan for the
+Status: implementation and verification in progress. September 28, 2026.
+Operational commands are maintained in [releases.md](releases.md). This is the execution plan for the
 [distribution proposal](distribution-plan.md).
 
 ## Outcome and scope
@@ -143,9 +143,7 @@ Use the existing public `ConcosHut/LuckerParty` repository for source and binary
 releases, as requested. This replaces the earlier proposal for private source
 and separate public download repositories under ParaLizard. Authenticate as
 ParaLizard with write access for pushes and admin access for default/protected
-branch renames and settings, subject to organization rules. GitHub CLI on `box`
-is currently unauthenticated;
-that limits external changes, not the local launcher milestones.
+branch renames and settings, subject to organization rules. GitHub CLI on `box` is authenticated as ParaLizard with administrator access.
 
 Remote inspection on September 28, 2026 found default branch `master` at
 `e0f6f6b8c654bb9f6fbe607569f47038ffc9ac27`, plus `legacy`, `fixed-camera`, and
@@ -237,8 +235,7 @@ return to Stable, without developer tools or developer credentials.
 
 Execute milestones 1 -> 2 -> 3 -> 4 -> 5. Start with a small working launcher,
 not a polished visual design. Keep commits aligned with reviewable milestones
-and record actual verification results. The user's current request is to create
-this plan; implementation begins in the next execution step.
+and record actual verification results. The user authorized implementation of this plan.
 
 The repository and public visibility are now decided. Milestone 4 needs
 authenticated ParaLizard access with sufficient rights on `ConcosHut/LuckerParty`.

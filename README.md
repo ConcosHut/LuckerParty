@@ -1,12 +1,18 @@
-# Lucker Party — prototype 01.1
+# Lucker Party
 
 A small first-person test bed: a gray grid floor, four colored solid boxes,
 walking, sprinting, jumping, mouse look, reset, and an Escape menu. This iteration
 is local single-player; no networking or minigames are implemented.
 
-## Play the Windows build
+## Install and play
 
-Extract **all** files from `artifacts/LuckerParty-prototype-01.1-windows-x64.zip`,
+Download the Windows Stable installer or Linux Stable AppImage from
+[GitHub Releases](https://github.com/ConcosHut/LuckerParty/releases/latest).
+The launcher updates automatically before starting the game. Choose Beta for
+development updates; return to Stable at any time. Offline play, installation,
+release promotion, and recovery are covered in [the release runbook](docs/releases.md).
+
+For the original ZIP playtest build, Extract **all** files from `artifacts/LuckerParty-prototype-01.1-windows-x64.zip`,
 then double-click `LuckerParty.exe`. Keep its PCK and data directory next to it.
 The packaged game includes its runtime; you do not need Godot or a .NET SDK to
 play. This build targets normal Intel/AMD 64-bit Windows PCs.
@@ -64,6 +70,8 @@ python tools/dev.py run
 python tools/dev.py check
 python tools/dev.py export --target windows
 python tools/dev.py export --target linux
+python tools/dev.py pack --target windows --profile player
+python tools/check_distribution.py --target linux
 ```
 
 On Windows, for example:
@@ -82,7 +90,9 @@ Generated tools, build outputs, and artifacts are excluded from Git.
 
 - `src/LuckerParty.Core`: plain C# movement settings, independent of Godot.
 - `src/LuckerParty.Godot`: scenes, input, character physics, rendering, and UI.
-- `tools/dev.py`: shared Windows/Linux build, run, check, and export commands.
+- `src/LuckerParty.Launcher`: standalone updater UI and guarded game process.
+- `tools/dev.py`: shared Windows/Linux build, run, check, export, and pack commands.
+- `tools/check_distribution.py`: real installed updater and failure checks.
 - `docs`: design brief, development harness plan, and playtest instructions.
 
 `check` builds the project, checks the core dependency boundary, imports the
@@ -100,7 +110,9 @@ and saves a viewport screenshot, then exits. This requires a graphical display.
 The first iteration's verification results and remaining Windows playtesting
 are recorded in [docs/prototype-01.md](docs/prototype-01.md).
 
-The proposed stable/beta launcher and automatic update setup is described in
-[docs/distribution-plan.md](docs/distribution-plan.md). It is not implemented yet.
-The concrete milestones and verification are in
-[docs/launcher-implementation-plan.md](docs/launcher-implementation-plan.md).
+The standalone Avalonia/C# launcher uses Velopack for Windows installers and
+Windows/Linux updates. `master` publishes Beta; `release` publishes Stable.
+The old s&box master is preserved as `legacy-2`. See
+[the release runbook](docs/releases.md) for packaging commands, installed update
+checks, channel behavior, and recovery. [The implementation plan](docs/launcher-implementation-plan.md)
+records the design and acceptance criteria.
