@@ -155,8 +155,11 @@ internal sealed class LauncherController
         }
         using var game = Process.Start(start) ?? throw new InvalidOperationException("Could not start the game.");
         GameRunning = true;
-        _preferences.Game = new(game.Id, game.StartTime.ToUniversalTime().Ticks);
-        try { JsonFiles.Write(_preferencesPath, _preferences); }
+        try
+        {
+            _preferences.Game = SessionGuard.CaptureGame(game);
+            JsonFiles.Write(_preferencesPath, _preferences);
+        }
         catch
         {
             // Do not leave an unrecorded child that a later launcher could

@@ -58,7 +58,7 @@ internal sealed record Distribution
 }
 
 internal sealed record BuildInfo(string Version = "unpackaged", string Commit = "unknown", bool Dirty = false);
-internal sealed record GameSession(int Pid, long StartTicks);
+internal sealed record GameSession(int Pid, long StartTicks, string? BootId = null);
 internal sealed record Preferences
 {
     public string Channel { get; set; } = "stable";

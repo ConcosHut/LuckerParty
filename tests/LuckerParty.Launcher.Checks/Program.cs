@@ -7,6 +7,8 @@ using Velopack.Sources;
 if (args.Length == 2 && args[0] == "--lock-child")
 {
     using var held = new SessionGuard(args[1]);
+    using var self = Process.GetCurrentProcess();
+    JsonFiles.Write(Path.Combine(args[1], "identity.json"), SessionGuard.CaptureGame(self));
     File.WriteAllText(Path.Combine(args[1], "ready"), "ready");
     while (!File.Exists(Path.Combine(args[1], "exit"))) await Task.Delay(20);
     return 0;
@@ -34,7 +36,7 @@ try
             throw new Exception("Two processes acquired the launcher session.");
         }
         catch (InvalidOperationException) { }
-        var identity = new GameSession(child.Id, child.StartTime.ToUniversalTime().Ticks);
+        var identity = JsonFiles.Read<GameSession>(Path.Combine(directory, "identity.json"))!;
         Require(SessionGuard.IsGameRunning(identity), "An orphaned running game still blocks updates");
         Require(!SessionGuard.IsGameRunning(identity with { StartTicks = identity.StartTicks - 1 }), "PID reuse is not mistaken for an active game");
         File.WriteAllText(Path.Combine(directory, "exit"), "exit");

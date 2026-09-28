@@ -60,5 +60,17 @@ assets; they do not establish delta sizes for future Godot PCK/game content.
 ## Remaining human/platform checks
 
 Headless update/game checks do not verify input feel or every Linux desktop.
-Windows signing is not configured. The graphical launcher/production GitHub
-feed checks and final CI publication results are recorded as they are completed.
+Windows signing is not configured. The Windows interactive task rendered the launcher in desktop session 1,
+verified its error/retry/offline buttons, closed it cleanly, and rendered the
+packaged game to a viewport image. Linux created its X11 launcher window, but
+the desktop was locked, so its visual layout was not verified there.
+Production GitHub feed checks and final CI publication results follow below.
+
+An additional installed startup check exposed that Linux .NET process start
+timestamps can differ across callers. The first unit check compared in one
+process and missed this. Linux session identity now uses `/proc/<pid>/stat`
+start ticks plus kernel boot ID; Windows keeps its exact process creation time.
+The focused check now reads the child process's persisted identity, proving
+cross-process recovery instead of comparing two timestamps from one caller.
+Old Linux session records without boot IDs conservatively block replacement
+while their PID remains alive.

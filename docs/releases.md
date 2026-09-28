@@ -12,7 +12,8 @@ or downloading fails, select **Retry** or **Play installed version**. Select
 current stable build, even when it is older. The launcher stays alive while the
 game runs; closing its window during play hides it. Another invocation defers
 updates until that session exits. A launcher crash also leaves a recorded child
-PID/start time that blocks replacement while that child is still alive.
+process identity that blocks replacement while that child is still alive.
+Windows uses process creation time; Linux uses kernel start ticks and boot ID.
 
 Windows packages are initially **unsigned**. Certificate-based signing is not
 configured. Windows may show a reputation warning. Initial targets are Windows
