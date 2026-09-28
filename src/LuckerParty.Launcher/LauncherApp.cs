@@ -83,7 +83,13 @@ internal sealed class LauncherWindow : Window
     {
         _retry.IsEnabled = _play.IsEnabled = _channel.IsEnabled = false;
         var result = await _controller.RunAsync(playInstalled);
-        if (result == 0) { Close(); return; }
+        if (result == 0 && _controller.CheckOnly) { Close(); return; }
+        if (result == 0)
+        {
+            _status.Text = "Game closed. Choose a channel or play again.";
+            _retry.Content = "Play";
+        }
+        else _retry.Content = "Retry";
         WindowState = WindowState.Normal;
         Show();
         _retry.IsEnabled = _play.IsEnabled = _channel.IsEnabled = true;
