@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 
 namespace LuckerParty.Launcher;
@@ -19,39 +20,16 @@ internal static class PartyRoom
     { Text = text, FontFamily = Display, FontSize = size, Foreground = Ink, TextWrapping = TextWrapping.Wrap };
 
     public static Styles ButtonStyles()
-    {
-        var styles = new Styles();
-        var normal = new Style(selector => selector.OfType<Button>());
-        normal.Setters.Add(new Setter(Button.CornerRadiusProperty, new CornerRadius(12)));
-        normal.Setters.Add(new Setter(Button.BorderThicknessProperty, new Thickness(0)));
-        normal.Setters.Add(new Setter(Button.FontWeightProperty, FontWeight.Bold));
-        styles.Add(normal);
-        var hover = new Style(selector => selector.OfType<Button>().Class("flat").Class(":pointerover"));
-        hover.Setters.Add(new Setter(Button.BackgroundProperty, Lilac));
-        hover.Setters.Add(new Setter(Button.ForegroundProperty, Ink));
-        styles.Add(hover);
-        var actionHover = new Style(selector => selector.OfType<Button>().Class("primary").Class(":pointerover"));
-        actionHover.Setters.Add(new Setter(Button.BackgroundProperty, Brush("#EB474F")));
-        actionHover.Setters.Add(new Setter(Button.ForegroundProperty, Brushes.White));
-        styles.Add(actionHover);
-        return styles;
-    }
-}
+        => (Styles)AvaloniaXamlLoader.Load(new Uri("avares://LuckerParty.Launcher/Assets/PartyRoomControls.axaml"));
 
-internal sealed class CapsuleAvatar(int number) : Control
-{
-    public override void Render(DrawingContext context)
+    public static void StyleMenu(ContextMenu menu)
     {
-        var color = new[] { "#F94D9B", "#FF9D22", "#8E45ED" }[(number - 1) % 3];
-        context.DrawEllipse(PartyRoom.Brush("#DED2C5"), null, new Point(32, 72), 20, 5);
-        var gradient = new LinearGradientBrush
-        {
-            StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
-            GradientStops = new GradientStops { new(Colors.White, 0), new(Color.Parse(color), .35), new(Color.Parse(color), 1) }
-        };
-        context.DrawRectangle(gradient, null, new Rect(13, 9, 38, 62), 19, 19);
-        context.DrawRectangle(PartyRoom.Ink, null, new Rect(26, 31, 3, 11), 2, 2);
-        context.DrawRectangle(PartyRoom.Ink, null, new Rect(35, 31, 3, 11), 2, 2);
+        // Popup surfaces are separate visual roots: give the menu and its item
+        // their own themes instead of relying on a window descendant selector.
+        var styles = ButtonStyles();
+        menu.Theme = (ControlTheme)styles.Resources["PartyRoomMenuTheme"]!;
+        menu.ItemContainerTheme = (ControlTheme)styles.Resources["PartyRoomMenuItemTheme"]!;
+        menu.FontFamily = Body;
     }
 }
 

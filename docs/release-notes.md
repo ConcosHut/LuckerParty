@@ -16,3 +16,6 @@
 - Startup updates leave Play ready; the Play chevron offers the installed-version fallback.
 - Settings controls a conditional sidebar with per-instance Show and Close actions.
 - Closing the launcher during play minimizes it for taskbar restoration.
+- Flush window/sidebar styling, shaded instance cards and clearer status/actions.
+- Coral hover states, a compact flush Play dropdown and contextual channel/version information.
+- Running state and immediate helper updates when multiple instances are disabled.

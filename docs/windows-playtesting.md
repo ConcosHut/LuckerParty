@@ -80,6 +80,12 @@ build. A successful task-start response is not sufficient: inspect launch
 status, process build path, session ID, and logs. Record rendering/controls
 observations separately from automated process checks.
 
+For player-launcher update checks, run the updater through an interactive
+scheduled task too. Starting it directly inside an SSH command can let SSH
+session cleanup terminate the updater before replacement/restart completes.
+Inspect the replacement process path/version and pending-intent state after the
+task; an updater start message alone is not evidence of a completed update.
+
 ## Verification recorded September 28, 2026
 
 The Windows setup agent reported end-to-end transfer, hash verification,

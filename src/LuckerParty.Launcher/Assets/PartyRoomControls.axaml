@@ -1,0 +1,250 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+    <!-- Own the presenter, rather than inheriting Fluent's state setters.
+         Template bindings preserve the caller's normal background/foreground. -->
+    <ControlTheme x:Key="PartyRoomButtonTheme" TargetType="Button">
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="FocusAdorner" Value="{x:Null}" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Grid>
+            <ContentPresenter x:Name="PART_ContentPresenter"
+                              Background="{TemplateBinding Background}"
+                              Foreground="{TemplateBinding Foreground}"
+                              BorderBrush="{TemplateBinding BorderBrush}"
+                              BorderThickness="{TemplateBinding BorderThickness}"
+                              CornerRadius="{TemplateBinding CornerRadius}"
+                              Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Padding="{TemplateBinding Padding}"
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                              RecognizesAccessKey="True" />
+            <Border x:Name="KeyboardFocus" IsHitTestVisible="False"
+                    Margin="3" CornerRadius="{TemplateBinding CornerRadius}"
+                    BorderThickness="2" BorderBrush="Transparent" />
+          </Grid>
+        </ControlTemplate>
+      </Setter>
+      <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#E7DEFF" />
+      </Style>
+      <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#D9CBF6" />
+      </Style>
+      <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#F0EBE6" />
+        <Setter Property="Foreground" Value="#636884" />
+      </Style>
+      <Style Selector="^:focus-visible /template/ Border#KeyboardFocus">
+        <Setter Property="BorderBrush" Value="#636884" />
+      </Style>
+
+      <!-- Both halves of Play keep their size, shape and color on interaction. -->
+      <Style Selector="^.primary /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#FF575E" />
+        <Setter Property="Foreground" Value="White" />
+      </Style>
+      <Style Selector="^.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#ED464F" />
+      </Style>
+      <Style Selector="^.primary:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#D93643" />
+      </Style>
+      <Style Selector="^.primary:disabled /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#CF656C" />
+        <Setter Property="Foreground" Value="White" />
+      </Style>
+      <Style Selector="^.primary:focus-visible /template/ Border#KeyboardFocus">
+        <Setter Property="BorderBrush" Value="White" />
+      </Style>
+
+      <Style Selector="^.caption:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#EEE8E0" />
+      </Style>
+      <Style Selector="^.caption:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#E3D9CD" />
+      </Style>
+      <Style Selector="^.caption-close:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#FFD8DA" />
+      </Style>
+      <Style Selector="^.caption-close:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#FFB9BF" />
+      </Style>
+
+      <!-- Channel selection belongs to the shared moving thumb. Neither
+           segment paints an independent pill or washes out a disabled label. -->
+      <Style Selector="^.channel /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+      </Style>
+      <Style Selector="^.channel:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Opacity" Value="0.86" />
+      </Style>
+      <Style Selector="^.channel:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Opacity" Value="0.72" />
+      </Style>
+      <Style Selector="^.channel:disabled /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{TemplateBinding Foreground}" />
+        <Setter Property="Opacity" Value="1" />
+      </Style>
+      <Style Selector="^.channel /template/ Border#KeyboardFocus">
+        <Setter Property="Width" Value="28" />
+        <Setter Property="Height" Value="2" />
+        <Setter Property="Margin" Value="0,0,0,6" />
+        <Setter Property="VerticalAlignment" Value="Bottom" />
+        <Setter Property="CornerRadius" Value="1" />
+        <Setter Property="BorderThickness" Value="0" />
+      </Style>
+      <Style Selector="^.channel:focus-visible /template/ Border#KeyboardFocus">
+        <Setter Property="Background" Value="{TemplateBinding Foreground}" />
+      </Style>
+    </ControlTheme>
+
+    <!-- These are ToggleSwitch's required input parts. Keeping its canvas and
+         moving panel preserves click, drag, Space and animated knob positioning. -->
+    <ControlTheme x:Key="PartyRoomToggleTheme" TargetType="ToggleSwitch">
+      <Setter Property="Foreground" Value="#10192D" />
+      <Setter Property="Background" Value="#E7DEFF" />
+      <Setter Property="BorderBrush" Value="#CBBEE5" />
+      <Setter Property="HorizontalAlignment" Value="Left" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="FocusAdorner" Value="{x:Null}" />
+      <Setter Property="KnobTransitions">
+        <Transitions>
+          <DoubleTransition Property="Canvas.Left" Duration="0:0:0.18" Easing="CubicEaseOut" />
+        </Transitions>
+      </Setter>
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Grid RowDefinitions="Auto,Auto" RowSpacing="9">
+            <ContentPresenter x:Name="PART_ContentPresenter" Grid.Row="0"
+                              Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Foreground="{TemplateBinding Foreground}" RecognizesAccessKey="True" />
+            <Grid Grid.Row="1" ColumnDefinitions="48,12,Auto" Height="28">
+              <Border x:Name="SwitchTrack" Width="48" Height="28" CornerRadius="14"
+                      Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                      BorderThickness="1" />
+              <Canvas x:Name="PART_SwitchKnob" Grid.Column="0" Width="20" Height="28"
+                      HorizontalAlignment="Left">
+                <Grid x:Name="PART_MovingKnobs" Width="28" Height="28">
+                  <Ellipse x:Name="SwitchKnob" Fill="#636884" Width="20" Height="20" />
+                </Grid>
+              </Canvas>
+              <ContentPresenter x:Name="PART_OffContentPresenter" Grid.Column="2"
+                                Content="{TemplateBinding OffContent}" ContentTemplate="{TemplateBinding OffContentTemplate}"
+                                Foreground="{TemplateBinding Foreground}" VerticalAlignment="Center" />
+              <ContentPresenter x:Name="PART_OnContentPresenter" Grid.Column="2" IsVisible="False"
+                                Content="{TemplateBinding OnContent}" ContentTemplate="{TemplateBinding OnContentTemplate}"
+                                Foreground="{TemplateBinding Foreground}" VerticalAlignment="Center" />
+              <Border x:Name="ToggleKeyboardFocus" Grid.Column="0" IsHitTestVisible="False"
+                      Margin="-3" CornerRadius="17" BorderThickness="2" BorderBrush="Transparent" />
+            </Grid>
+          </Grid>
+        </ControlTemplate>
+      </Setter>
+      <Style Selector="^:pointerover">
+        <Setter Property="Background" Value="#D9CBF6" />
+        <Setter Property="BorderBrush" Value="#B7A4DE" />
+      </Style>
+      <Style Selector="^:pressed">
+        <Setter Property="Background" Value="#CCBAEE" />
+      </Style>
+      <Style Selector="^:checked">
+        <Setter Property="Background" Value="#FF575E" />
+        <Setter Property="BorderBrush" Value="#FF575E" />
+      </Style>
+      <Style Selector="^:checked:pointerover">
+        <Setter Property="Background" Value="#ED464F" />
+        <Setter Property="BorderBrush" Value="#ED464F" />
+      </Style>
+      <Style Selector="^:checked:pressed">
+        <Setter Property="Background" Value="#D93643" />
+        <Setter Property="BorderBrush" Value="#D93643" />
+      </Style>
+      <Style Selector="^:disabled">
+        <Setter Property="Background" Value="#E9E3EF" />
+        <Setter Property="BorderBrush" Value="#D8CFDF" />
+        <Setter Property="Foreground" Value="#636884" />
+      </Style>
+      <Style Selector="^:checked:disabled">
+        <Setter Property="Background" Value="#CF656C" />
+        <Setter Property="BorderBrush" Value="#CF656C" />
+      </Style>
+      <Style Selector="^:checked /template/ Ellipse#SwitchKnob">
+        <Setter Property="Fill" Value="White" />
+      </Style>
+      <Style Selector="^:checked /template/ ContentPresenter#PART_OffContentPresenter">
+        <Setter Property="IsVisible" Value="False" />
+      </Style>
+      <Style Selector="^:checked /template/ ContentPresenter#PART_OnContentPresenter">
+        <Setter Property="IsVisible" Value="True" />
+      </Style>
+      <Style Selector="^:focus-visible /template/ Border#ToggleKeyboardFocus">
+        <Setter Property="BorderBrush" Value="#636884" />
+      </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="PartyRoomMenuTheme" TargetType="ContextMenu">
+      <Setter Property="Focusable" Value="True" />
+      <Setter Property="Background" Value="#FFFDF8" />
+      <Setter Property="Foreground" Value="#10192D" />
+      <Setter Property="BorderBrush" Value="#E8E1D8" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="14" />
+      <Setter Property="Padding" Value="6" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}"
+                  Padding="{TemplateBinding Padding}">
+            <ItemsPresenter x:Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </ControlTheme>
+    <!-- This compact item is for the launcher's single fallback action. -->
+    <ControlTheme x:Key="PartyRoomMenuItemTheme" TargetType="MenuItem">
+      <Setter Property="Padding" Value="14,10" />
+      <Setter Property="Foreground" Value="#10192D" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="FocusAdorner" Value="{x:Null}" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <ContentPresenter x:Name="PART_HeaderPresenter" Content="{TemplateBinding Header}"
+                            ContentTemplate="{TemplateBinding HeaderTemplate}" Padding="{TemplateBinding Padding}"
+                            Foreground="{TemplateBinding Foreground}" Background="{TemplateBinding Background}"
+                            CornerRadius="9" RecognizesAccessKey="True" />
+        </ControlTemplate>
+      </Setter>
+      <Style Selector="^:selected /template/ ContentPresenter#PART_HeaderPresenter">
+        <Setter Property="Background" Value="#E7DEFF" />
+      </Style>
+      <Style Selector="^:pointerover /template/ ContentPresenter#PART_HeaderPresenter">
+        <Setter Property="Background" Value="#E7DEFF" />
+      </Style>
+      <Style Selector="^:pressed /template/ ContentPresenter#PART_HeaderPresenter">
+        <Setter Property="Background" Value="#D9CBF6" />
+      </Style>
+      <Style Selector="^:disabled /template/ ContentPresenter#PART_HeaderPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="#636884" />
+      </Style>
+    </ControlTheme>
+  </Styles.Resources>
+
+  <Style Selector="Button">
+    <Setter Property="Theme" Value="{StaticResource PartyRoomButtonTheme}" />
+  </Style>
+
+  <Style Selector="ToggleSwitch">
+    <Setter Property="Theme" Value="{StaticResource PartyRoomToggleTheme}" />
+  </Style>
+</Styles>

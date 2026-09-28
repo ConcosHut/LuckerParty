@@ -10,10 +10,13 @@ the illustration contains no user interface.
 Normal desktop startup checks and installs available updates, then waits for Play.
 Changing Stable/Beta prepares that channel without starting a game. The segment
 thumb animates between two always-visible choices. The installed version appears
-once in the footer beside update status.
+once beneath the top-right selector beside update status. Selected channel text
+stays white on coral; unselected text stays navy, including while games block
+channel switching. A tooltip explains that restriction.
 
 Play checks/applies updates before starting one game. The button shows progress
-or Retry update when appropriate. Its chevron offers Play installed version as
+or Retry update when appropriate; a single-instance running game shows Running.
+Its narrow, flush chevron offers Play installed version as
 the explicit offline fallback. Update restart intent distinguishes preparation
 from a user-requested launch, so an update cannot turn startup preparation into
 an unexpected game launch.
@@ -35,6 +38,25 @@ focus policy. Close asks that game to quit. An explicit Force close becomes
 available only after a normal close fails. Process exit, rather than the click,
 removes the card and releases update ownership. PID reuse is rejected.
 
+Cards use small native vector capsule illustrations on tinted floor tiles,
+status dots and eye/close action icons. The helper Opens another game window
+appears only while multiple instances are enabled and a game is running;
+changing the setting refreshes that helper immediately.
+
+## Window and controls
+
+Custom caption controls extend the sidebar to the window edges. Windows retains
+native resize borders and maximize hit testing; Linux uses border-only window
+decorations. The caption Close action passes through the same live-game guard
+as other close requests. The layout adapts to narrower and shorter windows.
+
+Complete Avalonia control themes own hover, pressed, disabled and keyboard
+focus states. Play remains coral on hover; the segmented selector uses a focus
+underline inside its shared pill. The installed-version menu uses the same
+palette. There is no need to migrate the launcher to a browser framework for
+these controls. Implementation and verification are tracked in
+[the polish checklist](launcher-polish-checklist.md).
+
 Closing the launcher during play minimizes it for easy taskbar restoration.
 The launcher session guard and persisted identities continue protecting the
 installed build until all children exit. A crashed launcher's surviving games
@@ -45,7 +67,9 @@ still block replacement; a fresh launcher waits until they close.
 `python tools/dev.py check` exercises controller ownership using three real
 child processes and the rendered Avalonia home, Settings, multi-instance and
 small-window layouts with the embedded fonts/art. It tests the Play dropdown,
-sidebar visibility, channel deferral, and targeted Show/Close. PNGs are written
+sidebar visibility, channel deferral, targeted Show/Close, actual pointer hover,
+keyboard focus, split-button geometry and immediate preference/state changes.
+PNGs are written
 under ignored `artifacts/launcher-ui-checks/` for visual inspection.
 
 `python tools/check_distribution.py --target linux` (or windows on Windows)

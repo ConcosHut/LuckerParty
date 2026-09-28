@@ -17,7 +17,8 @@ or downloading fails, choose **Retry update** or use the Play button's chevron
 for **Play installed version**. Select **Beta** to receive development builds;
 select **Stable** to return to the current stable build, even when it is older.
 Changing channels prepares that version without starting the game. Close all
-games before changing channels. The installed version is shown once in the footer.
+games before changing channels. The installed version and update status are shown
+once beneath the top-right channel selector.
 
 The launcher stays alive while games run; closing its window during play
 minimizes it so it can be restored from the taskbar. Another invocation defers

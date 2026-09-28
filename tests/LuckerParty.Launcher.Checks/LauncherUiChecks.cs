@@ -3,6 +3,9 @@ using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Interactivity;
+using Avalonia.Input;
+using Avalonia.Controls.Presenters;
+using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using LuckerParty.Launcher;
@@ -39,12 +42,44 @@ internal static class LauncherUiChecks
                     Require(window.GetVisualDescendants().OfType<TextBlock>().Count(text => text.Text == controller.Version) == 1,
                         "Installed version is displayed once");
                     await Save(window, output, "party-room-home.png");
+                    var primary = FindButton(window, "Play"); var chevron = FindButton(window, "Play options");
+                    var primaryPosition = primary.TranslatePoint(new Point(0, 0), window)!.Value;
+                    var chevronPosition = chevron.TranslatePoint(new Point(0, 0), window)!.Value;
+                    Require(Math.Abs(primary.Bounds.Height - chevron.Bounds.Height) < .1 && Math.Abs(primaryPosition.Y - chevronPosition.Y) < .1,
+                        "Play and chevron have flush top and bottom edges");
+                    Require(chevron.Bounds.Width <= chevron.Bounds.Height + 1,
+                        "Chevron segment has compact equal padding");
+                    window.MouseMove(new Point(primaryPosition.X + primary.Bounds.Width / 2, primaryPosition.Y + primary.Bounds.Height / 2));
+                    Dispatcher.UIThread.RunJobs();
+                    var playSurface = primary.GetVisualDescendants().OfType<ContentPresenter>().Single(presenter => presenter.Name == "PART_ContentPresenter");
+                    Require(playSurface.Background is ISolidColorBrush hover && hover.Color.R > hover.Color.G + 60 && hover.Color.R > hover.Color.B + 60,
+                        "Real pointer hover keeps Play coral instead of Fluent gray");
+                    await Save(window, output, "party-room-hover.png");
+                    window.MouseMove(new Point(5, 5));
+                    var stable = FindButton(window, "Stable release channel");
+                    stable.Focus(NavigationMethod.Tab);
+                    Dispatcher.UIThread.RunJobs();
+                    var focus = stable.GetVisualDescendants().OfType<Border>().Single(border => border.Name == "KeyboardFocus");
+                    Require(focus.Height == 2 && focus.Width == 28, "Channel keyboard focus stays inside the shared pill as an underline");
+                    var initialVersion = window.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == controller.Version);
+                    Require(initialVersion.TranslatePoint(new Point(0,0), window)!.Value.Y < 180,
+                        "Installed version sits beneath the top-right channel selector");
                     Click(FindButton(window, "Settings"));
                     var toggle = window.GetVisualDescendants().OfType<ToggleSwitch>().Single();
                     Require(toggle.IsEffectivelyVisible, "Multiple-instance preference lives in Settings");
                     await Save(window, output, "party-room-settings.png");
-                    toggle.IsChecked = true;
+                    var toggleTrack = toggle.GetVisualDescendants().OfType<Border>().Single(border => border.Name == "SwitchTrack");
+                    Require(toggleTrack.Background is ISolidColorBrush offTrack && offTrack.Color == Color.Parse("#E7DEFF"),
+                        "Settings switch uses the lilac off state");
+                    toggle.Focus(NavigationMethod.Tab);
+                    window.KeyPress(Key.Space, RawInputModifiers.None);
+                    window.KeyRelease(Key.Space, RawInputModifiers.None);
+                    Dispatcher.UIThread.RunJobs();
+                    Require(toggle.IsChecked == true, "Custom Settings switch retains Space-key activation");
+                    Require(toggleTrack.Background is ISolidColorBrush onTrack && onTrack.Color == Color.Parse("#FF575E"),
+                        "Settings switch uses the coral on state");
                     Require(sidebar.IsVisible && controller.AllowMultipleInstances, "Settings toggle reveals the instance sidebar");
+                    window.Width = 1240;
                     Click(window.GetVisualDescendants().OfType<Button>().Single(button => Equals(button.Content, "← Back to play")));
                     Require(!toggle.IsEffectivelyVisible, "Main screen does not expose the multiple-instance toggle");
                     for (var count = 1; count <= 3; count++)
@@ -55,10 +90,36 @@ internal static class LauncherUiChecks
                     await Wait(() => window.GetVisualDescendants().OfType<Button>().Count(button => AutomationProperties.GetName(button)?.StartsWith("Close instance") == true) == 3);
                     Require(FindButton(window, "Play").IsEnabled, "Play stays enabled with three running games");
                     Require(!FindButton(window, "Stable release channel").IsEnabled, "Channel changes are disabled while games run");
+                    foreach (var channelButton in new[] { FindButton(window, "Stable release channel"), FindButton(window, "Beta release channel") })
+                    {
+                        var surface = channelButton.GetVisualDescendants().OfType<ContentPresenter>().Single(presenter => presenter.Name == "PART_ContentPresenter");
+                        Require(surface.Foreground is ISolidColorBrush foreground && channelButton.Foreground is ISolidColorBrush expected && foreground.Color == expected.Color,
+                            "Disabled channel labels preserve selected and unselected contrast");
+                    }
                     await Save(window, output, "party-room-instances.png");
+                    var helper = window.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Name == "PlayHelper");
+                    Require(helper.Text == "Opens another game window", "Multi-instance Play explains the additional window");
+                    Click(FindButton(window, "Settings"));
+                    toggle.IsChecked = false;
+                    Require(!FindButton(window, "Running").IsEnabled && !sidebar.IsVisible && controller.RunningGames == 3,
+                        "Turning the preference off immediately shows disabled Running without closing games");
+                    Require(helper.Text != "Opens another game window", "Additional-instance helper disappears immediately when the toggle is off");
+                    Click(window.GetVisualDescendants().OfType<Button>().Single(button => Equals(button.Content, "← Back to play")));
+                    await Save(window, output, "party-room-running.png");
+                    Click(FindButton(window, "Settings"));
+                    toggle.IsChecked = true;
+                    Require(FindButton(window, "Play").IsEnabled && helper.Text == "Opens another game window",
+                        "Turning the preference on immediately restores Play and its correct helper");
+                    Click(window.GetVisualDescendants().OfType<Button>().Single(button => Equals(button.Content, "← Back to play")));
                     Click(FindButton(window, "Play options"));
                     Require(FindButton(window, "Play options").ContextMenu!.IsOpen, "Installed-version fallback is behind Play options");
-                    FindButton(window, "Play options").ContextMenu!.Close();
+                    await Save(window, output, "party-room-dropdown.png");
+                    var menu = FindButton(window, "Play options").ContextMenu!;
+                    var menuWindow = TopLevel.GetTopLevel(menu)!;
+                    menuWindow.KeyPress(Key.Escape, RawInputModifiers.None);
+                    menuWindow.KeyRelease(Key.Escape, RawInputModifiers.None);
+                    Dispatcher.UIThread.RunJobs();
+                    Require(!menu.IsOpen, "Installed-version menu retains Escape-key dismissal");
                     Click(FindButton(window, "Show instance 1"));
                     await Wait(() => File.Exists(Path.Combine(installation, "game", $"show-{controller.Instances.First().Identity.Pid}")));
                     Click(FindButton(window, "Close instance 2"));

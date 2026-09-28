@@ -61,6 +61,10 @@ Its settings opt-in reveals a sidebar with targeted Show/Close and permits addit
 build while games run; updates and channel changes still require every child to exit.
 GitHub Actions verifies both platforms and publishes them together in a draft
 before exposing it. Never overwrite a published version; advance version.json.
+Launcher window state is coordinated in LauncherApp.cs; layout/chrome/sidebar
+live in separate partial-class files and control themes in Assets/PartyRoomControls.axaml.
+Parallel edits may share a checkout when file ownership is disjoint; run builds
+only after integration. See docs/launcher-polish-checklist.md for the UI pass.
 
 Multiplayer architecture, command-line servers, connection requirements, and
 verification are in [docs/multiplayer.md](docs/multiplayer.md). Network physics
