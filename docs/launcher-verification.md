@@ -80,3 +80,12 @@ identity fix: a live recorded process blocked feed discovery and package
 application, even with a newer full package already cached. The executable /
 AppImage stayed unchanged. Linux identity was supplied by a separate process
 using the same kernel start counter and boot ID as the launcher.
+
+The fresh Ubuntu 22.04 and Windows Server 2022 CI builds both passed all
+gameplay, cross-process guard, and real installed HTTP update checks for
+`322c567`. Windows also installed/updated and rendered the corrected launcher
+as Dev 0.2.3 on the actual PC, with clean build metadata and a successful game
+smoke. The initial publish step left complete private drafts because GitHub's
+tag endpoint could not look them up; the publisher now verifies by release ID.
+Those never-published drafts were removed after recording their metadata and
+retaining CI artifacts, and the corrected pipeline rebuilds the first release.
