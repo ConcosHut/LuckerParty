@@ -134,6 +134,65 @@ the player-facing launcher is acceptable.
 
 Source: [butler uploads and client updates](https://itch.io/docs/butler/pushing.html).
 
+## Fast Linux-to-Windows development loop
+
+The updater also works with a private HTTP feed or local directory, so it can
+deliver frequent development builds. It does not by itself arrange remote
+execution or continuously watch for a build while the launcher is closed.
+Testing updater logic is also distinct from running and debugging the game.
+
+For the user's rapid playtesting workflow, add an opt-in Windows desktop helper
+alongside the distribution launcher. Start it once in the logged-in user session
+and enable automatic playtesting for that session. It watches a private feed
+reachable from Windows, through the LAN or an existing private network. The
+same Velopack packaging/update code should handle the package; the helper adds
+build notification, launch requests, and launch status.
+
+The proposed sequence is:
+
+1. Finish a change on Linux and run the appropriate checks.
+2. Export the Windows game and package it with the launcher. Assign a unique
+   increasing development version and record the source revision, including
+   whether the workspace has uncommitted changes.
+3. Publish the completed package to the private development feed, then publish
+   a small ready/launch request naming that exact build. Never announce a partial
+   package, and use a unique request ID so polling cannot repeatedly launch it.
+4. The Windows helper notices the request, downloads/applies the package with
+   the launcher, and starts the requested version on the desktop. Keep the
+   helper separate from the application files replaced during an update.
+5. Report the installed build and launch result. Later, return logs and bounded
+   smoke-check results to the Linux workflow as useful debugging evidence.
+
+No commit, push, or GitHub Actions run is necessary for each local iteration.
+The existing Linux-to-Windows export remains the build path; Windows receives
+a runnable package rather than requiring a local SDK or engine editor. There
+will still be build, packaging, and transfer time; measure those before promising
+a particular turnaround time. A launched process is not proof of correct
+rendering or controls.
+
+The private development feed is separate from the two player channels and does
+not require another long-lived source branch. Keep its installation and user
+data separate from the regular player installation. Beta remains useful for
+sharing checkpoints with friends and testing the real distribution pipeline.
+
+Only the helper's armed development mode responds to remote launch requests.
+Use an authenticated or access-controlled feed and fixed package/launch actions,
+rather than accepting arbitrary shell commands. If the game is already running,
+queue the new build and let the user close it; do not interrupt a playtest.
+Require the Windows PC to be awake, the user logged in, and the helper connected.
+The current Linux session has no configured Windows helper connection.
+
+A normal app in the user's desktop session is the simplest starting point.
+Windows services cannot directly interact with the desktop; installing a
+background service alone would not solve visible game launch. Start with a
+small helper, then consider folding the watch mode into the launcher once the
+workflow works. Full remote debugging or source editing on Windows would be a
+separate capability.
+
+Sources: [local and HTTP update feeds](https://docs.velopack.io/integrating/update-sources),
+[development testing support](https://docs.velopack.io/integrating/testing),
+[Windows services and interactive sessions](https://learn.microsoft.com/en-us/windows/win32/services/interactive-services).
+
 For our launcher, prove the integration locally before enabling publication:
 package build A, install it, serve a local update feed with build B, and confirm
 the launcher updates itself and starts the new game. Check offline launch,
