@@ -102,3 +102,5 @@ are recorded in [docs/prototype-01.md](docs/prototype-01.md).
 
 The proposed stable/beta launcher and automatic update setup is described in
 [docs/distribution-plan.md](docs/distribution-plan.md). It is not implemented yet.
+The concrete milestones and verification are in
+[docs/launcher-implementation-plan.md](docs/launcher-implementation-plan.md).

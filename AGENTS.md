@@ -43,3 +43,9 @@ Windows SSH playtesting is configured from this `box` workspace. Follow
 build, launch it through the interactive Windows task, and read status/logs.
 Keep machine-local keys ignored and preserve active playtests; a `PENDING`
 result requires a later task trigger after the game closes.
+
+The next planned feature is the standalone Velopack launcher. Follow
+[docs/launcher-implementation-plan.md](docs/launcher-implementation-plan.md).
+The user chose public `ConcosHut/LuckerParty`, preserving s&box on `legacy-2`,
+with future Godot `master`/Beta and `release`/Stable branches. The remote migration
+has not happened; this local checkout is still on `main` without a Git remote.

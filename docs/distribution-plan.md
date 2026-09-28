@@ -4,6 +4,9 @@ Research date: September 28, 2026. This is a recommendation, not an implemented
 launcher or publishing pipeline. The local repository currently has `main` and
 no Git remote configured.
 
+For implementation order, deliverables, and acceptance checks, use the
+[launcher implementation plan](launcher-implementation-plan.md).
+
 ## Recommendation
 
 Build a small standalone C# launcher using [Velopack](https://github.com/velopack/velopack)
@@ -30,12 +33,14 @@ Sources: [project and license](https://github.com/velopack/velopack),
 
 | Source branch | Player channel | Publication policy |
 | --- | --- | --- |
-| `main` | Stable | Publish a versioned tag from a tested revision. |
-| `beta` | Beta | Automatically publish successful builds after the required checks. |
+| `master` | Beta | Publish successful builds after the required checks. |
+| `release` | Stable | Publish a newly versioned, tested promotion after checks. |
 
-Develop on `beta`, playtest, then merge the accepted changes into `main` and tag
-a stable release. Carry stable fixes back into `beta`. No third long-lived
-release branch is needed. Branches organize source work; channels select the
+Develop on `master`, playtest, then merge accepted changes with a new release
+version into `release`. Carry stable fixes back into `master`. Preserve the old
+s&box master as `legacy-2`, leaving the existing `legacy` branch intact. Only
+master/release are active Godot development branches. Branches organize source
+work; channels select the
 compiled versions installed on players' machines. A Git push alone does not
 update anyone's installation without a successful publication.
 
@@ -79,19 +84,17 @@ Source: [startup and update APIs](https://docs.velopack.io/integrating/overview)
 
 ## Hosting and publishing
 
-Use public download repositories if we want token-free installation on friends'
-PCs. The source repository can remain private by publishing only binaries and
-release notes to separate public repositories. CI credentials stay in CI; do
-not distribute an account's private GitHub token inside the launcher.
+The user chose to reuse public `ConcosHut/LuckerParty` for both source and release
+downloads. Authenticate as ParaLizard with appropriate repository access. The
+earlier private-source/separate-download-repositories proposal is superseded.
+CI credentials stay in CI; do not distribute private GitHub tokens in a launcher.
 
-For frequent beta publication, prefer separate stable and beta download
-repositories initially. The `GithubSource` implementation inspected on the
-upstream `develop` branch requests only the first ten releases before filtering
-prereleases; enough beta releases in a shared repository can hide an older
-stable release. Separate repositories avoid this coupling without writing a
-custom source. Verify this behavior against the actual pinned SDK version when
-implementing. This is a hosting detail, not a requirement for more source
-branches or player channels.
+The `GithubSource` implementation inspected on upstream `develop` requests only
+the first ten releases before filtering prereleases; enough beta releases in
+our shared repository can hide an older stable release. Verify the actual pinned
+SDK's behavior and add focused feed discovery/fallback if necessary. Include a
+test that stable remains discoverable after frequent beta publication. This is
+provider discovery logic, not a custom package updater.
 
 GitHub Releases host the installer/AppImage, feeds, and update packages. GitHub
 documents a per-asset limit below 2 GiB and no total release-size or bandwidth
