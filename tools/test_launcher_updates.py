@@ -60,6 +60,8 @@ url = f'http://127.0.0.1:{server.server_port}'
 def invoke(*extra, expected=0, version=None):
     log = data / 'launcher.log'
     offset = len(log.read_text(encoding='utf-8')) if log.exists() else 0
+    game_log = data / 'game.log'
+    game_offset = len(game_log.read_text(encoding='utf-8')) if game_log.exists() else 0
     result = subprocess.run([str(executable),'--headless',*extra],capture_output=True,text=True,errors='replace',timeout=120)
     if result.returncode != expected: raise RuntimeError(f'Unexpected exit {result.returncode}: {result.stdout} {result.stderr}')
     if version:
@@ -68,6 +70,8 @@ def invoke(*extra, expected=0, version=None):
             text = log.read_text(encoding='utf-8')[offset:] if log.exists() else ''
             if f'GAME_EXITED version={version} code=0' in text:
                 if text.count(f'GAME_STARTED version={version} ') != 1: raise RuntimeError('Game launched more than once')
+                game_text = game_log.read_text(encoding='utf-8')[game_offset:]
+                if f'GAME_BUILD: version={version}' not in game_text: raise RuntimeError('In-game display version differs from the installed package')
                 print(text.strip(),flush=True)
                 return
             time.sleep(.25)

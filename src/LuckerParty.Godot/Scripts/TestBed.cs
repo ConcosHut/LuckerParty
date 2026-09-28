@@ -1,4 +1,5 @@
 using Godot;
+using System.Text.Json;
 using GameEnvironment = Godot.Environment;
 
 namespace LuckerParty.Godot;
@@ -126,14 +127,17 @@ public partial class TestBed : Node3D
 
     private void BuildInterface()
     {
+        var version = ReadBuildVersion();
+        GetWindow().Title = $"Lucker Party — {version}";
+        GD.Print($"GAME_BUILD: version={version}");
         var layer = new CanvasLayer();
         AddChild(layer);
         var root = new Control();
         root.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
         root.MouseFilter = Control.MouseFilterEnum.Ignore;
         layer.AddChild(root);
-        root.AddChild(Text("LUCKER PARTY  /  PROTOTYPE 01.1", new Vector2(28, 24), 24));
-        root.AddChild(Text("FIRST-PERSON MOVEMENT TEST", new Vector2(28, 58), 14));
+        root.AddChild(Text($"LUCKER PARTY  /  {version}", new Vector2(28, 24), 24));
+        root.AddChild(Text("PROTOTYPE 01.1  /  FIRST-PERSON MOVEMENT TEST", new Vector2(28, 58), 14));
         var instructions = Text("WASD / arrows  Move     Mouse  Look     Shift  Sprint\nSpace  Jump     R  Reset     Esc  Menu     F3  Diagnostics", Vector2.Zero, 17);
         instructions.AnchorTop = instructions.AnchorBottom = 1;
         instructions.Position = new Vector2(28, -82);
@@ -167,6 +171,15 @@ public partial class TestBed : Node3D
         var quit = new Button { Text = "Quit" };
         quit.Pressed += () => GetTree().Quit();
         column.AddChild(quit);
+    }
+
+    private static string ReadBuildVersion()
+    {
+        if (OS.HasFeature("editor")) return "DEVELOPMENT";
+        var path = Path.Combine(Path.GetDirectoryName(OS.GetExecutablePath())!, "build-info.json");
+        if (!File.Exists(path)) return "UNVERSIONED BUILD";
+        using var metadata = JsonDocument.Parse(File.ReadAllText(path));
+        return metadata.RootElement.GetProperty("version").GetString()!;
     }
 
     private static Label Text(string text, Vector2 position, int size)
