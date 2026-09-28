@@ -96,3 +96,6 @@ and saves a viewport screenshot, then exits. This requires a graphical display.
 
 The first iteration's verification results and remaining Windows playtesting
 are recorded in [docs/prototype-01.md](docs/prototype-01.md).
+
+The proposed stable/beta launcher and automatic update setup is described in
+[docs/distribution-plan.md](docs/distribution-plan.md). It is not implemented yet.
