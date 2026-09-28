@@ -1,0 +1,27 @@
+LUCKER PARTY - PROTOTYPE 01
+
+Extract the entire ZIP before running LuckerParty.exe (Windows) or
+LuckerParty.x86_64 (Linux). Keep the executable, PCK, and data folder together.
+No Godot editor or .NET SDK is required for the packaged build.
+
+CONTROLS
+WASD or arrow keys: move
+Mouse: look
+Left Shift: sprint
+Space: jump
+R: reset to spawn
+Escape: release mouse and open menu; Escape again or Resume returns to play
+Alt-Tab: opens menu and releases the mouse
+Quit: use the menu or close the window
+
+WHAT TO CHECK
+You should see red, blue, yellow, and green boxes on a gray grid floor.
+Walk around and into boxes: they should block your movement.
+Try jumping onto the low green step.
+Diagonal movement should have the same speed as moving straight.
+Try sprinting, looking up/down, resetting, and switching away from the window.
+Resize the window and check that the interface stays readable.
+
+This is a local single-player test bed. Multiplayer and minigames come later.
+When reporting a problem, include your Windows/GPU versions, what you did,
+what happened, and whether resetting or restarting fixed it.

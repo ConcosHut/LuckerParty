@@ -1,0 +1,12 @@
+.tools/
+artifacts/
+**/.godot/
+**/bin/
+**/obj/
+.vs/
+*.user
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example

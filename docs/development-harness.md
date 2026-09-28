@@ -8,12 +8,15 @@ keeping the project understandable to the human team.
 Inspired by OpenAI's February 11, 2026 article:
 [Harness engineering](https://openai.com/index/harness-engineering/).
 
-The following is a proposed adaptation for Lucker Party. This document describes
-future tooling; none of the commands or harnesses below are implemented yet.
+This plan adapts those ideas for Lucker Party. Prototype 01 implements the pinned
+toolchain, shared command wrapper, core dependency boundary, bounded movement
+scenario, screenshot capture, and Windows/Linux packaging. CI, seeded minigames,
+structured gameplay events, and multiplayer checks remain future work. See
+[prototype verification](prototype-01.md) and [commands](../README.md).
 
 ## Small initial foundation
 
-When the engine template is created:
+Implemented in the initial engine template:
 
 1. Pin the engine and language toolchain versions.
 2. Document and verify commands to build, run, and perform a bounded smoke check.
@@ -26,8 +29,8 @@ repository and CI setup. A smoke check must exercise startup, not merely compile
 
 ## Windows iteration and cross-platform builds
 
-Initial required development platforms are Linux and Windows. If Godot/C# is
-selected, use the same pinned Godot .NET edition and compatible .NET SDK on both.
+Initial required development platforms are Linux and Windows. Godot/C# is
+selected; use the same pinned Godot .NET edition and compatible .NET SDK on both.
 Use matching .NET export templates for packaging.
 
 Provide a documented Windows loop: sync the same source revision, build, and
@@ -54,10 +57,10 @@ Documentation:
 
 ## Enforce the engine boundary
 
-If Godot/C# is selected, begin with a plain C# core and a Godot integration
-project. The integration can depend on the core; the core cannot depend on
-Godot or engine integration code. Verify that boundary through project
-dependencies and an automated architecture check as the projects appear.
+The template has a plain C# core and a Godot integration project. The integration
+depends on the core; the core cannot depend on Godot or engine integration code.
+The command wrapper checks the core's project/package references before running
+the game or packaging builds.
 
 Pass simple commands and events across the boundary. Keep engine objects out
 of shared player records, scoring rules, and session state.

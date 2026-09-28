@@ -28,10 +28,9 @@ Themed playlists are a proposed addition, not a settled requirement.
 The original prototype uses s&box and C#:
 https://github.com/ConcosHut/LuckerParty.
 
-The team is considering a different engine to improve automated development.
-Godot with C# is the current recommendation. ECS-oriented alternatives and a
-custom host using libraries such as raylib or SDL remain under consideration.
-No engine or language has been selected definitively.
+Prototype 01 uses Godot 4.5.2 .NET with C#, targeting Windows and Linux x64.
+The portable core remains a plain .NET 8 project. A future engine migration or
+custom host remains possible; no ECS library is needed for this iteration.
 
 Desired separation: keep rules, scoring, round flow, and random selection
 independent of the engine. Rendering, input, physics, scenes, and network
@@ -45,10 +44,10 @@ must work on this Linux development machine and the user's Windows PC, with a
 short edit/build/playtest loop on Windows. Additional platform targets should
 be agreed explicitly.
 
-Create a very basic runnable template in the selected engine. Proposed scope:
-a placeholder 3D room, a controllable character, first-person and overhead
-camera options, a reset action, and documented build/run commands for Linux and
-Windows. Verify a Windows export early, alongside the Linux build.
+The first iteration implements a placeholder 3D arena, a first-person character,
+colored solid boxes, walking, sprinting, jumping, mouse look, reset, and a menu.
+Build/run commands and Windows/Linux export presets are included. Overhead
+cameras remain a later addition.
 
 Networking, complete minigames, and the full party framework follow later.
 Player count, distribution platforms, and joining/hosting infrastructure remain
