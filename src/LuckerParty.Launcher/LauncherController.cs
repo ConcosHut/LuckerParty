@@ -59,6 +59,7 @@ internal sealed class LauncherController
             _preferences = JsonFiles.Read<Preferences>(_preferencesPath) ?? _preferences;
             if (SessionGuard.IsGameRunning(_preferences.Game))
                 throw new InvalidOperationException("The game is already running. Update deferred until it closes.");
+            var skipUpdate = _options.NoUpdate;
             if (playInstalled)
             {
                 _options = _options with { Resume = false };
@@ -69,7 +70,8 @@ internal sealed class LauncherController
             {
                 if (_preferences.PendingLaunch is null || _preferences.PendingVersion != _build.Version)
                     throw new InvalidOperationException("Update restart did not reach the requested version. Retry or play the installed build.");
-                _options = _preferences.PendingLaunch with { Resume = false, NoUpdate = true };
+                _options = _preferences.PendingLaunch with { Resume = false };
+                skipUpdate = true; // Skip once, then check again on subsequent Play clicks.
                 _preferences.PendingLaunch = null;
                 _preferences.PendingVersion = null;
             }
@@ -77,7 +79,7 @@ internal sealed class LauncherController
             _preferences.Channel = Channel;
             JsonFiles.Write(_preferencesPath, _preferences);
 
-            if (!playInstalled && !_options.NoUpdate)
+            if (!playInstalled && !skipUpdate)
             {
                 var source = CreateSource();
                 var transition = Channel != _distribution.Channel;

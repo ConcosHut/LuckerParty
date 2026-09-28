@@ -56,6 +56,9 @@ internal sealed class LauncherWindow : Window
             const string errorPrefix = "LAUNCHER_ERROR: ";
             _status.Text = state.Message.StartsWith(errorPrefix, StringComparison.Ordinal)
                 ? state.Message[errorPrefix.Length..] : state.Message;
+            if (state.Message.StartsWith("GAME_EXITED", StringComparison.Ordinal) && state.Message.EndsWith("code=0", StringComparison.Ordinal))
+                _status.Text = "Game closed. Choose a channel or play again.";
+            if (state.Running) _status.Text = "Game is running.";
             _progress.Value = state.Progress;
             _notes.Text = state.Notes;
             if (state.Running) WindowState = WindowState.Minimized;
