@@ -123,3 +123,15 @@ and scripts were preserved. Player installs/settings remain separate from Dev.
 These tests verify installation, update delivery, runtime, and accessible UI
 controls. Friends should still playtest input feel and additional Windows/Linux
 configurations. Windows installers are unsigned.
+
+The next published Betas, 16 and 17, also passed both platform pipelines and
+generated deltas from the previous full packages. A separate public-feed check
+updated an installed Linux Beta 14 straight to Beta 17, skipping Beta 16, and
+ran exactly one successful game smoke without developer credentials.
+
+That check exposed a fresh Linux data-directory edge case: .NET's default
+folder lookup returns an empty path when XDG_DATA_HOME does not exist yet.
+The launcher now requests the path without requiring it to exist, then creates
+its data directory normally. A separate-process regression check uses a fresh,
+nonexistent XDG_DATA_HOME and verifies preferences/logs stay outside the
+working/install directory.
