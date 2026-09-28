@@ -49,6 +49,8 @@ colored solid boxes, walking, sprinting, jumping, mouse look, reset, and a menu.
 Build/run commands and Windows/Linux export presets are included. Overhead
 cameras remain a later addition.
 
-Networking, complete minigames, and the full party framework follow later.
-Player count, distribution platforms, and joining/hosting infrastructure remain
-open design questions.
+The first multiplayer sandbox supports eight players with direct-IP ENet hosting,
+server-owned movement, named capsules and a menu. See [multiplayer](multiplayer.md).
+Multiplayer is a core design principle: gameplay rules must define network
+ownership and late-join/disconnect behavior. Complete minigames, matchmaking,
+relays and the full party framework follow later.

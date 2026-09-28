@@ -6,10 +6,10 @@ instructions are in [README.md](README.md).
 
 ## Current state
 
-Prototype 01.1 uses Godot 4.5.2 .NET and C# on .NET 8 (SDK 8.0.425). It implements
-a single-player first-person test bed with interpolated camera translation and
-F3/F4/F5 timing diagnostics. The original s&box project is
-https://github.com/ConcosHut/LuckerParty. Networking and minigames come later.
+The first multiplayer sandbox uses Godot 4.5.2 .NET and C# on .NET 8 (SDK 8.0.425). It implements
+a first-person sandbox with a main menu, eight-player direct-IP ENet lobbies,
+server-owned movement, prediction and names. Practice retains F3/F4/F5 diagnostics. The original s&box project is
+https://github.com/ConcosHut/LuckerParty. Minigames come later.
 
 ## Working principles
 
@@ -18,6 +18,9 @@ https://github.com/ConcosHut/LuckerParty. Networking and minigames come later.
   playtesting. Avoid making Bash or Linux-specific paths a build requirement.
 - Keep game rules separate from engine objects, rendering, physics, and transport.
 - Build abstractions around demonstrated needs; avoid a universal engine wrapper.
+- Multiplayer is a core principle: new gameplay must define server authority,
+  late-join state, and disconnect behavior. Clients submit intent, not scores
+  or random outcomes. Do not pause shared physics when a player opens a menu.
 - Add runnable verification alongside substantive gameplay features.
 - Report what was verified and which behavior still needs human playtesting.
 - Preserve meaningful design decisions in repository documents.
@@ -28,8 +31,8 @@ https://github.com/ConcosHut/LuckerParty. Networking and minigames come later.
 From the repository root, with the pinned SDK and Godot .NET editor available:
 
 - `python tools/dev.py build`: compile and verify the core dependency boundary.
-- `python tools/dev.py check`: build, import, and run the movement and 240 FPS
-  camera interpolation scenarios.
+- `python tools/dev.py check`: build, import, and run movement, 240 FPS camera,
+  core input/name, launcher guard, and multi-process networking scenarios.
 - `python tools/dev.py run`: launch the graphical test bed.
 - `python tools/dev.py export --target windows`: package the Windows x64 build.
 - `python tools/dev.py export --target linux`: package the Linux x64 build.
@@ -55,3 +58,8 @@ Keep update SDK startup auto-apply disabled, hold the launcher session guard unt
 the game exits, and keep preferences/logs outside replaced install files.
 GitHub Actions verifies both platforms and publishes them together in a draft
 before exposing it. Never overwrite a published version; advance version.json.
+
+Multiplayer architecture, command-line servers, connection requirements, and
+verification are in [docs/multiplayer.md](docs/multiplayer.md). Network physics
+stays at 60 Hz. Preserve the independent camera presentation history during
+reconciliation; resetting it on every snapshot causes high-refresh stepping.

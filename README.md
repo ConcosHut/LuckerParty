@@ -1,8 +1,9 @@
 # Lucker Party
 
 A small first-person test bed: a gray grid floor, four colored solid boxes,
-walking, sprinting, jumping, mouse look, reset, and an Escape menu. This iteration
-is local single-player; no networking or minigames are implemented.
+walking, sprinting, jumping, mouse look, reset, and an Escape menu. The multiplayer
+prototype adds direct-IP hosting/joining, names and remote capsules. Minigames
+come later.
 
 ## Install and play
 
@@ -12,7 +13,12 @@ The launcher updates automatically before starting the game. Choose Beta for
 development updates; return to Stable at any time. Offline play, installation,
 release promotion, and recovery are covered in [the release runbook](docs/releases.md).
 
-For the original ZIP playtest build, Extract **all** files from `artifacts/LuckerParty-prototype-01.1-windows-x64.zip`,
+For multiplayer play, choose Beta in the launcher, enter your display name, then
+Host lobby or enter the host IP and Join lobby. The default port is UDP 27015.
+See [the multiplayer runbook](docs/multiplayer.md) for LAN/internet hosting,
+server commands, architecture, and verification.
+
+For the original ZIP playtest build, extract **all** files from `artifacts/LuckerParty-prototype-01.1-windows-x64.zip`,
 then double-click `LuckerParty.exe`. Keep its PCK and data directory next to it.
 The packaged game includes its runtime; you do not need Godot or a .NET SDK to
 play. This build targets normal Intel/AMD 64-bit Windows PCs.
@@ -27,7 +33,7 @@ play. This build targets normal Intel/AMD 64-bit Windows PCs.
 | Escape | Open/close menu and release/capture mouse |
 | F3 | Show frame timing and movement diagnostics |
 | F4 | Compare smooth camera translation with the original stepping |
-| F5 | Switch physics between 60 Hz and a diagnostic 10 Hz |
+| F5 | Practice only: switch physics between 60 Hz and a diagnostic 10 Hz |
 
 Switching away from the game opens the menu. Use Resume when you return.
 Walk into boxes to check collision, and jump onto the low green step.
@@ -88,11 +94,12 @@ Generated tools, build outputs, and artifacts are excluded from Git.
 
 ## Structure and verification
 
-- `src/LuckerParty.Core`: plain C# movement settings, independent of Godot.
+- `src/LuckerParty.Core`: plain C# movement settings, input codec, and name rules.
 - `src/LuckerParty.Godot`: scenes, input, character physics, rendering, and UI.
 - `src/LuckerParty.Launcher`: standalone updater UI and guarded game process.
 - `tools/dev.py`: shared Windows/Linux build, run, check, export, and pack commands.
 - `tools/check_distribution.py`: real installed updater and failure checks.
+- `tools/test_multiplayer.py`: real multi-process ENet and latency/loss checks.
 - `docs`: design brief, development harness plan, and playtest instructions.
 
 `check` builds the project, checks the core dependency boundary, imports the
@@ -102,6 +109,8 @@ normalization, sprint, box collision, jump/landing, disabled controls, immediate
 mouse look, look limits, reset, interpolation reset, and the R key binding.
 It also compares camera motion with and without interpolation at 240 render
 frames per second against 60 physics ticks per second.
+It also launches isolated host/client processes to check multiplayer ownership,
+joining, movement, loss, capacity, disconnects, and recovery.
 It exits nonzero on a failed assertion.
 
 For graphical evidence, the game accepts `-- --capture /absolute/path/image.png`

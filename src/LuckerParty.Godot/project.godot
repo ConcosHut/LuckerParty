@@ -3,7 +3,7 @@ config_version=5
 
 [application]
 config/name="Lucker Party"
-run/main_scene="res://Scenes/TestBed.tscn"
+run/main_scene="res://Scenes/Main.tscn"
 config/features=PackedStringArray("4.5", "C#", "GL Compatibility")
 
 [display]

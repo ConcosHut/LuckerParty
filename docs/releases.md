@@ -7,7 +7,8 @@ Party shortcuts. On Linux, keep the AppImage in a writable directory, mark it
 executable, and run it. Do not run either as administrator/root.
 
 The game HUD and window title use the same exported build version as the launcher.
-"Prototype 01.1" describes the movement test bed; it is not a release version.
+Older "Prototype 01.1" labels describe the movement milestone, not a release
+version. The multiplayer sandbox is available through Beta.
 Runs from the Godot editor show "DEVELOPMENT" instead of an installed version.
 
 The launcher checks for updates and starts the game automatically. If checking

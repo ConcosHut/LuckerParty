@@ -1,15 +1,16 @@
 using Godot;
-using System.Text.Json;
 using GameEnvironment = Godot.Environment;
 
 namespace LuckerParty.Godot;
 
 public partial class TestBed : Node3D
 {
-    private FirstPersonPlayer _player = null!;
+    private FirstPersonPlayer? _player;
+    public MultiplayerSession? Session { get; set; }
     private Control _pauseMenu = null!;
     private Label _status = null!;
     private Label _diagnostics = null!;
+    private LineEdit? _nameEditor;
     private readonly Queue<double> _frameTimes = new();
     private double _diagnosticTimer;
     private bool _paused;
@@ -18,18 +19,20 @@ public partial class TestBed : Node3D
     {
         RegisterInputs();
         BuildWorld();
-        _player = GD.Load<PackedScene>("res://Scenes/FirstPersonPlayer.tscn")
-            .Instantiate<FirstPersonPlayer>();
-        AddChild(_player);
+        if (Session is null)
+        {
+            _player = GD.Load<PackedScene>("res://Scenes/FirstPersonPlayer.tscn").Instantiate<FirstPersonPlayer>();
+            AddChild(_player);
+        }
         BuildInterface();
-        Input.MouseMode = Input.MouseModeEnum.Captured;
+        if (_player is not null) Input.MouseMode = Input.MouseModeEnum.Captured;
         GD.Print("PROTOTYPE_READY: first-person test bed loaded");
 
         var arguments = OS.GetCmdlineUserArgs();
         if (arguments.Contains("--smoke-test"))
-            AddChild(new SmokeTest { Player = _player });
+            AddChild(new SmokeTest { Player = _player! });
         if (arguments.Contains("--camera-check"))
-            AddChild(new CameraInterpolationCheck { Player = _player });
+            AddChild(new CameraInterpolationCheck { Player = _player! });
         var captureIndex = Array.IndexOf(arguments, "--capture");
         if (captureIndex >= 0 && captureIndex + 1 < arguments.Length)
             CaptureFrame(arguments[captureIndex + 1]);
@@ -127,7 +130,7 @@ public partial class TestBed : Node3D
 
     private void BuildInterface()
     {
-        var version = ReadBuildVersion();
+        var version = GameBuild.Version;
         GetWindow().Title = $"Lucker Party — {version}";
         GD.Print($"GAME_BUILD: version={version}");
         var layer = new CanvasLayer();
@@ -137,14 +140,14 @@ public partial class TestBed : Node3D
         root.MouseFilter = Control.MouseFilterEnum.Ignore;
         layer.AddChild(root);
         root.AddChild(Text($"LUCKER PARTY  /  {version}", new Vector2(28, 24), 24));
-        root.AddChild(Text("PROTOTYPE 01.1  /  FIRST-PERSON MOVEMENT TEST", new Vector2(28, 58), 14));
+        root.AddChild(Text("FIRST-PERSON SANDBOX", new Vector2(28, 58), 14));
         var instructions = Text("WASD / arrows  Move     Mouse  Look     Shift  Sprint\nSpace  Jump     R  Reset     Esc  Menu     F3  Diagnostics", Vector2.Zero, 17);
         instructions.AnchorTop = instructions.AnchorBottom = 1;
         instructions.Position = new Vector2(28, -82);
         root.AddChild(instructions);
         _status = Text("", new Vector2(28, 84), 14);
         root.AddChild(_status);
-        _diagnostics = Text("", new Vector2(28, 111), 14);
+        _diagnostics = Text("", new Vector2(28, Session is null ? 111 : 160), 14);
         _diagnostics.Visible = false;
         root.AddChild(_diagnostics);
         var crosshair = Text("+", Vector2.Zero, 24);
@@ -166,20 +169,55 @@ public partial class TestBed : Node3D
         resume.Pressed += () => SetPaused(false);
         column.AddChild(resume);
         var reset = new Button { Text = "Reset position" };
-        reset.Pressed += () => { _player.ResetToSpawn(); SetPaused(false); };
+        reset.Pressed += () => { ResetPlayer(); SetPaused(false); };
         column.AddChild(reset);
+        if (Session is not null)
+        {
+            var name = _nameEditor = new LineEdit { Text = Session.LocalName, MaxLength = 24, PlaceholderText = "Display name" };
+            column.AddChild(name);
+            var rename = new Button { Text = "Change name" };
+            rename.Pressed += () => { Session.ChangeName(name.Text); name.Text = Session.LocalName; };
+            column.AddChild(rename);
+            var leave = new Button { Text = Session.IsServer ? "Close lobby" : "Leave lobby" };
+            leave.Pressed += () => Session.Leave("Left the lobby.");
+            column.AddChild(leave);
+        }
+        else
+        {
+            var menu = new Button { Text = "Main menu" };
+            menu.Pressed += () => GetParent<GameRoot>().ReturnToMenu("Practice ended.");
+            column.AddChild(menu);
+        }
         var quit = new Button { Text = "Quit" };
         quit.Pressed += () => GetTree().Quit();
         column.AddChild(quit);
     }
 
-    private static string ReadBuildVersion()
+    public FirstPersonPlayer SpawnPlayer(int id, string name, Vector3 spawn)
     {
-        if (OS.HasFeature("editor")) return "DEVELOPMENT";
-        var path = Path.Combine(Path.GetDirectoryName(OS.GetExecutablePath())!, "build-info.json");
-        if (!File.Exists(path)) return "UNVERSIONED BUILD";
-        using var metadata = JsonDocument.Parse(File.ReadAllText(path));
-        return metadata.RootElement.GetProperty("version").GetString()!;
+        var player = GD.Load<PackedScene>("res://Scenes/FirstPersonPlayer.tscn").Instantiate<FirstPersonPlayer>();
+        player.Name = $"Player_{id}";
+        player.Session = Session;
+        player.PeerId = id;
+        player.SpawnPosition = spawn;
+        player.LocalControl = !Session!.Dedicated && id == Multiplayer.GetUniqueId();
+        AddChild(player);
+        player.SetDisplayName(name);
+        if (player.LocalControl)
+        {
+            _player = player;
+            Input.MouseMode = Input.MouseModeEnum.Captured;
+        }
+        _player?.GetNode<Camera3D>("Head/Camera").MakeCurrent();
+        return player;
+    }
+
+    public void SetLocalName(string name) { if (_nameEditor is not null) _nameEditor.Text = name; }
+
+    private void ResetPlayer()
+    {
+        if (Session is null) _player?.ResetToSpawn();
+        else _player?.RequestReset();
     }
 
     private static Label Text(string text, Vector2 position, int size)
@@ -198,11 +236,13 @@ public partial class TestBed : Node3D
         if (_diagnosticTimer < 0.25) return;
         _diagnosticTimer = 0;
         var sorted = _frameTimes.Order().ToArray();
-        _status.Text = $"{Engine.GetFramesPerSecond()} FPS  /  {Engine.PhysicsTicksPerSecond} physics Hz  /  {(_player.IsOnFloor() ? "GROUNDED" : "AIRBORNE")}";
-        _diagnostics.Text = $"F4  Camera interpolation: {(_player.InterpolateCameraPosition ? "ON" : "OFF (original)")}\n"
+        _status.Text = $"{Engine.GetFramesPerSecond()} FPS  /  {Engine.PhysicsTicksPerSecond} physics Hz  /  {(_player?.IsOnFloor() == true ? "GROUNDED" : "AIRBORNE")}"
+            + (Session is null ? "" : $"\n{Session.Description}");
+        _diagnostics.Text = $"F4  Camera interpolation: {(_player?.InterpolateCameraPosition != false ? "ON" : "OFF (original)")}\n"
             + $"Frame time: avg {sorted.Average():F2} ms / p95 {sorted[(int)((sorted.Length - 1) * 0.95)]:F2} ms / max {sorted[^1]:F2} ms\n"
-            + $"F5  Physics: {Engine.PhysicsTicksPerSecond} Hz (60 normal / 10 diagnostic)\n"
-            + "Compare A/D with the mouse still. R resets position and view.";
+            + (Session is null ? $"F5  Physics: {Engine.PhysicsTicksPerSecond} Hz (60 normal / 10 diagnostic)\n" : "Network physics: 60 Hz / snapshots: 30 Hz\n")
+            + (Session is null ? "Compare A/D with the mouse still. R resets position and view."
+                : $"{Session.Description}\n{string.Join(", ", Session.Players.Values.Select(p => p.Name))}");
     }
 
     public override void _UnhandledInput(InputEvent input)
@@ -212,15 +252,15 @@ public partial class TestBed : Node3D
             SetPaused(!_paused);
             GetViewport().SetInputAsHandled();
         }
-        else if (!_paused && input.IsActionPressed("reset")) _player.ResetToSpawn();
+        else if (!_paused && input.IsActionPressed("reset")) ResetPlayer();
         else if (input.IsActionPressed("diagnostics")) _diagnostics.Visible = !_diagnostics.Visible;
-        else if (input.IsActionPressed("interpolation"))
+        else if (_player is not null && input.IsActionPressed("interpolation"))
         {
             _player.InterpolateCameraPosition = !_player.InterpolateCameraPosition;
             _diagnostics.Visible = true;
             GD.Print($"CAMERA_INTERPOLATION: {_player.InterpolateCameraPosition}");
         }
-        else if (input.IsActionPressed("slow_physics"))
+        else if (Session is null && _player is not null && input.IsActionPressed("slow_physics"))
         {
             Engine.PhysicsTicksPerSecond = Engine.PhysicsTicksPerSecond == 60 ? 10 : 60;
             _player.ResetToSpawn();
@@ -234,12 +274,15 @@ public partial class TestBed : Node3D
         if (what == NotificationApplicationFocusOut && _player is not null) SetPaused(true);
     }
 
-    private void SetPaused(bool paused)
+    public void SetPaused(bool paused)
     {
         _paused = paused;
         _pauseMenu.Visible = paused;
-        _player.ControlsEnabled = !paused;
-        _player.SetPhysicsProcess(!paused);
+        if (_player is not null)
+        {
+            _player.ControlsEnabled = !paused;
+            if (Session is null) _player.SetPhysicsProcess(!paused);
+        }
         Input.MouseMode = paused ? Input.MouseModeEnum.Visible : Input.MouseModeEnum.Captured;
     }
 

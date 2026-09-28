@@ -4,7 +4,7 @@ The development connection is configured. Use SSH/SCP from the Linux workspace
 to prepare a Windows build, then trigger the on-demand interactive desktop task.
 A custom watch helper and additional chats are not required for this loop.
 This is development infrastructure; the player-facing Velopack launcher and
-stable/beta distribution remain unimplemented.
+stable/beta distribution are available; see [releases](releases.md).
 
 ## Configured connection
 
