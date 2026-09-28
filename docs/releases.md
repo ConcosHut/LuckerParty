@@ -6,6 +6,10 @@ Windows installs per user without administrator permission and creates Lucker
 Party shortcuts. On Linux, keep the AppImage in a writable directory, mark it
 executable, and run it. Do not run either as administrator/root.
 
+The game HUD and window title use the same exported build version as the launcher.
+"Prototype 01.1" describes the movement test bed; it is not a release version.
+Runs from the Godot editor show "DEVELOPMENT" instead of an installed version.
+
 The launcher checks for updates and starts the game automatically. If checking
 or downloading fails, select **Retry** or **Play installed version**. Select
 **Beta** to receive development builds; select **Stable** to return to the
