@@ -18,6 +18,7 @@ internal sealed class LauncherController
     public event Action<LauncherState>? Changed;
     public bool Busy { get; private set; }
     public bool GameRunning { get; private set; }
+    public bool CheckOnly => _options.CheckOnly;
     public string Channel => _options.Channel ?? _preferences.Channel;
     public string Version => _build.Version;
     public string DataDirectory => _dataDirectory;

@@ -9,7 +9,9 @@ executable, and run it. Do not run either as administrator/root.
 The launcher checks for updates and starts the game automatically. If checking
 or downloading fails, select **Retry** or **Play installed version**. Select
 **Beta** to receive development builds; select **Stable** to return to the
-current stable build, even when it is older. The launcher stays alive while the
+current stable build, even when it is older. Close the game to return to the
+launcher and change channels; selecting one checks it and starts the next
+session. The launcher stays alive while the
 game runs; closing its window during play hides it. Another invocation defers
 updates until that session exits. A launcher crash also leaves a recorded child
 process identity that blocks replacement while that child is still alive.
