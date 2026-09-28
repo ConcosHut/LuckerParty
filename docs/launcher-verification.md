@@ -89,3 +89,37 @@ smoke. The initial publish step left complete private drafts because GitHub's
 tag endpoint could not look them up; the publisher now verifies by release ID.
 Those never-published drafts were removed after recording their metadata and
 retaining CI artifacts, and the corrected pipeline rebuilds the first release.
+
+## Published feeds and final desktop checks
+
+Stable [0.2.0](https://github.com/ConcosHut/LuckerParty/releases/tag/v0.2.0)
+and Beta [0.3.0-beta.14](https://github.com/ConcosHut/LuckerParty/releases/tag/v0.3.0-beta.14)
+published successfully after both platform builds and the final draft verification:
+[Stable CI](https://github.com/ConcosHut/LuckerParty/actions/runs/36406915920),
+[Beta CI](https://github.com/ConcosHut/LuckerParty/actions/runs/36406913951).
+The release ID lookup fixed draft verification. Stable was built from `e4b4fe0`;
+Beta from `48ed5ce`, with the same launcher/game changes and distinct versions.
+Master now has base version 0.3.0; release keeps 0.2.0.
+
+The public Windows installer was downloaded on the actual PC and verified
+against SHA256SUMS before silent installation. Its complete self-contained game
+passed smoke checks; the installed launcher found Stable through GitHub's public
+API without any developer credential. Build metadata was clean.
+
+Linux's actual installed player AppImage fetched Beta from GitHub, restarted
+and ran that game, then fetched/ran older Stable again.
+Windows's interactive desktop task used UI Automation to choose **Beta** in
+the real launcher, downloaded/ran it from GitHub, pressed **Play** again and
+verified another Beta update check, then chose **Stable** and downloaded/ran
+the older stable version. Result: `GITHUB_UI_CHANNEL_PASS`.
+
+The launcher remains available after a game closes so channel changes are
+accessible. A separate Windows desktop check verified the enabled channel
+selector and Play button after an updater restart, and that Play checks updates
+again rather than retaining the one-time resume skip: `REPLAY_UI_PASS`.
+All temporary verification tasks were removed; the original ZIP playtest task
+and scripts were preserved. Player installs/settings remain separate from Dev.
+
+These tests verify installation, update delivery, runtime, and accessible UI
+controls. Friends should still playtest input feel and additional Windows/Linux
+configurations. Windows installers are unsigned.

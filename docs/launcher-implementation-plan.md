@@ -1,7 +1,7 @@
 # Velopack launcher implementation plan
 
-Status: launcher implemented and locally verified; first automated publication
-is in progress. September 28, 2026.
+Status: implemented, published, and verified on Windows and Linux. September 28,
+2026. See [launcher-verification.md](launcher-verification.md) for evidence.
 Operational commands are maintained in [releases.md](releases.md). This is the execution plan for the
 [distribution proposal](distribution-plan.md).
 

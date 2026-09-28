@@ -11,7 +11,7 @@ repository rulesets when the migration began.
   `master`; initial implementation commit: `af25d54d7a52b88be594484c7b75fbe065494840`.
 - New repository default: `master`. Local `main` was renamed and tracks it.
 - `release` started from the accepted Godot revision, then fast-forwarded to
-  `24706e7` for the Linux recovery fix; it publishes Stable.
+  `e4b4fe0` for the completed launcher; it published Stable 0.2.0.
 - Other branches preserved: `legacy` (`cc877492d519cb3a972778f06357bdf5b974c864`),
   `fixed-camera` (`b9dbe07e1f09cb35516c7105b5f56108d69c94d6`),
   `terry-races` (`5647e33dd9370d866df7d8e18276ffe73b37c0dc`).
