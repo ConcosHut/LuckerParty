@@ -92,7 +92,10 @@ also has a backup tag recorded in the repository migration report.
 GitHub Actions checks the gameplay, launcher guards, and real installed updates
 on Ubuntu 22.04 and Windows Server 2022 before packaging both platforms. Pull
 requests check/package but do not publish. Actions and editor downloads are
-pinned; publishing alone has `contents: write`. Windows 10/11 desktop testing
+pinned; publishing alone has `contents: write`. The launcher locks both
+platform dependency graphs. To change packages deliberately, regenerate with
+`dotnet restore src/LuckerParty.Launcher/LuckerParty.Launcher.csproj -p:RestoreLockedMode=false --force-evaluate`
+and review the resulting lock-file changes. Windows 10/11 desktop testing
 still uses the actual PC; server/headless CI does not verify mouse feel.
 
 `version.json` supplies the next three-part stable version. Master's package

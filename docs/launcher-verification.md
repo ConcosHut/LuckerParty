@@ -74,3 +74,9 @@ The focused check now reads the child process's persisted identity, proving
 cross-process recovery instead of comparing two timestamps from one caller.
 Old Linux session records without boot IDs conservatively block replacement
 while their PID remains alive.
+
+Real installed pending-startup checks passed on Windows and Linux after the
+identity fix: a live recorded process blocked feed discovery and package
+application, even with a newer full package already cached. The executable /
+AppImage stayed unchanged. Linux identity was supplied by a separate process
+using the same kernel start counter and boot ID as the launcher.

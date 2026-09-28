@@ -53,7 +53,9 @@ internal sealed class LauncherWindow : Window
         };
         controller.Changed += state => Dispatcher.UIThread.Post(() =>
         {
-            _status.Text = state.Message;
+            const string errorPrefix = "LAUNCHER_ERROR: ";
+            _status.Text = state.Message.StartsWith(errorPrefix, StringComparison.Ordinal)
+                ? state.Message[errorPrefix.Length..] : state.Message;
             _progress.Value = state.Progress;
             _notes.Text = state.Notes;
             if (state.Running) WindowState = WindowState.Minimized;
