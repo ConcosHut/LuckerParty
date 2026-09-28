@@ -55,7 +55,9 @@ Use `python tools/dev.py pack --target windows` for isolated Dev packages and
 `python tools/check_distribution.py --target linux` or `--target windows` on the
 matching OS. Build commands own a workspace lock; export platforms sequentially.
 Keep update SDK startup auto-apply disabled, hold the launcher session guard until
-the game exits, and keep preferences/logs outside replaced install files.
+all game instances exit, and keep preferences/logs outside replaced install files.
+The launcher settings opt-in permits additional Play launches of the installed
+build while games run; updates and channel changes still require every child to exit.
 GitHub Actions verifies both platforms and publishes them together in a draft
 before exposing it. Never overwrite a published version; advance version.json.
 

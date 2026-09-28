@@ -12,6 +12,11 @@ Choose **Beta** in the launcher for the multiplayer prototype. In the game:
 2. Choose **Host lobby**, or enter the host's IP/hostname and choose **Join lobby**.
 3. Use the same port on both machines; the default is **UDP 27015**.
 
+To test on one PC, enable **Settings → Allow multiple game instances** in the
+launcher. Its Play buttons remain available while games run. Host in the first
+game and join `127.0.0.1` in subsequent games, using the same port. Each game can
+use a different display name. Launcher updates wait until every instance closes.
+
 Hosting opens the existing arena immediately, as a playable sandbox lobby.
 Other players are colored capsules with names overhead. Up to eight players can
 join, including a listen host. WASD, mouse look, sprint, jump and reset work.

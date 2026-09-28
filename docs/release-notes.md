@@ -9,3 +9,5 @@
 - Main menu with saved names, direct-IP Host/Join, and practice.
 - Up to eight named capsules, server-owned movement and smooth prediction.
 - Late joins, rename, disconnect recovery, and optional headless hosting.
+- Launcher Settings with a saved opt-in for multiple simultaneous games.
+- Play again for local multiplayer testing; updates wait for all games to close.

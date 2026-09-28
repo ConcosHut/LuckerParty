@@ -22,6 +22,19 @@ updates until that session exits. A launcher crash also leaves a recorded child
 process identity that blocks replacement while that child is still alive.
 Windows uses process creation time; Linux uses kernel start ticks and boot ID.
 
+For local multiplayer testing, open the launcher's **Settings** section and enable
+**Allow multiple game instances**. Restore the launcher while your first game is
+running, enable the setting, then use **Play another instance** or **Play installed
+version**. Both start another copy of the installed build. The launcher stays
+visible for subsequent launches when this setting is enabled. Host in one game
+and join `127.0.0.1` with the same UDP port in the others.
+
+The setting defaults to off and persists across restarts and updates. Turning it
+off prevents additional launches without closing existing games. Updates and
+channel changes remain deferred until **all** instances close. Every child has a
+persisted process identity, so a launcher crash cannot allow an update over a
+surviving game; resume normal play from a fresh launcher after those games close.
+
 Windows packages are initially **unsigned**. Certificate-based signing is not
 configured. Windows may show a reputation warning. Initial targets are Windows
 10/11 x64 and Linux x64 with glibc and normal desktop graphics libraries. Linux

@@ -9,25 +9,32 @@ internal sealed record LauncherState(string Message, int Progress = 0, bool Runn
 internal sealed class LauncherController
 {
     private LaunchOptions _options;
-    private readonly string _directory = AppContext.BaseDirectory;
+    private readonly string _directory;
     private readonly Distribution _distribution;
     private readonly string _preferencesPath;
     private readonly string _dataDirectory;
     private Preferences _preferences;
     private readonly BuildInfo _build;
+    private readonly object _sync = new();
+    private readonly object _logSync = new();
+    private readonly Dictionary<int, GameSession> _games = new();
+    private SessionGuard? _guard;
     public event Action<LauncherState>? Changed;
     public bool Busy { get; private set; }
-    public bool GameRunning { get; private set; }
+    public int RunningGames { get { lock (_sync) return _games.Count; } }
+    public bool GameRunning => RunningGames > 0;
+    public bool AllowMultipleInstances { get { lock (_sync) return _preferences.AllowMultipleInstances; } }
     public bool CheckOnly => _options.CheckOnly;
     public string Channel => _options.Channel ?? _preferences.Channel;
     public string Version => _build.Version;
     public string DataDirectory => _dataDirectory;
 
-    public LauncherController(LaunchOptions options)
+    public LauncherController(LaunchOptions options, string? directory = null, string? dataDirectory = null)
     {
+        _directory = directory ?? AppContext.BaseDirectory;
         _distribution = Distribution.Load(_directory);
         _build = JsonFiles.Read<BuildInfo>(Path.Combine(_directory, "build-info.json")) ?? new();
-        _dataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData,
+        _dataDirectory = dataDirectory ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData,
                 Environment.SpecialFolderOption.DoNotVerify),
             "LuckerParty", _distribution.PackageId);
         _preferencesPath = Path.Combine(_dataDirectory, "preferences.json");
@@ -38,47 +45,78 @@ internal sealed class LauncherController
 
     public void SelectChannel(string channel)
     {
-        if (Busy) throw new InvalidOperationException("Wait for the current launch to finish.");
+        if (Busy || GameRunning) throw new InvalidOperationException("Close all game instances before changing channels.");
         _options = _options with { Channel = LaunchOptions.ValidateChannel(channel), NoUpdate = false, Resume = false };
+    }
+
+    public void SetAllowMultipleInstances(bool enabled)
+    {
+        lock (_sync)
+        {
+            if (Busy) throw new InvalidOperationException("Wait for the current launch to finish.");
+            // Serialize preference writes with other launchers without releasing
+            // this launcher's existing guard while its games are alive.
+            using var temporaryGuard = _guard is null ? new SessionGuard(_dataDirectory) : null;
+            _preferences = JsonFiles.Read<Preferences>(_preferencesPath) ?? _preferences;
+            _preferences.AllowMultipleInstances = enabled;
+            JsonFiles.Write(_preferencesPath, _preferences);
+        }
     }
 
     private void Report(string message, int progress = 0, bool running = false, string notes = "")
     {
-        Directory.CreateDirectory(_dataDirectory);
-        File.AppendAllText(Path.Combine(_dataDirectory, "launcher.log"), $"{DateTime.UtcNow:O} {message}{Environment.NewLine}");
+        lock (_logSync)
+        {
+            Directory.CreateDirectory(_dataDirectory);
+            File.AppendAllText(Path.Combine(_dataDirectory, "launcher.log"), $"{DateTime.UtcNow:O} {message}{Environment.NewLine}");
+        }
         Changed?.Invoke(new(message, progress, running, notes));
     }
 
     public async Task<int> RunAsync(bool playInstalled = false)
     {
-        if (Busy) return 3;
-        Busy = true;
+        lock (_sync)
+        {
+            if (Busy) return 3;
+            Busy = true;
+        }
         try
         {
-            using var guard = new SessionGuard(_dataDirectory);
-            // Reload after acquiring ownership; another invocation may have saved state.
-            _preferences = JsonFiles.Read<Preferences>(_preferencesPath) ?? _preferences;
-            if (SessionGuard.IsGameRunning(_preferences.Game))
-                throw new InvalidOperationException("The game is already running. Update deferred until it closes.");
             var skipUpdate = _options.NoUpdate;
-            if (playInstalled)
+            lock (_sync)
             {
-                _options = _options with { Resume = false };
-                _preferences.PendingLaunch = null;
-                _preferences.PendingVersion = null;
+                _guard ??= new SessionGuard(_dataDirectory);
+                // Reload after acquiring ownership; another invocation may have saved state.
+                _preferences = JsonFiles.Read<Preferences>(_preferencesPath) ?? _preferences;
+                var liveGames = SessionGuard.LiveGames(_preferences);
+                if (liveGames.Count > 0)
+                {
+                    if (_options.CheckOnly || !_preferences.AllowMultipleInstances
+                        || liveGames.Any(game => !_games.Values.Contains(game)))
+                        throw new InvalidOperationException("The game is already running. Close all instances before updating, or enable multiple instances in their launcher to play again.");
+                    skipUpdate = true;
+                    playInstalled = true; // Never replace files used by any live instance.
+                }
+                if (playInstalled)
+                {
+                    _options = _options with { Resume = false };
+                    _preferences.PendingLaunch = null;
+                    _preferences.PendingVersion = null;
+                }
+                if (_options.Resume)
+                {
+                    if (_preferences.PendingLaunch is null || _preferences.PendingVersion != _build.Version)
+                        throw new InvalidOperationException("Update restart did not reach the requested version. Retry or play the installed build.");
+                    _options = _preferences.PendingLaunch with { Resume = false };
+                    skipUpdate = true; // Skip once, then check again on subsequent Play clicks.
+                    _preferences.PendingLaunch = null;
+                    _preferences.PendingVersion = null;
+                }
+                _preferences.Game = null;
+                _preferences.Games = liveGames;
+                _preferences.Channel = Channel;
+                JsonFiles.Write(_preferencesPath, _preferences);
             }
-            if (_options.Resume)
-            {
-                if (_preferences.PendingLaunch is null || _preferences.PendingVersion != _build.Version)
-                    throw new InvalidOperationException("Update restart did not reach the requested version. Retry or play the installed build.");
-                _options = _preferences.PendingLaunch with { Resume = false };
-                skipUpdate = true; // Skip once, then check again on subsequent Play clicks.
-                _preferences.PendingLaunch = null;
-                _preferences.PendingVersion = null;
-            }
-            _preferences.Game = null;
-            _preferences.Channel = Channel;
-            JsonFiles.Write(_preferencesPath, _preferences);
 
             if (!playInstalled && !skipUpdate)
             {
@@ -124,7 +162,16 @@ internal sealed class LauncherController
             Report($"LAUNCHER_ERROR: {error.Message}");
             return 1;
         }
-        finally { Busy = false; }
+        finally
+        {
+            lock (_sync) { Busy = false; ReleaseIdleGuard(); }
+        }
+    }
+
+    private void ReleaseIdleGuard()
+    {
+        if (Busy || _games.Count > 0) return;
+        _guard?.Dispose(); _guard = null;
     }
 
     private IUpdateSource CreateSource()
@@ -157,45 +204,76 @@ internal sealed class LauncherController
             foreach (var argument in new[] { "--headless", "--fixed-fps", "60", "--", "--smoke-test" })
                 start.ArgumentList.Add(argument);
         }
-        using var game = Process.Start(start) ?? throw new InvalidOperationException("Could not start the game.");
-        GameRunning = true;
+        var game = Process.Start(start) ?? throw new InvalidOperationException("Could not start the game.");
         try
         {
-            _preferences.Game = SessionGuard.CaptureGame(game);
-            JsonFiles.Write(_preferencesPath, _preferences);
+            var identity = SessionGuard.CaptureGame(game);
+            lock (_sync)
+            {
+                _preferences.Games.Add(identity);
+                JsonFiles.Write(_preferencesPath, _preferences);
+                _games.Add(game.Id, identity);
+            }
         }
         catch
         {
             // Do not leave an unrecorded child that a later launcher could
             // replace. This process belongs to this launch attempt only.
             if (!game.HasExited) game.Kill(entireProcessTree: true);
-            GameRunning = false;
+            await game.WaitForExitAsync();
+            lock (_sync) _preferences.Games.RemoveAll(session => session.Pid == game.Id);
+            game.Dispose();
             throw;
         }
-        Report($"GAME_STARTED version={_build.Version} channel={_distribution.Channel} commit={_build.Commit} pid={game.Id}", running: true);
+        var completion = TrackGameAsync(game);
+        Report($"GAME_STARTED version={_build.Version} channel={_distribution.Channel} commit={_build.Commit} pid={game.Id}", running: GameRunning);
+        // The desktop UI can accept another Play click while this child runs.
+        // Headless invocations keep their original exit-code/smoke-test contract.
+        return _options.Headless ? await completion : 0;
+    }
+
+    private async Task<int> TrackGameAsync(Process game)
+    {
         var smokePassed = false;
-        var logGate = new SemaphoreSlim(1, 1);
         async Task ReadLogAsync(StreamReader reader)
         {
             while (await reader.ReadLineAsync() is { } line)
             {
                 if (line.Contains("SMOKE_TEST_PASS:")) smokePassed = true;
-                await logGate.WaitAsync();
-                try { await File.AppendAllTextAsync(Path.Combine(_dataDirectory, "game.log"), $"{DateTime.UtcNow:O} build={_build.Version} {line}{Environment.NewLine}"); }
-                finally { logGate.Release(); }
+                lock (_logSync)
+                    File.AppendAllText(Path.Combine(_dataDirectory, "game.log"), $"{DateTime.UtcNow:O} build={_build.Version} pid={game.Id} {line}{Environment.NewLine}");
             }
         }
-        var stdout = ReadLogAsync(game.StandardOutput);
-        var stderr = ReadLogAsync(game.StandardError);
-        await game.WaitForExitAsync();
-        await Task.WhenAll(stdout, stderr);
-        logGate.Dispose();
-        _preferences.Game = null;
-        JsonFiles.Write(_preferencesPath, _preferences);
-        GameRunning = false;
-        if (_options.GameSmoke && !smokePassed)
-            throw new InvalidOperationException("The game smoke scenario did not pass; inspect game.log.");
-        Report($"GAME_EXITED version={_build.Version} code={game.ExitCode}");
-        return game.ExitCode;
+        try
+        {
+            var stdout = ReadLogAsync(game.StandardOutput);
+            var stderr = ReadLogAsync(game.StandardError);
+            await game.WaitForExitAsync();
+            await Task.WhenAll(stdout, stderr);
+            if (_options.GameSmoke && !smokePassed)
+                throw new InvalidOperationException("The game smoke scenario did not pass; inspect game.log.");
+            return game.ExitCode;
+        }
+        catch (Exception error)
+        {
+            Report($"LAUNCHER_ERROR: {error.Message}");
+            return 1;
+        }
+        finally
+        {
+            // Keep the shared guard until every game has actually exited.
+            if (game.HasExited)
+            {
+                lock (_sync)
+                {
+                    _games.Remove(game.Id, out var identity);
+                    _preferences.Games.RemoveAll(session => session == identity);
+                    try { JsonFiles.Write(_preferencesPath, _preferences); }
+                    finally { ReleaseIdleGuard(); }
+                }
+                Report($"GAME_EXITED version={_build.Version} code={game.ExitCode}", running: GameRunning);
+                game.Dispose();
+            }
+        }
     }
 }

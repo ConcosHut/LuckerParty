@@ -42,6 +42,10 @@ internal sealed class SessionGuard : IDisposable
         // Access denied should block an update rather than assume the process is absent.
     }
 
+    public static List<GameSession> LiveGames(Preferences preferences) =>
+        preferences.Games.Concat(preferences.Game is { } oldGame ? new[] { oldGame } : Array.Empty<GameSession>())
+            .Distinct().Where(IsGameRunning).ToList();
+
     public static GameSession CaptureGame(Process process)
     {
         if (!OperatingSystem.IsLinux()) return new(process.Id, process.StartTime.ToUniversalTime().Ticks);

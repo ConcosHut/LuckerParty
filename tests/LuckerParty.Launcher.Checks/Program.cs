@@ -4,6 +4,16 @@ using System.Text;
 using LuckerParty.Launcher;
 using Velopack.Sources;
 
+// A real, bounded child process used by the controller integration checks.
+if (File.Exists(Path.Combine(AppContext.BaseDirectory, "game-fixture")))
+{
+    var exitFile = Path.Combine(AppContext.BaseDirectory, $"exit-{Environment.ProcessId}");
+    var deadline = DateTime.UtcNow.AddSeconds(30);
+    Console.WriteLine("FIXTURE_GAME_READY");
+    while (!File.Exists(exitFile) && DateTime.UtcNow < deadline) await Task.Delay(20);
+    return 0;
+}
+
 if (args.Length == 2 && args[0] == "--data-child")
 {
     Require(!Directory.Exists(args[1]), "Fresh configured data directory does not exist yet");
@@ -59,18 +69,80 @@ try
         catch (InvalidOperationException) { }
         var identity = JsonFiles.Read<GameSession>(Path.Combine(directory, "identity.json"))!;
         Require(SessionGuard.IsGameRunning(identity), "An orphaned running game still blocks updates");
+        using var self = Process.GetCurrentProcess();
+        var ownIdentity = SessionGuard.CaptureGame(self);
+        var multiple = new Preferences { Game = identity, Games = new() { identity, ownIdentity } };
+        Require(SessionGuard.LiveGames(multiple).Count == 2, "Legacy and multiple game identities are tracked without duplicates");
         Require(!SessionGuard.IsGameRunning(identity with { StartTicks = identity.StartTicks - 1 }), "PID reuse is not mistaken for an active game");
         File.WriteAllText(Path.Combine(directory, "exit"), "exit");
         await child.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(10));
         Require(!SessionGuard.IsGameRunning(identity), "Exited game permits the next update");
+        Require(SessionGuard.LiveGames(multiple).SequenceEqual(new[] { ownIdentity }), "Every surviving orphan still blocks updates after another child exits");
         using var recovered = new SessionGuard(directory);
         Console.WriteLine("CHECK_PASS: Cross-process guard releases after owner exit");
     }
     finally { if (!child.HasExited) child.Kill(); }
 
+    var installation = Path.Combine(directory, "fixture-install");
+    var gameDirectory = Path.Combine(installation, "game");
+    Directory.CreateDirectory(gameDirectory);
+    foreach (var source in Directory.EnumerateFiles(AppContext.BaseDirectory, "*", SearchOption.AllDirectories))
+    {
+        var destination = Path.Combine(gameDirectory, Path.GetRelativePath(AppContext.BaseDirectory, source));
+        Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+        File.Copy(source, destination);
+    }
+    File.WriteAllText(Path.Combine(gameDirectory, "game-fixture"), "fixture");
+    JsonFiles.Write(Path.Combine(installation, "distribution.json"), new Distribution { GameExecutable = Path.GetFileName(Environment.ProcessPath!) });
+    var multiData = Path.Combine(directory, "multiple-data");
+    var controller = new LauncherController(new LaunchOptions(), installation, multiData);
+    var checkedForUpdates = false;
+    controller.Changed += state =>
+    {
+        if (state.Message.StartsWith("Checking ") || state.Message.StartsWith("Unpackaged developer")) checkedForUpdates = true;
+    };
+    try
+    {
+        Require(!controller.AllowMultipleInstances, "Multiple instances are opt-in");
+        Require(await controller.RunAsync(playInstalled: true) == 0 && controller.RunningGames == 1 && !controller.Busy,
+            "Desktop launch returns while its game remains running");
+        Require(await controller.RunAsync() == 1 && controller.RunningGames == 1,
+            "Default setting refuses a second game");
+        controller.SetAllowMultipleInstances(true);
+        Require(new LauncherController(new LaunchOptions(), installation, multiData).AllowMultipleInstances,
+            "Multiple-instance setting survives launcher reload");
+        Require(await controller.RunAsync() == 0 && controller.RunningGames == 2 && !controller.Busy,
+            "Enabled setting starts a second independent game");
+        Require(!checkedForUpdates, "Additional Play launches skip update checking while another game runs");
+        Require(await controller.RunAsync(playInstalled: true) == 0 && controller.RunningGames == 3,
+            "Play installed version also supports an additional instance");
+        try { controller.SelectChannel("beta"); throw new Exception("Channel changed with active games."); }
+        catch (InvalidOperationException) { Console.WriteLine("CHECK_PASS: Channel changes remain deferred during multiple games"); }
+        controller.SetAllowMultipleInstances(false);
+        Require(await controller.RunAsync() == 1 && controller.RunningGames == 3,
+            "Disabling the setting stops new launches without closing existing games");
+        var identities = JsonFiles.Read<Preferences>(Path.Combine(multiData, "preferences.json"))!.Games;
+        Require(identities.Count == 3 && identities.All(SessionGuard.IsGameRunning), "All running process identities are persisted");
+        foreach (var game in identities.Take(2)) File.WriteAllText(Path.Combine(gameDirectory, $"exit-{game.Pid}"), "exit");
+        await WaitFor(() => controller.RunningGames == 1);
+        try { using var duplicate = new SessionGuard(multiData); throw new Exception("Guard released before the last game."); }
+        catch (InvalidOperationException) { Console.WriteLine("CHECK_PASS: Update guard remains held until the last instance closes"); }
+        File.WriteAllText(Path.Combine(gameDirectory, $"exit-{identities.Last().Pid}"), "exit");
+        await WaitFor(() => !controller.GameRunning);
+        using var released = new SessionGuard(multiData);
+        Require(JsonFiles.Read<Preferences>(Path.Combine(multiData, "preferences.json"))!.Games.Count == 0,
+            "Last exit clears all identities and releases update ownership");
+    }
+    finally
+    {
+        var identities = JsonFiles.Read<Preferences>(Path.Combine(multiData, "preferences.json"))?.Games ?? new();
+        foreach (var game in identities) File.WriteAllText(Path.Combine(gameDirectory, $"exit-{game.Pid}"), "exit");
+        await WaitFor(() => !controller.GameRunning);
+    }
+
     var releases = await new ExposedStableSource(new FixtureDownloader()).Read();
     Require(releases.Length == 1 && releases[0].Name == "stable-0.2.0", "Stable discovery survives a page full of beta releases");
-    Console.WriteLine("LAUNCHER_CHECK_PASS: session ownership, orphan/PID recovery, and stable discovery");
+    Console.WriteLine("LAUNCHER_CHECK_PASS: multiple instances, settings, session ownership, orphan/PID recovery, and stable discovery");
     return 0;
 }
 finally { Directory.Delete(directory, recursive: true); }
@@ -79,6 +151,16 @@ static void Require(bool value, string message)
 {
     if (!value) throw new Exception(message);
     Console.WriteLine("CHECK_PASS: " + message);
+}
+
+static async Task WaitFor(Func<bool> condition)
+{
+    var deadline = DateTime.UtcNow.AddSeconds(10);
+    while (!condition())
+    {
+        if (DateTime.UtcNow > deadline) throw new Exception("Game process lifecycle timed out.");
+        await Task.Delay(20);
+    }
 }
 
 sealed class ExposedStableSource(IFileDownloader downloader)

@@ -29,17 +29,24 @@ internal sealed class LauncherWindow : Window
     private readonly ComboBox _channel;
     private readonly Button _retry = new() { Content = "Retry", IsEnabled = false };
     private readonly Button _play = new() { Content = "Play installed version", IsEnabled = false };
+    private readonly CheckBox _multipleInstances;
+    private bool _restoringSetting;
 
     public LauncherWindow(LauncherController controller)
     {
         _controller = controller;
         Title = "Lucker Party";
         Width = 520;
-        Height = 390;
+        Height = 510;
         MinWidth = 460;
-        MinHeight = 340;
+        MinHeight = 460;
         _channel = new() { ItemsSource = new[] { "Stable", "Beta" }, SelectedIndex = controller.Channel == "beta" ? 1 : 0, Width = 140 };
-        Content = new StackPanel
+        _multipleInstances = new()
+        {
+            Content = "Allow multiple game instances",
+            IsChecked = controller.AllowMultipleInstances
+        };
+        var layout = new StackPanel
         {
             Margin = new Thickness(28), Spacing = 16,
             Children =
@@ -48,9 +55,27 @@ internal sealed class LauncherWindow : Window
                 new TextBlock { Text = $"Installed version: {controller.Version}" },
                 _channel, _status, _progress,
                 new ScrollViewer { MaxHeight = 65, Content = _notes },
-                new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12, Children = { _retry, _play } }
+                new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12, Children = { _retry, _play } },
+                new Expander
+                {
+                    Header = "Settings", IsExpanded = true,
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    Content = new StackPanel
+                    {
+                        Spacing = 8, Children =
+                        {
+                            _multipleInstances,
+                            new TextBlock
+                            {
+                                Text = "Play again to test multiplayer locally. Updates and channel changes wait until all game instances close.",
+                                TextWrapping = TextWrapping.Wrap
+                            }
+                        }
+                    }
+                }
             }
         };
+        Content = new ScrollViewer { Content = layout };
         controller.Changed += state => Dispatcher.UIThread.Post(() =>
         {
             const string errorPrefix = "LAUNCHER_ERROR: ";
@@ -58,13 +83,31 @@ internal sealed class LauncherWindow : Window
                 ? state.Message[errorPrefix.Length..] : state.Message;
             if (state.Message.StartsWith("GAME_EXITED", StringComparison.Ordinal) && state.Message.EndsWith("code=0", StringComparison.Ordinal))
                 _status.Text = "Game closed. Choose a channel or play again.";
-            if (state.Running) _status.Text = "Game is running.";
+            if (state.Running) _status.Text = controller.RunningGames == 1
+                ? "1 game instance is running." : $"{controller.RunningGames} game instances are running.";
             _progress.Value = state.Progress;
             _notes.Text = state.Notes;
-            if (state.Running) WindowState = WindowState.Minimized;
+            if (state.Message.StartsWith("GAME_STARTED", StringComparison.Ordinal) && controller.GameRunning && !controller.AllowMultipleInstances)
+                WindowState = WindowState.Minimized;
+            if (state.Message.StartsWith("GAME_EXITED", StringComparison.Ordinal) && !controller.GameRunning)
+            { WindowState = WindowState.Normal; Show(); }
+            RefreshControls();
         });
         _retry.Click += async (_, _) => await LaunchAsync();
         _play.Click += async (_, _) => await LaunchAsync(playInstalled: true);
+        _multipleInstances.IsCheckedChanged += (_, _) =>
+        {
+            if (_restoringSetting) return;
+            try { controller.SetAllowMultipleInstances(_multipleInstances.IsChecked == true); }
+            catch (Exception error)
+            {
+                _status.Text = error.Message;
+                _restoringSetting = true;
+                _multipleInstances.SetCurrentValue(CheckBox.IsCheckedProperty, controller.AllowMultipleInstances);
+                _restoringSetting = false;
+            }
+            RefreshControls();
+        };
         _channel.SelectionChanged += async (_, _) =>
         {
             if (!IsVisible || controller.Busy) return;
@@ -74,7 +117,7 @@ internal sealed class LauncherWindow : Window
         Opened += async (_, _) => await LaunchAsync();
         Closing += (_, args) =>
         {
-            if (controller.Busy)
+            if (controller.Busy || controller.GameRunning)
             {
                 args.Cancel = true;
                 if (controller.GameRunning) Hide();
@@ -84,17 +127,28 @@ internal sealed class LauncherWindow : Window
 
     private async Task LaunchAsync(bool playInstalled = false)
     {
-        _retry.IsEnabled = _play.IsEnabled = _channel.IsEnabled = false;
-        var result = await _controller.RunAsync(playInstalled);
+        var launch = _controller.RunAsync(playInstalled);
+        RefreshControls();
+        var result = await launch;
         if (result == 0 && _controller.CheckOnly) { Close(); return; }
         if (result == 0)
         {
-            _status.Text = "Game closed. Choose a channel or play again.";
+            if (!_controller.GameRunning) _status.Text = "Game closed. Choose a channel or play again.";
             _retry.Content = "Play";
         }
         else _retry.Content = "Retry";
-        WindowState = WindowState.Normal;
-        Show();
-        _retry.IsEnabled = _play.IsEnabled = _channel.IsEnabled = true;
+        if (!_controller.GameRunning || _controller.AllowMultipleInstances)
+        { WindowState = WindowState.Normal; Show(); }
+        RefreshControls();
+    }
+
+    private void RefreshControls()
+    {
+        var canPlay = !_controller.Busy && (!_controller.GameRunning || _controller.AllowMultipleInstances);
+        _retry.IsEnabled = _play.IsEnabled = canPlay;
+        _channel.IsEnabled = !_controller.Busy && !_controller.GameRunning;
+        _multipleInstances.IsEnabled = !_controller.Busy;
+        if (_controller.GameRunning && _controller.AllowMultipleInstances) _retry.Content = "Play another instance";
+        else if (Equals(_retry.Content, "Play another instance")) _retry.Content = "Play";
     }
 }

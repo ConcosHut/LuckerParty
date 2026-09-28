@@ -80,6 +80,10 @@ def invoke(*extra, expected=0, version=None):
 
 try:
     invoke('--no-update','--game-smoke',version=args.initial_version)
+    preferences_path = data / 'preferences.json'
+    preferences = json.loads(preferences_path.read_text(encoding='utf-8'))
+    preferences['allowMultipleInstances'] = True
+    preferences_path.write_text(json.dumps(preferences),encoding='utf-8')
     sentinel = data / 'saved-sentinel.txt'
     sentinel.write_text('preserve-me')
     invoke('--feed','http://127.0.0.1:1','--check-only',expected=1)
@@ -95,8 +99,8 @@ try:
     invoke('--feed',url,'--channel','beta','--game-smoke',version=args.beta_version)
     invoke('--feed',url,'--channel','stable','--game-smoke',version=args.stable_version)
     preferences = json.loads((data/'preferences.json').read_text(encoding='utf-8'))
-    if preferences['channel'] != 'stable' or sentinel.read_text() != 'preserve-me': raise RuntimeError('Preferences/saved data changed')
-    if preferences.get('pendingLaunch') is not None or preferences.get('game') is not None: raise RuntimeError('Session intent was not consumed')
+    if preferences['channel'] != 'stable' or not preferences.get('allowMultipleInstances') or sentinel.read_text() != 'preserve-me': raise RuntimeError('Preferences/saved data changed')
+    if preferences.get('pendingLaunch') is not None or preferences.get('game') is not None or preferences.get('games'): raise RuntimeError('Session intent was not consumed')
     print('INSTALLED_UPDATE_CHECK_PASS: install, offline, interrupted/corrupt download, HTTP A->B, Stable->Beta->older Stable, one launch and retained settings',flush=True)
 finally:
     server.shutdown()

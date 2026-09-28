@@ -62,6 +62,9 @@ internal sealed record GameSession(int Pid, long StartTicks, string? BootId = nu
 internal sealed record Preferences
 {
     public string Channel { get; set; } = "stable";
+    public bool AllowMultipleInstances { get; set; }
+    public List<GameSession> Games { get; set; } = new();
+    // Retained to read preferences written by the original single-game launcher.
     public GameSession? Game { get; set; }
     public LaunchOptions? PendingLaunch { get; set; }
     public string? PendingVersion { get; set; }
