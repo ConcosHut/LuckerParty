@@ -32,7 +32,7 @@ if __name__ == '__main__':
     executable = next(editor.glob('**/*mono_win64_console.exe' if os.name == 'nt' else '**/*mono_linux.x86_64'))
     if os.name != 'nt': executable.chmod(0o755)
     data = Path(os.environ['APPDATA']) if os.name == 'nt' else Path(os.environ.get('XDG_DATA_HOME', str(Path.home()/'.local/share')))
-    templates = data / 'Godot/export_templates/4.5.2.stable.mono'
+    templates = data / ('Godot' if os.name == 'nt' else 'godot') / 'export_templates/4.5.2.stable.mono'
     templates.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(download('export_templates.tpz')) as archive:
         for item in archive.infolist():

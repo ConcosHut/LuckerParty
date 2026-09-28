@@ -98,15 +98,17 @@ def tool_path(name, explicit, local_candidates):
 
 def run(command, environment, timeout=180, inspect=False):
     print("Running:", subprocess.list2cmdline([str(item) for item in command]), flush=True)
-    result = subprocess.run(command, cwd=ROOT, env=environment, check=True, timeout=timeout,
+    result = subprocess.run(command, cwd=ROOT, env=environment, check=False, timeout=timeout,
                             capture_output=inspect, text=True)
     if inspect:
         output = result.stdout + result.stderr
         print(output, end="", flush=True)
+        result.check_returncode()
         # Godot can return zero even when its .NET exporter logs an error.
         if "ERROR:" in output or "Build FAILED." in output:
             raise RuntimeError("Godot logged an error; refusing to accept this run")
         return output
+    result.check_returncode()
 
 
 def main():
