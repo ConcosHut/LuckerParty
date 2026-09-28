@@ -179,6 +179,7 @@ def main():
                      environment, timeout=60, inspect=True)
         if "CAMERA_CHECK_PASS:" not in output:
             raise RuntimeError("Camera interpolation scenario did not report completion")
+        run([sys.executable, str(ROOT / "tools/test_launcher_control.py"), *base, "--headless", "--", "--launcher-control"], environment, timeout=60)
         run([dotnet, "run", "--project", str(ROOT / "tests/LuckerParty.Launcher.Checks")], environment, timeout=60)
         run([dotnet, "run", "--project", str(ROOT / "tests/LuckerParty.Core.Checks")], environment, timeout=60)
         run([sys.executable, str(ROOT / "tools/test_multiplayer.py"), "--godot", godot], environment, timeout=180)

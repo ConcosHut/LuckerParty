@@ -9,4 +9,7 @@ are included alongside this file under `licenses/` in launcher packages.
 - Avalonia: MIT, https://github.com/AvaloniaUI/Avalonia/blob/master/licence.md
 - Skia/SkiaSharp: BSD/MIT and dependency notices, https://github.com/mono/SkiaSharp
 
+- Lilita One: SIL OFL 1.1, https://github.com/google/fonts/tree/main/ofl/lilitaone
+- Nunito Sans (static instances): SIL OFL 1.1, https://github.com/google/fonts/tree/main/ofl/nunitosans
+
 Godot and self-contained .NET exports also include their runtime license files.

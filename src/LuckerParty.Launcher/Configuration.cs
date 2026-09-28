@@ -10,6 +10,7 @@ internal sealed record LaunchOptions
     public bool CheckOnly { get; init; }
     public bool GameSmoke { get; init; }
     public bool Resume { get; init; }
+    public bool PrepareOnly { get; init; }
     public string? Feed { get; init; }
     public string? Channel { get; init; }
 
@@ -25,6 +26,7 @@ internal sealed record LaunchOptions
                 "--check-only" => result with { CheckOnly = true },
                 "--game-smoke" => result with { GameSmoke = true },
                 "--resume" => result with { Resume = true },
+                "--prepare-only" => result with { PrepareOnly = true },
                 "--feed" when i + 1 < args.Length => result with { Feed = args[++i] },
                 "--channel" when i + 1 < args.Length => result with { Channel = ValidateChannel(args[++i]) },
                 _ => throw new ArgumentException($"Unknown or incomplete launcher argument: {args[i]}")

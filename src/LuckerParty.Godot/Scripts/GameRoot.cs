@@ -18,6 +18,7 @@ public partial class GameRoot : Node
     public override void _Ready()
     {
         var args = OS.GetCmdlineUserArgs();
+        if (args.Contains("--launcher-control")) AddChild(new LauncherControl { Name = "LauncherControl" });
         _automationMode = args.Contains("--control-file") || args.Contains("--probe-file") || args.Contains("--server");
         Session = new MultiplayerSession { Name = "Network", OwnerRoot = this };
         AddChild(Session);

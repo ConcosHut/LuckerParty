@@ -9,6 +9,7 @@ from pathlib import Path
 import shutil
 import socket
 import subprocess
+import sys
 import threading
 import time
 
@@ -57,14 +58,24 @@ server = http.server.ThreadingHTTPServer(('127.0.0.1',0),functools.partial(Handl
 threading.Thread(target=server.serve_forever,daemon=True).start()
 url = f'http://127.0.0.1:{server.server_port}'
 
-def invoke(*extra, expected=0, version=None):
+def invoke(*extra, expected=0, version=None, ready_version=None):
     log = data / 'launcher.log'
     offset = len(log.read_text(encoding='utf-8')) if log.exists() else 0
     game_log = data / 'game.log'
     game_offset = len(game_log.read_text(encoding='utf-8')) if game_log.exists() else 0
     result = subprocess.run([str(executable),'--headless',*extra],capture_output=True,text=True,errors='replace',timeout=120)
     if result.returncode != expected: raise RuntimeError(f'Unexpected exit {result.returncode}: {result.stdout} {result.stderr}')
-    if version:
+    if ready_version:
+        end = time.monotonic()+90
+        while time.monotonic() < end:
+            text = log.read_text(encoding='utf-8')[offset:] if log.exists() else ''
+            if f'LAUNCHER_READY version={ready_version} ' in text:
+                if 'GAME_STARTED' in text: raise RuntimeError('Startup preparation launched a game')
+                print(text.strip(),flush=True)
+                return
+            time.sleep(.25)
+        raise RuntimeError('Updated launcher failed to become ready: '+text)
+    elif version:
         end = time.monotonic()+90
         while time.monotonic() < end:
             text = log.read_text(encoding='utf-8')[offset:] if log.exists() else ''
@@ -80,6 +91,11 @@ def invoke(*extra, expected=0, version=None):
 
 try:
     invoke('--no-update','--game-smoke',version=args.initial_version)
+    if windows:
+        # The exported Windows GUI executable must also expose its redirected pipe.
+        subprocess.run([sys.executable, str(Path(__file__).with_name('test_launcher_control.py')),
+                        str(args.install_dir.resolve() / 'current/game/LuckerParty.exe'),
+                        '--headless', '--', '--launcher-control'], check=True, timeout=45)
     preferences_path = data / 'preferences.json'
     preferences = json.loads(preferences_path.read_text(encoding='utf-8'))
     preferences['allowMultipleInstances'] = True
@@ -95,7 +111,8 @@ try:
     invoke('--feed',url,'--check-only',expected=1)
     invoke('--no-update','--game-smoke',version=args.initial_version)
     Handler.mode = 'normal'
-    invoke('--feed',url,'--channel','stable','--game-smoke',version=args.stable_version)
+    invoke('--feed',url,'--channel','stable','--prepare-only',ready_version=args.stable_version)
+    invoke('--no-update','--game-smoke',version=args.stable_version)
     invoke('--feed',url,'--channel','beta','--game-smoke',version=args.beta_version)
     invoke('--feed',url,'--channel','stable','--game-smoke',version=args.stable_version)
     preferences = json.loads((data/'preferences.json').read_text(encoding='utf-8'))

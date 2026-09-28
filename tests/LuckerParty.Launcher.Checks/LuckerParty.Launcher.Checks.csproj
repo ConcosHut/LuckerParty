@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Avalonia.Headless" Version="11.3.22" />
     <ProjectReference Include="../../src/LuckerParty.Launcher/LuckerParty.Launcher.csproj" />
   </ItemGroup>
 </Project>

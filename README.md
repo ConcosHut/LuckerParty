@@ -9,7 +9,7 @@ come later.
 
 Download the Windows Stable installer or Linux Stable AppImage from
 [GitHub Releases](https://github.com/ConcosHut/LuckerParty/releases/latest).
-The launcher updates automatically before starting the game. Choose Beta for
+The launcher updates automatically on opening, then waits for Play. Choose Beta for
 development updates; return to Stable at any time. Offline play, installation,
 release promotion, and recovery are covered in [the release runbook](docs/releases.md).
 

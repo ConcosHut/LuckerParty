@@ -4,7 +4,19 @@ using Velopack.Sources;
 
 namespace LuckerParty.Launcher;
 
-internal sealed record LauncherState(string Message, int Progress = 0, bool Running = false, string Notes = "");
+internal enum LauncherActivity { Ready, Checking, Downloading, Applying, Error }
+internal sealed record LauncherState(string Message, int Progress = 0, bool Running = false, string Notes = "",
+    LauncherActivity Activity = LauncherActivity.Ready);
+internal sealed record GameInstance(GameSession Identity, int Number, DateTime StartedAt, bool Closing, bool CloseFailed);
+internal sealed class OwnedGame(Process process, GameSession identity, int number)
+{
+    public Process Process { get; } = process;
+    public GameSession Identity { get; } = identity;
+    public int Number { get; } = number;
+    public DateTime StartedAt { get; } = DateTime.UtcNow;
+    public bool Closing { get; set; }
+    public bool CloseFailed { get; set; }
+}
 
 internal sealed class LauncherController
 {
@@ -17,12 +29,20 @@ internal sealed class LauncherController
     private readonly BuildInfo _build;
     private readonly object _sync = new();
     private readonly object _logSync = new();
-    private readonly Dictionary<int, GameSession> _games = new();
+    private readonly Dictionary<int, OwnedGame> _games = new();
     private SessionGuard? _guard;
+    private int _nextInstance;
     public event Action<LauncherState>? Changed;
     public bool Busy { get; private set; }
     public int RunningGames { get { lock (_sync) return _games.Count; } }
     public bool GameRunning => RunningGames > 0;
+    public GameInstance[] Instances
+    {
+        get { lock (_sync) return _games.Values.OrderBy(game => game.Number)
+            .Select(game => new GameInstance(game.Identity, game.Number, game.StartedAt, game.Closing, game.CloseFailed)).ToArray(); }
+    }
+    public LauncherActivity Activity { get; private set; } = LauncherActivity.Ready;
+    public string UpdateStatus { get; private set; } = "Getting ready";
     public bool AllowMultipleInstances { get { lock (_sync) return _preferences.AllowMultipleInstances; } }
     public bool CheckOnly => _options.CheckOnly;
     public string Channel => _options.Channel ?? _preferences.Channel;
@@ -63,22 +83,24 @@ internal sealed class LauncherController
         }
     }
 
-    private void Report(string message, int progress = 0, bool running = false, string notes = "")
+    private void Report(string message, int progress = 0, bool running = false, string notes = "", LauncherActivity? activity = null)
     {
+        if (activity is { } next) Activity = next;
         lock (_logSync)
         {
             Directory.CreateDirectory(_dataDirectory);
             File.AppendAllText(Path.Combine(_dataDirectory, "launcher.log"), $"{DateTime.UtcNow:O} {message}{Environment.NewLine}");
         }
-        Changed?.Invoke(new(message, progress, running, notes));
+        Changed?.Invoke(new(message, progress, running, notes, Activity));
     }
 
-    public async Task<int> RunAsync(bool playInstalled = false)
+    public async Task<int> RunAsync(bool playInstalled = false, bool prepareOnly = false)
     {
         lock (_sync)
         {
             if (Busy) return 3;
             Busy = true;
+            if (!_options.Headless) _options = _options with { PrepareOnly = prepareOnly };
         }
         try
         {
@@ -89,10 +111,10 @@ internal sealed class LauncherController
                 // Reload after acquiring ownership; another invocation may have saved state.
                 _preferences = JsonFiles.Read<Preferences>(_preferencesPath) ?? _preferences;
                 var liveGames = SessionGuard.LiveGames(_preferences);
-                if (liveGames.Count > 0)
+                if (liveGames.Count > 0 || _games.Count > 0)
                 {
-                    if (_options.CheckOnly || !_preferences.AllowMultipleInstances
-                        || liveGames.Any(game => !_games.Values.Contains(game)))
+                    if (_options.CheckOnly || prepareOnly || _options.PrepareOnly || !_preferences.AllowMultipleInstances
+                        || liveGames.Any(game => !_games.Values.Any(owned => owned.Identity == game)))
                         throw new InvalidOperationException("The game is already running. Close all instances before updating, or enable multiple instances in their launcher to play again.");
                     skipUpdate = true;
                     playInstalled = true; // Never replace files used by any live instance.
@@ -109,6 +131,7 @@ internal sealed class LauncherController
                         throw new InvalidOperationException("Update restart did not reach the requested version. Retry or play the installed build.");
                     _options = _preferences.PendingLaunch with { Resume = false };
                     skipUpdate = true; // Skip once, then check again on subsequent Play clicks.
+                    UpdateStatus = "Up to date";
                     _preferences.PendingLaunch = null;
                     _preferences.PendingVersion = null;
                 }
@@ -129,37 +152,47 @@ internal sealed class LauncherController
                 });
                 if (manager.IsInstalled)
                 {
-                    Report($"Checking {Channel} updates…");
+                    UpdateStatus = "Checking for updates";
+                    Report($"Checking {Channel} updates…", activity: LauncherActivity.Checking);
                     var update = await manager.CheckForUpdatesAsync().WaitAsync(TimeSpan.FromSeconds(30));
                     if (update is not null)
                     {
                         var target = update.TargetFullRelease;
-                        Report($"Downloading {target.Version}…", notes: target.NotesMarkdown ?? "");
+                        UpdateStatus = "Downloading update";
+                        Report($"Downloading {target.Version}…", notes: target.NotesMarkdown ?? "", activity: LauncherActivity.Downloading);
                         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(10));
                         await manager.DownloadUpdatesAsync(update, progress =>
-                            Changed?.Invoke(new($"Downloading {target.Version}…", progress, Notes: target.NotesMarkdown ?? "")), timeout.Token);
-                        _preferences.PendingLaunch = _options with { Channel = Channel, Resume = false };
-                        _preferences.PendingVersion = target.Version.ToString();
-                        JsonFiles.Write(_preferencesPath, _preferences);
-                        Report($"Applying {target.Version}; launcher will restart.");
+                            Changed?.Invoke(new($"Downloading {target.Version}…", progress, Notes: target.NotesMarkdown ?? "", Activity: LauncherActivity.Downloading)), timeout.Token);
+                        lock (_sync)
+                        {
+                            _preferences.PendingLaunch = _options with { Channel = Channel, Resume = false, PrepareOnly = prepareOnly || _options.PrepareOnly };
+                            _preferences.PendingVersion = target.Version.ToString();
+                            JsonFiles.Write(_preferencesPath, _preferences);
+                        }
+                        UpdateStatus = "Applying update";
+                        Report($"Applying {target.Version}; launcher will restart.", activity: LauncherActivity.Applying);
                         // Only this guarded launcher is active; no game has started yet.
                         manager.ApplyUpdatesAndRestart(target, ["--resume", .. (_options.Headless ? new[] { "--headless" } : [])]);
                         return 0;
                     }
                     if (transition) throw new InvalidOperationException($"No build is available for {Channel}.");
+                    UpdateStatus = "Up to date";
                 }
-                else Report("Unpackaged developer launch; installation updates are unavailable.");
+                else { UpdateStatus = "Developer build"; Report("Unpackaged developer launch; installation updates are unavailable."); }
             }
-            if (_options.CheckOnly)
+            else if (!GameRunning && (playInstalled || _options.NoUpdate)) UpdateStatus = "Installed version";
+            if (_options.CheckOnly || prepareOnly || _options.PrepareOnly)
             {
-                Report($"LAUNCHER_READY version={_build.Version} channel={_distribution.Channel}");
+                Report($"LAUNCHER_READY version={_build.Version} channel={_distribution.Channel}", activity: LauncherActivity.Ready);
                 return 0;
             }
+            Activity = LauncherActivity.Ready;
             return await StartGameAsync();
         }
         catch (Exception error)
         {
-            Report($"LAUNCHER_ERROR: {error.Message}");
+            UpdateStatus = "Update or launch needs attention";
+            Report($"LAUNCHER_ERROR: {error.Message}", activity: LauncherActivity.Error);
             return 1;
         }
         finally
@@ -197,13 +230,15 @@ internal sealed class LauncherController
         var start = new ProcessStartInfo(executable)
         {
             WorkingDirectory = gameDirectory, UseShellExecute = false,
-            RedirectStandardOutput = true, RedirectStandardError = true
+            RedirectStandardOutput = true, RedirectStandardError = true, RedirectStandardInput = true
         };
         if (_options.GameSmoke)
         {
             foreach (var argument in new[] { "--headless", "--fixed-fps", "60", "--", "--smoke-test" })
                 start.ArgumentList.Add(argument);
         }
+        else start.ArgumentList.Add("--");
+        start.ArgumentList.Add("--launcher-control");
         var game = Process.Start(start) ?? throw new InvalidOperationException("Could not start the game.");
         try
         {
@@ -212,7 +247,7 @@ internal sealed class LauncherController
             {
                 _preferences.Games.Add(identity);
                 JsonFiles.Write(_preferencesPath, _preferences);
-                _games.Add(game.Id, identity);
+                _games.Add(game.Id, new OwnedGame(game, identity, ++_nextInstance));
             }
         }
         catch
@@ -266,14 +301,54 @@ internal sealed class LauncherController
             {
                 lock (_sync)
                 {
-                    _games.Remove(game.Id, out var identity);
-                    _preferences.Games.RemoveAll(session => session == identity);
+                    _games.Remove(game.Id, out var owned);
+                    _preferences.Games.RemoveAll(session => session == owned?.Identity);
                     try { JsonFiles.Write(_preferencesPath, _preferences); }
                     finally { ReleaseIdleGuard(); }
                 }
                 Report($"GAME_EXITED version={_build.Version} code={game.ExitCode}", running: GameRunning);
                 game.Dispose();
             }
+        }
+    }
+
+    public Task<bool> ShowInstanceAsync(GameSession identity) => SendCommandAsync(identity, "show");
+
+    private async Task<bool> SendCommandAsync(GameSession identity, string command)
+    {
+        OwnedGame? owned;
+        lock (_sync) _games.TryGetValue(identity.Pid, out owned);
+        if (owned is null || owned.Identity != identity || !SessionGuard.IsGameRunning(identity)) return false;
+        try
+        {
+            await owned.Process.StandardInput.WriteLineAsync(command);
+            await owned.Process.StandardInput.FlushAsync();
+            return true;
+        }
+        catch (Exception error) when (error is IOException or InvalidOperationException or ObjectDisposedException)
+        { return false; }
+    }
+
+    public async Task CloseInstanceAsync(GameSession identity, bool force = false)
+    {
+        OwnedGame? owned;
+        lock (_sync)
+        {
+            if (!_games.TryGetValue(identity.Pid, out owned) || owned.Identity != identity || owned.Closing) return;
+            owned.Closing = true; owned.CloseFailed = false;
+        }
+        Report($"INSTANCE_CLOSING: number={owned.Number}", running: GameRunning);
+        try
+        {
+            if (!SessionGuard.IsGameRunning(identity)) return;
+            if (force) owned.Process.Kill(entireProcessTree: true);
+            else if (!await SendCommandAsync(identity, "close")) throw new IOException("The game did not receive the close request.");
+            await owned.Process.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(8));
+        }
+        catch (Exception error) when (error is TimeoutException or IOException or InvalidOperationException)
+        {
+            lock (_sync) { owned.Closing = false; owned.CloseFailed = true; }
+            Report("This game did not close. Retry, or use Force close on its card.", running: GameRunning);
         }
     }
 }

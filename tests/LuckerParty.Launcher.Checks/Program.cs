@@ -10,7 +10,16 @@ if (File.Exists(Path.Combine(AppContext.BaseDirectory, "game-fixture")))
     var exitFile = Path.Combine(AppContext.BaseDirectory, $"exit-{Environment.ProcessId}");
     var deadline = DateTime.UtcNow.AddSeconds(30);
     Console.WriteLine("FIXTURE_GAME_READY");
-    while (!File.Exists(exitFile) && DateTime.UtcNow < deadline) await Task.Delay(20);
+    var closeRequested = false;
+    _ = Task.Run(async () =>
+    {
+        while (await Console.In.ReadLineAsync() is { } command)
+        {
+            if (command == "close" && !File.Exists(Path.Combine(AppContext.BaseDirectory, $"ignore-close-{Environment.ProcessId}"))) closeRequested = true;
+            if (command == "show") File.WriteAllText(Path.Combine(AppContext.BaseDirectory, $"show-{Environment.ProcessId}"), "show");
+        }
+    });
+    while (!closeRequested && !File.Exists(exitFile) && DateTime.UtcNow < deadline) await Task.Delay(20);
     return 0;
 }
 
@@ -104,6 +113,10 @@ try
     try
     {
         Require(!controller.AllowMultipleInstances, "Multiple instances are opt-in");
+        var preparation = new LauncherController(new LaunchOptions { NoUpdate = true }, installation, multiData);
+        Require(await preparation.RunAsync(prepareOnly: true) == 0 && !preparation.GameRunning,
+            "Startup preparation leaves Play ready without starting a game");
+        checkedForUpdates = false;
         Require(await controller.RunAsync(playInstalled: true) == 0 && controller.RunningGames == 1 && !controller.Busy,
             "Desktop launch returns while its game remains running");
         Require(await controller.RunAsync() == 1 && controller.RunningGames == 1,
@@ -116,6 +129,11 @@ try
         Require(!checkedForUpdates, "Additional Play launches skip update checking while another game runs");
         Require(await controller.RunAsync(playInstalled: true) == 0 && controller.RunningGames == 3,
             "Play installed version also supports an additional instance");
+        var firstInstance = controller.Instances.First();
+        Require(await controller.ShowInstanceAsync(firstInstance.Identity), "Show targets a single owned game through its private pipe");
+        await WaitFor(() => File.Exists(Path.Combine(gameDirectory, $"show-{firstInstance.Identity.Pid}")));
+        Require(!await controller.ShowInstanceAsync(firstInstance.Identity with { StartTicks = firstInstance.Identity.StartTicks - 1 }),
+            "Instance actions reject a mismatched process identity");
         try { controller.SelectChannel("beta"); throw new Exception("Channel changed with active games."); }
         catch (InvalidOperationException) { Console.WriteLine("CHECK_PASS: Channel changes remain deferred during multiple games"); }
         controller.SetAllowMultipleInstances(false);
@@ -123,11 +141,15 @@ try
             "Disabling the setting stops new launches without closing existing games");
         var identities = JsonFiles.Read<Preferences>(Path.Combine(multiData, "preferences.json"))!.Games;
         Require(identities.Count == 3 && identities.All(SessionGuard.IsGameRunning), "All running process identities are persisted");
-        foreach (var game in identities.Take(2)) File.WriteAllText(Path.Combine(gameDirectory, $"exit-{game.Pid}"), "exit");
+        foreach (var game in identities.Take(2)) await controller.CloseInstanceAsync(game);
         await WaitFor(() => controller.RunningGames == 1);
         try { using var duplicate = new SessionGuard(multiData); throw new Exception("Guard released before the last game."); }
         catch (InvalidOperationException) { Console.WriteLine("CHECK_PASS: Update guard remains held until the last instance closes"); }
-        File.WriteAllText(Path.Combine(gameDirectory, $"exit-{identities.Last().Pid}"), "exit");
+        File.WriteAllText(Path.Combine(gameDirectory, $"ignore-close-{identities.Last().Pid}"), "ignore");
+        await controller.CloseInstanceAsync(identities.Last());
+        Require(controller.RunningGames == 1 && controller.Instances.Single().CloseFailed,
+            "Failed graceful close keeps the live game tracked and exposes explicit force close");
+        await controller.CloseInstanceAsync(identities.Last(), force: true);
         await WaitFor(() => !controller.GameRunning);
         using var released = new SessionGuard(multiData);
         Require(JsonFiles.Read<Preferences>(Path.Combine(multiData, "preferences.json"))!.Games.Count == 0,
@@ -139,6 +161,8 @@ try
         foreach (var game in identities) File.WriteAllText(Path.Combine(gameDirectory, $"exit-{game.Pid}"), "exit");
         await WaitFor(() => !controller.GameRunning);
     }
+
+    await LauncherUiChecks.Run(installation, Path.Combine(directory, "ui-data"));
 
     var releases = await new ExposedStableSource(new FixtureDownloader()).Read();
     Require(releases.Length == 1 && releases[0].Name == "stable-0.2.0", "Stable discovery survives a page full of beta releases");

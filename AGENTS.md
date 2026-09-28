@@ -56,7 +56,8 @@ Use `python tools/dev.py pack --target windows` for isolated Dev packages and
 matching OS. Build commands own a workspace lock; export platforms sequentially.
 Keep update SDK startup auto-apply disabled, hold the launcher session guard until
 all game instances exit, and keep preferences/logs outside replaced install files.
-The launcher settings opt-in permits additional Play launches of the installed
+The Party Room launcher prepares updates on startup without launching a game.
+Its settings opt-in reveals a sidebar with targeted Show/Close and permits additional Play launches of the installed
 build while games run; updates and channel changes still require every child to exit.
 GitHub Actions verifies both platforms and publishes them together in a draft
 before exposing it. Never overwrite a published version; advance version.json.

@@ -11,23 +11,27 @@ Older "Prototype 01.1" labels describe the movement milestone, not a release
 version. The multiplayer sandbox is available through Beta.
 Runs from the Godot editor show "DEVELOPMENT" instead of an installed version.
 
-The launcher checks for updates and starts the game automatically. If checking
-or downloading fails, select **Retry** or **Play installed version**. Select
-**Beta** to receive development builds; select **Stable** to return to the
-current stable build, even when it is older. Close the game to return to the
-launcher and change channels; selecting one checks it and starts the next
-session. The launcher stays alive while the
-game runs; closing its window during play hides it. Another invocation defers
-updates until that session exits. A launcher crash also leaves a recorded child
-process identity that blocks replacement while that child is still alive.
+The launcher automatically checks and installs updates on opening, then waits
+for **Play**. The Play button also checks before starting a game. If checking
+or downloading fails, choose **Retry update** or use the Play button's chevron
+for **Play installed version**. Select **Beta** to receive development builds;
+select **Stable** to return to the current stable build, even when it is older.
+Changing channels prepares that version without starting the game. Close all
+games before changing channels. The installed version is shown once in the footer.
+
+The launcher stays alive while games run; closing its window during play
+minimizes it so it can be restored from the taskbar. Another invocation defers
+updates until that session exits. A launcher crash also leaves recorded child
+process identities that block replacement while those children remain alive.
 Windows uses process creation time; Linux uses kernel start ticks and boot ID.
 
-For local multiplayer testing, open the launcher's **Settings** section and enable
-**Allow multiple game instances**. Restore the launcher while your first game is
-running, enable the setting, then use **Play another instance** or **Play installed
-version**. Both start another copy of the installed build. The launcher stays
-visible for subsequent launches when this setting is enabled. Host in one game
-and join `127.0.0.1` with the same UDP port in the others.
+For local multiplayer testing, open **Settings** and enable **Allow multiple
+game instances**. This reveals the running-instances sidebar. **Play** opens
+additional copies of the installed build while games run; each card offers
+**Show** and **Close** for that game. Host in one game and join `127.0.0.1` with
+the same UDP port in the others. **Force close** is offered only after a normal
+close fails. See [Party Room launcher](launcher-party-room.md) for design and
+verification details.
 
 The setting defaults to off and persists across restarts and updates. Turning it
 off prevents additional launches without closing existing games. Updates and
@@ -64,7 +68,8 @@ remove the separate data directory explicitly only when resetting preferences
 or deleting saved data is intended. There is no actual game save system yet.
 A future save format migration must define downgrade behavior separately.
 
-For offline troubleshooting, `--no-update` starts the installed game directly.
+For offline troubleshooting, `--headless --no-update` starts the installed game directly.
+`--headless --prepare-only` updates and reports readiness without starting a game.
 `--headless --no-update --game-smoke` runs the bounded gameplay scenario through
 the launcher; `--headless --check-only` updates and reports version without
 starting a game. Update restart intent is stored once and consumed by the new

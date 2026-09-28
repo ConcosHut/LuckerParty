@@ -15,10 +15,15 @@ a=p.parse_args()
 if (a.target=='windows') != (os.name=='nt'):p.error('Run installation tests on the matching OS (or use the Windows SSH workflow).')
 base = ROOT/'artifacts/update-checks'/str(time.time_ns())
 feed = base/'feed'
-for version,channel in [('0.0.1','stable'),('0.0.2','stable'),('0.1.0-beta.1','beta')]:
+# Unique versions keep an earlier valid cache from bypassing failure scenarios.
+stamp = int(time.time())
+day, iteration = stamp // 86400, (stamp % 86400) // 2
+# Each component also fits the .NET assembly version's 16-bit fields.
+initial_version, stable_version, beta_version = f'0.{day}.{iteration}', f'0.{day}.{iteration+1}', f'0.{day+1}.{iteration}-beta.1'
+for version,channel in [(initial_version,'stable'),(stable_version,'stable'),(beta_version,'beta')]:
     subprocess.run([sys.executable,str(ROOT/'tools/dev.py'),'pack','--target',a.target,'--version',version,'--channel',channel,'--feed',str(feed),'--output-dir',str(feed)],check=True)
-    if version=='0.0.1':
+    if version==initial_version:
         source=next(feed.glob('*Setup.exe' if os.name=='nt' else '*.AppImage'))
         initial=base/source.name
         shutil.copy2(source,initial)
-subprocess.run([sys.executable,str(ROOT/'tools/test_launcher_updates.py'),'--feed',str(feed),'--initial',str(initial),'--initial-version','0.0.1','--stable-version','0.0.2','--beta-version','0.1.0-beta.1','--install-dir',str(base/'installed with spaces')],check=True)
+subprocess.run([sys.executable,str(ROOT/'tools/test_launcher_updates.py'),'--feed',str(feed),'--initial',str(initial),'--initial-version',initial_version,'--stable-version',stable_version,'--beta-version',beta_version,'--install-dir',str(base/'installed with spaces')],check=True)
