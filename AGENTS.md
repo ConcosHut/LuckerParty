@@ -6,8 +6,9 @@ instructions are in [README.md](README.md).
 
 ## Current state
 
-Prototype 01 uses Godot 4.5.2 .NET and C# on .NET 8 (SDK 8.0.425). It implements
-a single-player first-person test bed. The original s&box project is
+Prototype 01.1 uses Godot 4.5.2 .NET and C# on .NET 8 (SDK 8.0.425). It implements
+a single-player first-person test bed with interpolated camera translation and
+F3/F4/F5 timing diagnostics. The original s&box project is
 https://github.com/ConcosHut/LuckerParty. Networking and minigames come later.
 
 ## Working principles
@@ -27,7 +28,8 @@ https://github.com/ConcosHut/LuckerParty. Networking and minigames come later.
 From the repository root, with the pinned SDK and Godot .NET editor available:
 
 - `python tools/dev.py build`: compile and verify the core dependency boundary.
-- `python tools/dev.py check`: build, import, and run the bounded physics scenario.
+- `python tools/dev.py check`: build, import, and run the movement and 240 FPS
+  camera interpolation scenarios.
 - `python tools/dev.py run`: launch the graphical test bed.
 - `python tools/dev.py export --target windows`: package the Windows x64 build.
 - `python tools/dev.py export --target linux`: package the Linux x64 build.

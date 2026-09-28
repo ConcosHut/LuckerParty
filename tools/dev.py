@@ -71,6 +71,10 @@ def main():
                      environment, timeout=60, inspect=True)
         if "SMOKE_TEST_PASS:" not in output:
             raise RuntimeError("Smoke scenario did not report completion")
+        output = run(base + ["--headless", "--fixed-fps", "240", "--", "--camera-check"],
+                     environment, timeout=60, inspect=True)
+        if "CAMERA_CHECK_PASS:" not in output:
+            raise RuntimeError("Camera interpolation scenario did not report completion")
     else:
         preset, filename = ("Windows Desktop", "LuckerParty.exe") if args.target == "windows" else ("Linux", "LuckerParty.x86_64")
         output = ROOT / "artifacts" / args.target
@@ -85,7 +89,7 @@ def main():
             if not any(output.rglob(dependency)):
                 raise RuntimeError(f"Export is incomplete: missing {dependency}")
         shutil.copy2(ROOT / "docs/PLAYTEST.txt", output / "PLAYTEST.txt")
-        archive = shutil.make_archive(str(ROOT / "artifacts" / f"LuckerParty-prototype-01-{args.target}-x64"), "zip", root_dir=output)
+        archive = shutil.make_archive(str(ROOT / "artifacts" / f"LuckerParty-prototype-01.1-{args.target}-x64"), "zip", root_dir=output)
         print(f"Packaged full export: {archive}")
 
 

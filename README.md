@@ -1,4 +1,4 @@
-# Lucker Party — prototype 01
+# Lucker Party — prototype 01.1
 
 A small first-person test bed: a gray grid floor, four colored solid boxes,
 walking, sprinting, jumping, mouse look, reset, and an Escape menu. This iteration
@@ -6,7 +6,7 @@ is local single-player; no networking or minigames are implemented.
 
 ## Play the Windows build
 
-Extract **all** files from `artifacts/LuckerParty-prototype-01-windows-x64.zip`,
+Extract **all** files from `artifacts/LuckerParty-prototype-01.1-windows-x64.zip`,
 then double-click `LuckerParty.exe`. Keep its PCK and data directory next to it.
 The packaged game includes its runtime; you do not need Godot or a .NET SDK to
 play. This build targets normal Intel/AMD 64-bit Windows PCs.
@@ -19,9 +19,18 @@ play. This build targets normal Intel/AMD 64-bit Windows PCs.
 | Space | Jump |
 | R | Reset position and view |
 | Escape | Open/close menu and release/capture mouse |
+| F3 | Show frame timing and movement diagnostics |
+| F4 | Compare smooth camera translation with the original stepping |
+| F5 | Switch physics between 60 Hz and a diagnostic 10 Hz |
 
 Switching away from the game opens the menu. Use Resume when you return.
 Walk into boxes to check collision, and jump onto the low green step.
+
+The camera now interpolates player position between physics ticks while mouse
+look remains immediate. Physics runs at 60 Hz by default. For a high-refresh
+monitor, hold A/D with the mouse still and press F4 to compare interpolation on
+and off. F5 exaggerates stepping for debugging; return to 60 Hz for normal play.
+See [the jitter investigation](docs/movement-jitter.md) for measured results.
 
 ## Develop on Windows or Linux
 
@@ -75,8 +84,11 @@ Generated tools, build outputs, and artifacts are excluded from Git.
 
 `check` builds the project, checks the core dependency boundary, imports the
 Godot project, and runs a bounded headless scenario against real scene physics.
-It checks floor contact, speed, diagonal normalization, sprint, box collision,
-jump/landing, disabled controls, mouse look limits, reset, and the R key binding.
+It runs 15 movement/camera checks covering floor contact, speed, diagonal
+normalization, sprint, box collision, jump/landing, disabled controls, immediate
+mouse look, look limits, reset, interpolation reset, and the R key binding.
+It also compares camera motion with and without interpolation at 240 render
+frames per second against 60 physics ticks per second.
 It exits nonzero on a failed assertion.
 
 For graphical evidence, the game accepts `-- --capture /absolute/path/image.png`

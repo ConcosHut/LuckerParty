@@ -1,4 +1,4 @@
-LUCKER PARTY - PROTOTYPE 01
+LUCKER PARTY - PROTOTYPE 01.1
 
 Extract the entire ZIP before running LuckerParty.exe (Windows) or
 LuckerParty.x86_64 (Linux). Keep the executable, PCK, and data folder together.
@@ -13,6 +13,9 @@ R: reset to spawn
 Escape: release mouse and open menu; Escape again or Resume returns to play
 Alt-Tab: opens menu and releases the mouse
 Quit: use the menu or close the window
+F3: show frame timing and physics/camera diagnostics
+F4: toggle camera position interpolation (ON by default)
+F5: toggle physics between 60 Hz (normal) and 10 Hz (diagnostic only)
 
 WHAT TO CHECK
 You should see red, blue, yellow, and green boxes on a gray grid floor.
@@ -21,6 +24,16 @@ Try jumping onto the low green step.
 Diagonal movement should have the same speed as moving straight.
 Try sprinting, looking up/down, resetting, and switching away from the window.
 Resize the window and check that the interface stays readable.
+
+JITTER COMPARISON
+Hold A or D with the mouse still and watch a box edge. Press F4 to compare the
+original stepped camera position with smooth interpolation. F5 at 10 Hz makes
+the difference easier to see; return to 60 Hz for normal play.
+At 240 FPS, normal frame time is about 4.17 ms. F3 shows average, p95, and maximum
+frame times over the most recent 240 frames. Startup or Alt-Tab can temporarily
+inflate these values; wait for the sample window to settle before comparing.
+If artifacts persist with interpolation ON, report whether frame times spike
+and whether the edges jump in position or leave a trailing/ghost image.
 
 This is a local single-player test bed. Multiplayer and minigames come later.
 When reporting a problem, include your Windows/GPU versions, what you did,

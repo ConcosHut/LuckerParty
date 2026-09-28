@@ -71,6 +71,8 @@ public partial class SmokeTest : Node
             // Headless displays cannot capture a hardware mouse. Exercise the same
             // look operation used by the captured-mouse event handler.
             Player.ApplyMouseLook(new Vector2(120, -100000));
+            Require(Player.CameraRotation.Y < -0.2f, "Mouse look updates the camera before the next physics tick");
+            await Frames(1);
             Require(Player.Rotation.Y < -0.2f, "Mouse motion turns the character");
             Require(Mathf.Abs(Player.GetNode<Node3D>("Head").Rotation.X - Mathf.DegToRad(85)) < 0.01f,
                 "Vertical look is clamped");
@@ -81,6 +83,8 @@ public partial class SmokeTest : Node
                 && Player.Rotation.IsEqualApprox(Vector3.Zero)
                 && Player.GetNode<Node3D>("Head").Rotation.IsEqualApprox(Vector3.Zero),
                 "Reset restores position, velocity, and camera orientation");
+            Require(Player.CameraPosition.IsEqualApprox(Player.SpawnPosition + new Vector3(0, 1.65f, 0)),
+                "Reset clears camera interpolation history without a visible sweep");
 
             // Exercise the bound key event, rather than only calling the reset method.
             Player.Position = new Vector3(8, 0.05f, 8);
@@ -89,7 +93,7 @@ public partial class SmokeTest : Node
             Input.ParseInputEvent(new InputEventKey { PhysicalKeycode = Key.R, Pressed = false });
             Require(Player.Position.DistanceTo(Player.SpawnPosition) < 0.1f, "R key resets the character");
 
-            GD.Print("SMOKE_TEST_PASS: 13 movement, collision, camera, and reset checks");
+            GD.Print("SMOKE_TEST_PASS: 15 movement, collision, camera, and reset checks");
             GetTree().Quit();
         }
         catch (Exception error)

@@ -8,6 +8,9 @@ public partial class TestBed : Node3D
     private FirstPersonPlayer _player = null!;
     private Control _pauseMenu = null!;
     private Label _status = null!;
+    private Label _diagnostics = null!;
+    private readonly Queue<double> _frameTimes = new();
+    private double _diagnosticTimer;
     private bool _paused;
 
     public override void _Ready()
@@ -24,6 +27,8 @@ public partial class TestBed : Node3D
         var arguments = OS.GetCmdlineUserArgs();
         if (arguments.Contains("--smoke-test"))
             AddChild(new SmokeTest { Player = _player });
+        if (arguments.Contains("--camera-check"))
+            AddChild(new CameraInterpolationCheck { Player = _player });
         var captureIndex = Array.IndexOf(arguments, "--capture");
         if (captureIndex >= 0 && captureIndex + 1 < arguments.Length)
             CaptureFrame(arguments[captureIndex + 1]);
@@ -39,6 +44,9 @@ public partial class TestBed : Node3D
         Bind("sprint", Key.Shift);
         Bind("reset", Key.R);
         Bind("pause", Key.Escape);
+        Bind("diagnostics", Key.F3);
+        Bind("interpolation", Key.F4);
+        Bind("slow_physics", Key.F5);
     }
 
     private static void Bind(string action, params Key[] keys)
@@ -124,14 +132,17 @@ public partial class TestBed : Node3D
         root.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
         root.MouseFilter = Control.MouseFilterEnum.Ignore;
         layer.AddChild(root);
-        root.AddChild(Text("LUCKER PARTY  /  PROTOTYPE 01", new Vector2(28, 24), 24));
+        root.AddChild(Text("LUCKER PARTY  /  PROTOTYPE 01.1", new Vector2(28, 24), 24));
         root.AddChild(Text("FIRST-PERSON MOVEMENT TEST", new Vector2(28, 58), 14));
-        var instructions = Text("WASD / arrows  Move     Mouse  Look     Shift  Sprint\nSpace  Jump     R  Reset     Esc  Menu", Vector2.Zero, 17);
+        var instructions = Text("WASD / arrows  Move     Mouse  Look     Shift  Sprint\nSpace  Jump     R  Reset     Esc  Menu     F3  Diagnostics", Vector2.Zero, 17);
         instructions.AnchorTop = instructions.AnchorBottom = 1;
         instructions.Position = new Vector2(28, -82);
         root.AddChild(instructions);
         _status = Text("", new Vector2(28, 84), 14);
         root.AddChild(_status);
+        _diagnostics = Text("", new Vector2(28, 111), 14);
+        _diagnostics.Visible = false;
+        root.AddChild(_diagnostics);
         var crosshair = Text("+", Vector2.Zero, 24);
         crosshair.AnchorLeft = crosshair.AnchorRight = 0.5f;
         crosshair.AnchorTop = crosshair.AnchorBottom = 0.5f;
@@ -168,7 +179,17 @@ public partial class TestBed : Node3D
 
     public override void _Process(double delta)
     {
-        _status.Text = $"{Engine.GetFramesPerSecond()} FPS  /  {(_player.IsOnFloor() ? "GROUNDED" : "AIRBORNE")}";
+        _frameTimes.Enqueue(delta * 1000);
+        if (_frameTimes.Count > 240) _frameTimes.Dequeue();
+        _diagnosticTimer += delta;
+        if (_diagnosticTimer < 0.25) return;
+        _diagnosticTimer = 0;
+        var sorted = _frameTimes.Order().ToArray();
+        _status.Text = $"{Engine.GetFramesPerSecond()} FPS  /  {Engine.PhysicsTicksPerSecond} physics Hz  /  {(_player.IsOnFloor() ? "GROUNDED" : "AIRBORNE")}";
+        _diagnostics.Text = $"F4  Camera interpolation: {(_player.InterpolateCameraPosition ? "ON" : "OFF (original)")}\n"
+            + $"Frame time: avg {sorted.Average():F2} ms / p95 {sorted[(int)((sorted.Length - 1) * 0.95)]:F2} ms / max {sorted[^1]:F2} ms\n"
+            + $"F5  Physics: {Engine.PhysicsTicksPerSecond} Hz (60 normal / 10 diagnostic)\n"
+            + "Compare A/D with the mouse still. R resets position and view.";
     }
 
     public override void _UnhandledInput(InputEvent input)
@@ -179,6 +200,20 @@ public partial class TestBed : Node3D
             GetViewport().SetInputAsHandled();
         }
         else if (!_paused && input.IsActionPressed("reset")) _player.ResetToSpawn();
+        else if (input.IsActionPressed("diagnostics")) _diagnostics.Visible = !_diagnostics.Visible;
+        else if (input.IsActionPressed("interpolation"))
+        {
+            _player.InterpolateCameraPosition = !_player.InterpolateCameraPosition;
+            _diagnostics.Visible = true;
+            GD.Print($"CAMERA_INTERPOLATION: {_player.InterpolateCameraPosition}");
+        }
+        else if (input.IsActionPressed("slow_physics"))
+        {
+            Engine.PhysicsTicksPerSecond = Engine.PhysicsTicksPerSecond == 60 ? 10 : 60;
+            _player.ResetToSpawn();
+            _diagnostics.Visible = true;
+            GD.Print($"PHYSICS_TICK_RATE: {Engine.PhysicsTicksPerSecond}");
+        }
     }
 
     public override void _Notification(int what)

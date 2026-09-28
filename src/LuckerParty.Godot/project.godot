@@ -2,7 +2,7 @@
 config_version=5
 
 [application]
-config/name="Lucker Party — Prototype 01"
+config/name="Lucker Party — Prototype 01.1"
 run/main_scene="res://Scenes/TestBed.tscn"
 config/features=PackedStringArray("4.5", "C#", "GL Compatibility")
 
@@ -15,6 +15,10 @@ window/stretch/mode="canvas_items"
 
 [dotnet]
 project/assembly_name="LuckerParty.Godot"
+
+[physics]
+common/physics_ticks_per_second=60
+common/physics_interpolation=true
 
 [rendering]
 renderer/rendering_method="gl_compatibility"

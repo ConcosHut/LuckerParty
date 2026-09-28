@@ -1,5 +1,10 @@
 # Prototype 01
 
+The initial Windows build was reported working by the user, with strafing jitter
+at 240 FPS. Prototype 01.1 adds camera interpolation and diagnostics. Its current
+checks and investigation are in [movement-jitter.md](movement-jitter.md).
+The verification below records the initial iteration.
+
 ## Implemented
 
 - Godot 4.5.2 .NET, C#, .NET 8, SDK 8.0.425.
@@ -41,5 +46,8 @@ Generated artifacts are ignored by Git and can be recreated with `tools/dev.py`:
 - `artifacts/LuckerParty-prototype-01-windows-x64.zip`
 - `artifacts/LuckerParty-prototype-01-linux-x64.zip`
 - `artifacts/prototype-01.png`
+
+The command wrapper now exports version 01.1 ZIPs. Original version 01 ZIPs are
+retained locally for reference.
 
 Keep all extracted executable, resource-pack, and runtime/data files together.

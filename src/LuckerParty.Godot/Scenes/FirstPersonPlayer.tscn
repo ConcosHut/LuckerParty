@@ -16,8 +16,11 @@ shape = SubResource("Capsule")
 
 [node name="Head" type="Node3D" parent="."]
 position = Vector3(0, 1.65, 0)
+physics_interpolation_mode = 2
 
 [node name="Camera" type="Camera3D" parent="Head"]
+top_level = true
+physics_interpolation_mode = 2
 current = true
 fov = 80.0
 near = 0.05
