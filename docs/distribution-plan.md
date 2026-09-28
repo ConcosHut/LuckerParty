@@ -140,8 +140,9 @@ The preferred first development transport is now direct SSH from `box` to
 Windows, using PowerShell for build preparation and an interactive scheduled
 task for visible desktop launch. This avoids needing a separate chat or a
 continuous watch helper for every playtest. The [Windows SSH setup prompt](windows-ssh-handoff.md)
-describes the one-time setup and required end-to-end verification. It is not
-configured yet. The feed/helper design below remains an alternative and can
+describes the one-time setup and required end-to-end verification. It is now
+configured on `box`; see [the working playtest commands](windows-playtesting.md).
+The feed/helper design below remains an alternative and can
 reuse the future player updater.
 
 The updater also works with a private HTTP feed or local directory, so it can
@@ -188,7 +189,7 @@ Use an authenticated or access-controlled feed and fixed package/launch actions,
 rather than accepting arbitrary shell commands. If the game is already running,
 queue the new build and let the user close it; do not interrupt a playtest.
 Require the Windows PC to be awake, the user logged in, and the helper connected.
-The current Linux session has no configured Windows helper connection.
+The current Linux session uses the configured SSH/task connection instead.
 
 A normal app in the user's desktop session is the simplest starting point.
 Windows services cannot directly interact with the desktop; installing a

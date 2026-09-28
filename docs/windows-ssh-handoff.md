@@ -2,7 +2,8 @@
 
 Paste this after the Windows playtest handoff prompt, or use it alone in a chat
 running locally on Windows. This supersedes the suggestion to build a custom
-watch helper as the first development transport. Nothing here is installed yet.
+watch helper as the first development transport. The setup has since been
+applied; see [the verified connection and commands](windows-playtesting.md).
 
 ---
 

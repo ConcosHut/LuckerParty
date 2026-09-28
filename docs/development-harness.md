@@ -47,8 +47,10 @@ When CI is available, run core/build checks on Linux and Windows and produce
 playtest artifacts. Verify Linux-to-Windows export against the selected engine
 version early; provide a native Windows build path as well. Record actual Windows
 runtime results separately from successful compilation/export. Graphical Windows
-playtesting requires a Windows machine; this Linux workspace does not establish
-access to the user's PC.
+playtesting uses the configured SSH connection and interactive desktop task on
+the user's PC; see [Windows playtesting](windows-playtesting.md). The Linux chat
+can transfer builds, trigger launch, and inspect Windows status/logs. Process
+launch evidence does not replace a human check of rendering and controls.
 
 Documentation:
 - [Godot C# setup and desktop support](https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/c_sharp_basics.html)

@@ -34,6 +34,9 @@ See [the jitter investigation](docs/movement-jitter.md) for measured results.
 
 ## Develop on Windows or Linux
 
+For development on `box` with remote Windows playtests, the working SSH transfer
+and desktop launch commands are in [docs/windows-playtesting.md](docs/windows-playtesting.md).
+
 Pinned toolchain:
 
 - [Godot **4.5.2 .NET**](https://github.com/godotengine/godot/releases/tag/4.5.2-stable),
