@@ -80,3 +80,58 @@ identity fix: a live recorded process blocked feed discovery and package
 application, even with a newer full package already cached. The executable /
 AppImage stayed unchanged. Linux identity was supplied by a separate process
 using the same kernel start counter and boot ID as the launcher.
+
+The fresh Ubuntu 22.04 and Windows Server 2022 CI builds both passed all
+gameplay, cross-process guard, and real installed HTTP update checks for
+`322c567`. Windows also installed/updated and rendered the corrected launcher
+as Dev 0.2.3 on the actual PC, with clean build metadata and a successful game
+smoke. The initial publish step left complete private drafts because GitHub's
+tag endpoint could not look them up; the publisher now verifies by release ID.
+Those never-published drafts were removed after recording their metadata and
+retaining CI artifacts, and the corrected pipeline rebuilds the first release.
+
+## Published feeds and final desktop checks
+
+Stable [0.2.0](https://github.com/ConcosHut/LuckerParty/releases/tag/v0.2.0)
+and Beta [0.3.0-beta.14](https://github.com/ConcosHut/LuckerParty/releases/tag/v0.3.0-beta.14)
+published successfully after both platform builds and the final draft verification:
+[Stable CI](https://github.com/ConcosHut/LuckerParty/actions/runs/36406915920),
+[Beta CI](https://github.com/ConcosHut/LuckerParty/actions/runs/36406913951).
+The release ID lookup fixed draft verification. Stable was built from `e4b4fe0`;
+Beta from `48ed5ce`, with the same launcher/game changes and distinct versions.
+Master now has base version 0.3.0; release keeps 0.2.0.
+
+The public Windows installer was downloaded on the actual PC and verified
+against SHA256SUMS before silent installation. Its complete self-contained game
+passed smoke checks; the installed launcher found Stable through GitHub's public
+API without any developer credential. Build metadata was clean.
+
+Linux's actual installed player AppImage fetched Beta from GitHub, restarted
+and ran that game, then fetched/ran older Stable again.
+Windows's interactive desktop task used UI Automation to choose **Beta** in
+the real launcher, downloaded/ran it from GitHub, pressed **Play** again and
+verified another Beta update check, then chose **Stable** and downloaded/ran
+the older stable version. Result: `GITHUB_UI_CHANNEL_PASS`.
+
+The launcher remains available after a game closes so channel changes are
+accessible. A separate Windows desktop check verified the enabled channel
+selector and Play button after an updater restart, and that Play checks updates
+again rather than retaining the one-time resume skip: `REPLAY_UI_PASS`.
+All temporary verification tasks were removed; the original ZIP playtest task
+and scripts were preserved. Player installs/settings remain separate from Dev.
+
+These tests verify installation, update delivery, runtime, and accessible UI
+controls. Friends should still playtest input feel and additional Windows/Linux
+configurations. Windows installers are unsigned.
+
+The next published Betas, 16 and 17, also passed both platform pipelines and
+generated deltas from the previous full packages. A separate public-feed check
+updated an installed Linux Beta 14 straight to Beta 17, skipping Beta 16, and
+ran exactly one successful game smoke without developer credentials.
+
+That check exposed a fresh Linux data-directory edge case: .NET's default
+folder lookup returns an empty path when XDG_DATA_HOME does not exist yet.
+The launcher now requests the path without requiring it to exist, then creates
+its data directory normally. A separate-process regression check uses a fresh,
+nonexistent XDG_DATA_HOME and verifies preferences/logs stay outside the
+working/install directory.

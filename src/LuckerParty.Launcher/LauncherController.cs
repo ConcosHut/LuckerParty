@@ -27,7 +27,8 @@ internal sealed class LauncherController
     {
         _distribution = Distribution.Load(_directory);
         _build = JsonFiles.Read<BuildInfo>(Path.Combine(_directory, "build-info.json")) ?? new();
-        _dataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        _dataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData,
+                Environment.SpecialFolderOption.DoNotVerify),
             "LuckerParty", _distribution.PackageId);
         _preferencesPath = Path.Combine(_dataDirectory, "preferences.json");
         _preferences = JsonFiles.Read<Preferences>(_preferencesPath) ?? new() { Channel = _distribution.Channel };

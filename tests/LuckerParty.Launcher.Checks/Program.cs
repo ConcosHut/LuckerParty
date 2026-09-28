@@ -4,6 +4,15 @@ using System.Text;
 using LuckerParty.Launcher;
 using Velopack.Sources;
 
+if (args.Length == 2 && args[0] == "--data-child")
+{
+    Require(!Directory.Exists(args[1]), "Fresh configured data directory does not exist yet");
+    var controller = new LauncherController(new LaunchOptions());
+    Require(controller.DataDirectory == Path.Combine(args[1], "LuckerParty", "LuckerParty.Unpackaged"),
+        "Fresh Linux data directory stays outside the working/install directory");
+    return 0;
+}
+
 if (args.Length == 2 && args[0] == "--lock-child")
 {
     using var held = new SessionGuard(args[1]);
@@ -18,6 +27,18 @@ var directory = Path.Combine(Path.GetTempPath(), "lucker-launcher-check-" + Guid
 Directory.CreateDirectory(directory);
 try
 {
+    if (OperatingSystem.IsLinux())
+    {
+        var freshData = Path.Combine(directory, "fresh-data");
+        var dataStart = new ProcessStartInfo(Environment.ProcessPath!) { UseShellExecute = false };
+        dataStart.ArgumentList.Add("--data-child");
+        dataStart.ArgumentList.Add(freshData);
+        dataStart.Environment["XDG_DATA_HOME"] = freshData;
+        using var dataChild = Process.Start(dataStart)!;
+        await dataChild.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(10));
+        Require(dataChild.ExitCode == 0, "Fresh Linux user data path check passes in a separate process");
+    }
+
     var childStart = new ProcessStartInfo(Environment.ProcessPath!) { UseShellExecute = false };
     childStart.ArgumentList.Add("--lock-child");
     childStart.ArgumentList.Add(directory);
