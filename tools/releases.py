@@ -31,7 +31,9 @@ def seed(channel, platform, output):
         # One previous full package is enough to generate the next delta.
         assets = [a for a in prior['assets'] if a['name'].endswith(f'-{platform}-{channel}-full.nupkg')]
         if assets:
-            newest = max(assets,key=lambda a:a['id'])
+            suffix = 'Windows' if platform == 'win-x64' else 'Linux'
+            expected = f"LuckerParty.{suffix}-{prior['tag_name'].removeprefix('v')}-{platform}-{channel}-full.nupkg"
+            newest = next(a for a in assets if a['name'] == expected)
             gh('release','download',prior['tag_name'],'--repo',REPOSITORY,'--pattern',newest['name'],'--dir',str(output))
             gh('release','download',prior['tag_name'],'--repo',REPOSITORY,'--pattern',f'releases.{platform}-{channel}.json','--dir',str(output))
 
@@ -51,7 +53,8 @@ def publish(channel, version, commit, directory):
     if any(r['tag_name']==tag for r in releases()): raise RuntimeError('Release already exists: '+tag)
     gh('release','create',tag,'--repo',REPOSITORY,'--target',commit,'--draft','--title',f'Lucker Party {version} ({channel.title()})','--notes-file',str(ROOT/'docs/release-notes.md'),*(['--prerelease'] if channel=='beta' else []))
     gh('release','upload',tag,'--repo',REPOSITORY,*[str(p) for p in assets],str(checksums))
-    uploaded=json.loads(gh('api',f'repos/{REPOSITORY}/releases/tags/{tag}',capture=True).stdout)
+    draft = next(r for r in releases() if r['tag_name'] == tag and r['draft'])
+    uploaded=json.loads(gh('api',f"repos/{REPOSITORY}/releases/{draft['id']}",capture=True).stdout)
     expected={p.name:p.stat().st_size for p in [*assets,checksums]}
     actual={a['name']:a['size'] for a in uploaded['assets']}
     if actual != expected: raise RuntimeError('Draft asset verification failed; draft retained for inspection')

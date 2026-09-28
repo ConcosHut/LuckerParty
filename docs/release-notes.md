@@ -1,4 +1,4 @@
-# Lucker Party 0.2
+# Launcher prototype
 
 - Standalone launcher with automatic updates before play.
 - Stable and Beta channels, with offline launch after an update failure.
