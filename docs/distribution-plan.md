@@ -136,12 +136,20 @@ Source: [butler uploads and client updates](https://itch.io/docs/butler/pushing.
 
 ## Fast Linux-to-Windows development loop
 
+The preferred first development transport is now direct SSH from `box` to
+Windows, using PowerShell for build preparation and an interactive scheduled
+task for visible desktop launch. This avoids needing a separate chat or a
+continuous watch helper for every playtest. The [Windows SSH setup prompt](windows-ssh-handoff.md)
+describes the one-time setup and required end-to-end verification. It is not
+configured yet. The feed/helper design below remains an alternative and can
+reuse the future player updater.
+
 The updater also works with a private HTTP feed or local directory, so it can
 deliver frequent development builds. It does not by itself arrange remote
 execution or continuously watch for a build while the launcher is closed.
 Testing updater logic is also distinct from running and debugging the game.
 
-For the user's rapid playtesting workflow, add an opt-in Windows desktop helper
+If the SSH/task workflow cannot meet the need, add an opt-in Windows desktop helper
 alongside the distribution launcher. Start it once in the logged-in user session
 and enable automatic playtesting for that session. It watches a private feed
 reachable from Windows, through the LAN or an existing private network. The

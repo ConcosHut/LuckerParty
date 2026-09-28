@@ -3,6 +3,10 @@
 Paste the text below into a new Codex chat running locally on Windows. This is
 prepared context, not an already-created or connected Windows chat.
 
+For direct Linux-to-Windows control, also use [the SSH setup add-on](windows-ssh-handoff.md).
+SSH plus an interactive scheduled task is now the preferred first development
+transport; a custom watch helper is a fallback.
+
 ---
 
 Help establish the Windows side of our Lucker Party development/playtest loop.
@@ -58,10 +62,10 @@ After that baseline, investigate the smallest repeatable download-and-launch
 command and whether this app exposes chat coordination tools. The Linux chat
 currently has read/list tools but no chat creation or message-sending tool.
 Do not assume pairing a device gives an existing Linux chat a Windows shell.
-If app coordination cannot trigger Windows work reliably, propose the small
-opt-in desktop helper described in the distribution plan. It must operate in
-the user's session, accept fixed build/launch requests, and queue new builds
-while a playtest is running. Avoid interrupting the user's current game.
+Use `docs/windows-ssh-handoff.md` to establish direct SSH access and an interactive
+desktop launch task. If that cannot meet the workflow, consider the small opt-in
+desktop helper described in the distribution plan. Avoid interrupting the user's
+current game.
 
 The immediate outcome is a verified Windows retrieval/launch baseline and a
 concrete next step for automating it. Player distribution still needs a
