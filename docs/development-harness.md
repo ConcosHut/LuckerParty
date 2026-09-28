@@ -24,6 +24,34 @@ When the engine template is created:
 Use local verification first. Add the same checks to CI when the project has a
 repository and CI setup. A smoke check must exercise startup, not merely compile.
 
+## Windows iteration and cross-platform builds
+
+Initial required development platforms are Linux and Windows. If Godot/C# is
+selected, use the same pinned Godot .NET edition and compatible .NET SDK on both.
+Use matching .NET export templates for packaging.
+
+Provide a documented Windows loop: sync the same source revision, build, and
+run the project directly in Godot. Provide repeatable Windows and Linux exports
+for playtesters who do not install development tools; package all output files
+together, including the C# runtime/data dependencies, rather than only the EXE.
+
+Use cross-platform tooling for shared build logic. Shell wrappers may provide
+convenience but must not make Bash a Windows prerequisite. Keep paths portable,
+asset filename casing consistent, and native dependencies available for each
+target architecture.
+
+When CI is available, run core/build checks on Linux and Windows and produce
+playtest artifacts. Verify Linux-to-Windows export against the selected engine
+version early; provide a native Windows build path as well. Record actual Windows
+runtime results separately from successful compilation/export. Graphical Windows
+playtesting requires a Windows machine; this Linux workspace does not establish
+access to the user's PC.
+
+Documentation:
+- [Godot C# setup and desktop support](https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/c_sharp_basics.html)
+- [Exporting projects](https://docs.godotengine.org/en/stable/tutorials/export/exporting_projects.html)
+- [Windows exports](https://docs.godotengine.org/en/stable/tutorials/export/exporting_for_windows.html)
+
 ## Enforce the engine boundary
 
 If Godot/C# is selected, begin with a plain C# core and a Godot integration

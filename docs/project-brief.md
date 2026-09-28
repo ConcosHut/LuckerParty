@@ -40,9 +40,15 @@ language/runtime compatibility and the amount of engine-specific gameplay.
 
 ## First milestone
 
+Cross-platform development and compilation are requirements. The initial setup
+must work on this Linux development machine and the user's Windows PC, with a
+short edit/build/playtest loop on Windows. Additional platform targets should
+be agreed explicitly.
+
 Create a very basic runnable template in the selected engine. Proposed scope:
 a placeholder 3D room, a controllable character, first-person and overhead
-camera options, a reset action, and documented build/run commands.
+camera options, a reset action, and documented build/run commands for Linux and
+Windows. Verify a Windows export early, alongside the Linux build.
 
 Networking, complete minigames, and the full party framework follow later.
 Player count, distribution platforms, and joining/hosting infrastructure remain

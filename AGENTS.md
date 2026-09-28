@@ -12,6 +12,8 @@ open; Godot with C# is the current proposal, not an implemented decision.
 ## Working principles
 
 - Keep code readable by the human team. Use clear names and small modules.
+- Support development and builds on Linux and Windows, including quick Windows
+  playtesting. Avoid making Bash or Linux-specific paths a build requirement.
 - Keep game rules separate from engine objects, rendering, physics, and transport.
 - Build abstractions around demonstrated needs; avoid a universal engine wrapper.
 - Add runnable verification alongside substantive gameplay features.
