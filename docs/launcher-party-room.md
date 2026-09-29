@@ -7,16 +7,19 @@ Avalonia controls remain native, keyboard accessible and independently testable;
 the illustration contains no user interface.
 
 The large stacked logo occupies the upper-left of the normal home screen.
-Settings and the sidebar layout use a compact horizontal lockup. The flat logo
+Settings and the sidebar layout use a compact horizontal lockup in the main
+area. The sidebar starts with Running instances and has no duplicate logo. The flat logo
 is deliberately kept distinct from the detailed hero, preserving recognizable
 shapes at small sizes. Its exact SVG paths render through `BrandLogo` without
 an installed logo font or a raster conversion. The hero uses high-quality
 bitmap interpolation when scaled down.
 
-A vertical ivory-to-sand gradient grounds the arena and the large bottom-right
-Play button: 480×88 normally, 440×76 in compact layouts, constrained by available
-width. The hero uses Multiply blending at render time to integrate its white
-backdrop; the approved PNG is unchanged. The old tagline is removed.
+A vertical ivory-to-sand gradient grounds the arena and the full-width
+Play button, with 28px side margins and an 88px height (76px in compact layouts).
+The hero uses its Image control's Multiply blend mode to integrate its opaque
+backdrop. `HeroEdgeBlend` paints a narrow feather of the actual surface gradient
+over the perimeter, removing the hard matte/shadow cutoff at every layout size.
+The approved PNG is unchanged. The old tagline is removed.
 Play has a restrained coral shadow,
 shared darker edge and subtle top highlight; hover increases elevation,
 pressing lowers it and disabled states remove the shadow. Existing capsule
@@ -41,7 +44,8 @@ stays white on coral; unselected text stays navy, including while games block
 channel switching. A tooltip explains that restriction.
 
 When the selected channel has a different version, Play becomes a green Update
-button with a download icon and target-version helper. Clicking Update installs
+button with a download icon and a small “New version · {version}” label beneath
+it identifying the update target. Clicking Update installs
 that version and restarts the launcher to Play; it never starts the game. This
 also applies to an older launcher's saved launch-after-update intent. Play checks
 again before starting one game; a newly discovered mismatch requires a separate
@@ -104,7 +108,7 @@ still block replacement; a fresh launcher waits until they close.
 child processes and the rendered Avalonia home, Settings, multi-instance and
 small-window layouts with the embedded fonts/art. It tests the Play dropdown,
 sidebar visibility, channel deferral, targeted Show/Close, actual pointer hover,
-keyboard focus, split-button geometry, bottom-right action placement, narrow
+keyboard focus, split-button geometry, full-width action placement, narrow
 sidebar layout and immediate preference/state changes. Update-policy checks cover
 startup/channel discovery without downloading, explicit Update, retry, legacy
 restart intent, the green hover state and deferral while games use the install.

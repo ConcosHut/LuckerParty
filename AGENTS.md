@@ -100,7 +100,9 @@ The finalized Clover Peak/Leafcut SVG sources live in assets/brand/ and render
 natively through BrandLogo.cs. Preserve their geometry and colors. The approved
 four-world hero is Assets/party-room-arena.png; keep regional art fixes intact.
 The home screen uses an ivory-to-sand gradient with the approved hero multiplied
-over it at render time, without altering the asset. The large bottom-right Play
+over it at render time, without altering the asset. HeroEdgeBlend feathers its
+opaque perimeter into the actual surface gradient. The sidebar has no duplicate
+logo. Play spans the main area with 28px side margins and
 has a restrained coral shadow; the tagline is removed. Play has no dropdown;
 Update and Retry expose the installed-version fallback. Download progress fills
 the disabled action behind its percentage and status line; installation has no

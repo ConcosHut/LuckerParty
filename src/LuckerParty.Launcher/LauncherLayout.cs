@@ -82,10 +82,10 @@ internal sealed partial class LauncherWindow
         RenderOptions.SetBitmapInterpolationMode(_arena, BitmapInterpolationMode.HighQuality);
         // White in the approved art becomes the warm backdrop; the source PNG
         // and every regional correction remain untouched.
-        RenderOptions.SetBitmapBlendingMode(_arena, BitmapBlendingMode.Multiply);
+        _arena.BlendMode = BitmapBlendingMode.Multiply;
         _arena.VerticalAlignment = VerticalAlignment.Bottom;
         _arena.HorizontalAlignment = HorizontalAlignment.Center;
-        return new Grid { Children = { _arena } };
+        return new Grid { Children = { _arena, new HeroEdgeBlend(_arena, _mainSurface) { IsHitTestVisible = false } } };
     }
 
     private void UpdateHomeLayout()
@@ -101,7 +101,7 @@ internal sealed partial class LauncherWindow
         _headerLockup.Height = width < 680 ? 60 : 79;
         _arena.Margin = new Thickness(0, compact ? 14 : 0, 0, 0);
         var playHeight = compact ? 76d : 88d;
-        _playSplit.Width = Math.Min(compact ? 440 : 480, Math.Max(0, width - 56));
+        _playSplit.Width = Math.Max(0, width - 56);
         _playSplit.Height = _playSections.Height = _play.Height = _more.Height = playHeight;
         _launchActions.Width = _playSplit.Width;
         _more.Width = playHeight;

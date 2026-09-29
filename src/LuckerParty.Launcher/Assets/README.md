@@ -12,6 +12,10 @@ assembled as layers. Local hand/rod repairs, sandstone-wall/shadow repairs and
 the final CSS boundary correction are preserved in this exact V4 composite.
 Do not regenerate the whole illustration for a small regional correction.
 
+The source has an opaque near-white matte, not an alpha cutout. The launcher
+uses Image.BlendMode = Multiply and HeroEdgeBlend to feather its outer margin
+into the correctly positioned surface gradient without changing these pixels.
+
 The ignored working master, masks, scripts, generation prompts and comparison
 captures live under `artifacts/brand-exploration/research-round-v7/` in
 `hero-layered/`, `hero-layered-v2/`, `hero-seam-repairs-v3/` and

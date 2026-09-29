@@ -271,3 +271,21 @@ Windows UTF-8 reader. [Beta 31](https://github.com/ConcosHut/LuckerParty/release
 is public; its source revision, both feeds and published asset digests were
 verified against the checksum list. Beta 30 was not published. The Windows VM
 remains stopped, and no physical-PC application was touched.
+
+## Target-version label, single branding and full-width action
+
+- [x] Replace the install/channel instruction below Update with a small
+  “New version · {version}” label that follows channel selection.
+- [x] Keep branding in the main area only; start the sidebar with Running instances.
+- [x] Expand Play/Update across the main area with equal 28px side margins,
+  including compact/sidebar layouts and embedded progress.
+- [x] Set Multiply on Image.BlendMode itself, rather than a render option that
+  the Image control overrides. Feather the opaque matte/shadow perimeter into
+  the actual background gradient without modifying the approved PNG.
+
+Focused launcher checks passed, including channel-specific target labels,
+full-width action geometry and existing multi-instance/update guards. Wide,
+compact, sidebar, Update and Updating renders were reviewed under ignored
+`artifacts/launcher-ui-checks/`; no artwork, fonts, chrome, gameplay or updater
+logic changed. No additional VM/full installed cycle was needed locally.
+Release verification runs both platforms in CI before publication.

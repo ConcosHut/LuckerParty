@@ -12,15 +12,11 @@ internal sealed partial class LauncherWindow
 
     private Border BuildSidebar()
     {
-        var rail = new Grid { RowDefinitions = new("Auto,Auto,*,Auto"), Margin = new Thickness(16, 30, 16, 22) };
-        var wordmark = Wordmark(36); wordmark.HorizontalAlignment = HorizontalAlignment.Left;
-        wordmark.Margin = new Thickness(8, 0, 0, 0);
-        ConfigureDragRegion(wordmark);
-        Place(rail, wordmark);
+        var rail = new Grid { RowDefinitions = new("Auto,*,Auto"), Margin = new Thickness(16, 30, 16, 22) };
         var header = new StackPanel
         {
             Orientation = Orientation.Horizontal, Spacing = 10,
-            Margin = new Thickness(6, 28, 0, 18), VerticalAlignment = VerticalAlignment.Center
+            Margin = new Thickness(6, 0, 0, 18), VerticalAlignment = VerticalAlignment.Center
         };
         var heading = PartyRoom.Text("Running instances", 19); heading.FontWeight = FontWeight.ExtraBold;
         heading.VerticalAlignment = VerticalAlignment.Center; header.Children.Add(heading);
@@ -30,11 +26,11 @@ internal sealed partial class LauncherWindow
             Background = PartyRoom.Lilac, CornerRadius = new CornerRadius(20),
             MinWidth = 32, Padding = new Thickness(8, 4), Child = _count
         });
-        Place(rail, header, 1);
+        Place(rail, header);
         _instances.Spacing = 14;
-        Place(rail, new ScrollViewer { Content = _instances, Margin = new Thickness(0, 0, 0, 16) }, 2);
+        Place(rail, new ScrollViewer { Content = _instances, Margin = new Thickness(0, 0, 0, 16) }, 1);
         var hint = PartyRoom.Text("Updates wait until all game windows close.", 13, PartyRoom.Muted);
-        hint.Margin = new Thickness(6, 0); Place(rail, hint, 3);
+        hint.Margin = new Thickness(6, 0); Place(rail, hint, 2);
         return new Border { Name = "InstanceSidebar", Width = 304, Background = PartyRoom.Sand, Child = rail };
     }
 

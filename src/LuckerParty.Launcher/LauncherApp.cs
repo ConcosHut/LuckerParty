@@ -243,7 +243,7 @@ internal sealed partial class LauncherWindow : Window
             : _controller.Activity == LauncherActivity.Error && _lastStateMessage.StartsWith("LAUNCHER_ERROR: ", StringComparison.Ordinal)
                 ? _lastStateMessage[16..] + " Use Play options to launch the installed version."
             : _controller.UpdateAvailable ? _controller.GameRunning ? "Close all game windows to update."
-                : $"Install {_controller.AvailableVersion} for {_controller.Channel}."
+                : $"New version · {_controller.AvailableVersion}"
             : _controller.GameRunning && _controller.AllowMultipleInstances ? "Opens another game window" : "";
         _message.IsVisible = !string.IsNullOrWhiteSpace(_message.Text);
         var channelHint = _controller.GameRunning ? "Close all game windows to change channels."

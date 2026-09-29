@@ -45,8 +45,10 @@ internal static class LauncherUiChecks
                     await Save(window, output, "party-room-home.png");
                     var primary = FindButton(window, "Play"); var chevron = FindButton(window, "Play options");
                     var primaryPosition = primary.TranslatePoint(new Point(0, 0), window)!.Value;
-                    Require(primaryPosition.X > window.Bounds.Width * .55 && primaryPosition.Y > window.Bounds.Height * .75,
-                        "Primary action occupies the bottom-right area");
+                    Require(Math.Abs(primaryPosition.X - 28) < 1 &&
+                        Math.Abs(window.Bounds.Width - primaryPosition.X - primary.Bounds.Width - 28) < 1 &&
+                        primaryPosition.Y > window.Bounds.Height * .75,
+                        "Primary action spans the main area with equal side margins");
                     Require(window.Bounds.Height - primaryPosition.Y - primary.Bounds.Height is >= 8 and <= 16,
                         "Empty helper text does not reserve blank padding beneath Play");
                     Require(primary.Bounds.Width >= 440 && primary.Bounds.Height >= 76 && !chevron.IsEffectivelyVisible,
@@ -138,6 +140,8 @@ internal static class LauncherUiChecks
                             "Disabled channel labels preserve selected and unselected contrast");
                     }
                     await Save(window, output, "party-room-instances.png");
+                    Require(!sidebar.GetVisualDescendants().OfType<BrandLogo>().Any(),
+                        "The instances sidebar does not duplicate the main logo");
                     var helper = window.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Name == "PlayHelper");
                     Require(helper.Text == "Opens another game window", "Multi-instance Play explains the additional window");
                     PointerClick(window, settingsNavigation);
@@ -189,6 +193,9 @@ internal static class LauncherUiChecks
                     Require(sidebar.IsVisible && play.IsEffectivelyVisible && play.Bounds.Height >= 56 && position.X >= sidebar.Bounds.Width &&
                         position.X + play.Bounds.Width <= window.Bounds.Width && position.Y + play.Bounds.Height <= window.Bounds.Height,
                         "Small sidebar layout keeps the complete primary action in the remaining window area");
+                    Require(Math.Abs(position.X - sidebar.Bounds.Width - 28) < 1 &&
+                        Math.Abs(window.Bounds.Width - position.X - play.Bounds.Width - 28) < 1,
+                        "Sidebar Play spans the remaining main area with equal side margins");
                     settingsPosition = settingsNavigation.TranslatePoint(new Point(), window)!.Value;
                     ToggleSettings(window);
                     await Save(window, output, "party-room-small-sidebar-settings.png");
@@ -224,10 +231,15 @@ internal static class LauncherUiChecks
             await Wait(() => !controller.Busy && controller.UpdateAvailable);
             Require(FindButton(window, "Update").IsEnabled && stable.Downloads == 0 && stable.Applies == 0 && !controller.GameRunning,
                 "Opening the desktop launcher presents Update without installing or starting a game");
+            var versionHint = window.GetVisualDescendants().OfType<TextBlock>().Single(control => control.Name == "PlayHelper");
+            Require(versionHint.IsEffectivelyVisible && versionHint.Text == "New version · 2.0.0",
+                "Update labels the selected channel's target version beneath its action");
             Click(FindButton(window, "Beta release channel"));
             await Wait(() => !controller.Busy && controller.AvailableVersion == "2.1.0-beta.1");
             Require(beta.Downloads == 0 && beta.Applies == 0 && !controller.GameRunning,
                 "Clicking Beta changes the target and Update state without installing or launching");
+            Require(versionHint.Text == "New version · 2.1.0-beta.1",
+                "The target-version label follows channel selection");
             await Save(window, output, "party-room-update.png");
             var chevron = FindButton(window, "Play options");
             var primary = FindButton(window, "Update");
@@ -265,6 +277,8 @@ internal static class LauncherUiChecks
             await Wait(() => !controller.Busy && !controller.UpdateAvailable);
             Require(FindButton(window, "Play").IsEnabled && stable.Downloads == 0,
                 "Returning to an up-to-date channel restores Play");
+            Require(!versionHint.IsEffectivelyVisible,
+                "An up-to-date channel hides the target-version label");
             await Save(window, output, "party-room-current.png");
             var status = window.GetVisualDescendants().OfType<TextBlock>().Single(control => control.Name == "UpdateStatus");
             var check = window.GetVisualDescendants().OfType<Control>().Single(control => control.Name == "UpdateCheck");
