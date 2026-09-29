@@ -203,3 +203,22 @@ addressed with complete Avalonia control themes and custom window chrome.
   area. Captures/status are under ignored
   `artifacts/windows-vm/launcher-beta26-desktop/`. Its launcher was closed and
   temporary task removed; no physical-PC applications were touched.
+
+## Stationary Settings and compact footer
+
+- [x] Align the check mark immediately beside the right-aligned Up to date text.
+- [x] Collapse empty Play helper text and reduce footer padding to 16px above
+  and 12px below its controls.
+- [x] Keep Settings in the same bottom position when toggled, including narrow
+  windows with and without the instance sidebar.
+- [x] Replace the selected lilac appearance with a warm darker face and inset
+  shadow that remains visible after pointer exit.
+- [x] Remove Back to Play; repeated Settings clicks, Space and Escape retain
+  their existing navigation behavior.
+
+Focused `python tools/dev.py check --suite launcher` passed, including actual
+pointer/keyboard toggling, position comparisons, status alignment and unchanged
+update/child-control checks. Final wide, narrow and sidebar renders were reviewed
+under ignored `artifacts/launcher-ui-checks/`. No fonts, native chrome, gameplay
+or updater logic changed; a fresh native VM/full local update cycle was not run.
+Cross-platform release verification and publication are pending.

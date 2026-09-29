@@ -34,7 +34,11 @@ internal sealed partial class LauncherWindow : Window
     private readonly Border _sidebar;
     private readonly TextBlock _count = PartyRoom.Text("0", 14);
     private readonly TextBlock _message = PartyRoom.Text("Getting ready…", 14, PartyRoom.Muted);
-    private readonly TextBlock _updateStatus = PartyRoom.Text("Getting ready", 13, PartyRoom.Muted);
+    private readonly TextBlock _updateStatus = new()
+    {
+        Text = "Getting ready", FontSize = 12, FontFamily = PartyRoom.Body,
+        Foreground = PartyRoom.Muted, TextWrapping = TextWrapping.NoWrap
+    };
     private readonly ProgressBar _progress = new() { Minimum = 0, Maximum = 100, Height = 5, IsVisible = false };
     private readonly TextBlock _playLabel = PartyRoom.Text("Play", 20, Brushes.White);
     private readonly Button _play, _more, _stable, _beta;
@@ -51,6 +55,7 @@ internal sealed partial class LauncherWindow : Window
     {
         _controller = controller;
         _message.Name = "PlayHelper";
+        _updateStatus.Name = "UpdateStatus";
         Title = "Lucker Party"; Background = PartyRoom.Ivory; Foreground = PartyRoom.Ink;
         FontFamily = PartyRoom.Body; FontSize = 14; RequestedThemeVariant = ThemeVariant.Light;
         Width = controller.AllowMultipleInstances ? 1464 : 1160; Height = 840; MinWidth = 820; MinHeight = 620;
@@ -117,7 +122,7 @@ internal sealed partial class LauncherWindow : Window
         {
             if (navigation.IsChecked != visible)
                 navigation.SetCurrentValue(ToggleButton.IsCheckedProperty, (bool?)visible);
-            ToolTip.SetTip(navigation, visible ? "Back to play" : "Open launcher settings");
+            ToolTip.SetTip(navigation, visible ? "Close Settings" : "Open launcher settings");
             if (!visible) navigation.Focus();
         }
         UpdateHomeLayout();
@@ -225,6 +230,7 @@ internal sealed partial class LauncherWindow : Window
             : _controller.UpdateAvailable ? _controller.GameRunning ? "Close all game windows to update."
                 : $"Install {_controller.AvailableVersion} for {_controller.Channel}."
             : _controller.GameRunning && _controller.AllowMultipleInstances ? "Opens another game window" : "";
+        _message.IsVisible = !string.IsNullOrWhiteSpace(_message.Text);
         var channelHint = _controller.GameRunning ? "Close all game windows to change channels."
             : _controller.Busy ? "Wait for the current update or launch to finish." : null;
         ToolTip.SetTip(_stable, channelHint); ToolTip.SetTip(_beta, channelHint);

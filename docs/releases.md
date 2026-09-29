@@ -25,8 +25,9 @@ games before changing channels. The installed version and update status are show
 once beneath the top-right channel selector.
 
 **Settings** is toggleable navigation: click it again to return to Play. Its
-lilac selected state stays visible while Settings is open. Space activates it;
-**Back to play** and Escape also return home and clear selection.
+warm, pressed-in face and inset shadow stay visible while Settings is open.
+The button keeps the same screen position on both pages. Space activates it;
+Escape also returns home. There is no separate Back to play button.
 
 The launcher stays alive while games run; closing its window during play
 minimizes it so it can be restored from the taskbar. Another invocation defers

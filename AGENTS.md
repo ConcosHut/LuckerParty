@@ -83,8 +83,12 @@ a green Update action; only that action installs, then returns to Play on restar
 Desktop restart always clears launch-after-update intent, including older versions'
 saved intent. Headless automation retains explicit prepare/launch behavior;
 `--headless --discover-only` checks metadata without installing or launching.
-Settings is toggleable navigation with a persistent selected state; Back and
-Escape return to play and clear selection. Startup windows fit and recenter in
+Settings is toggleable navigation with a persistent pressed-in face and inset
+shadow. It stays anchored at the same bottom position on both pages; clicking
+it again or pressing Escape returns to play. There is no separate Back button.
+Empty Play helper text collapses rather than reserving footer space; the update
+check mark sits directly beside its right-aligned status text.
+Startup windows fit and recenter in
 the display's working area using logical dimensions and pixel positions.
 Its settings opt-in reveals a sidebar with targeted Show/Close and permits additional Play launches of the installed
 build while games run; updates and channel changes still require every child to exit.

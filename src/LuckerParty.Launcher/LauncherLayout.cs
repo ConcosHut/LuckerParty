@@ -17,7 +17,7 @@ internal sealed partial class LauncherWindow
     private readonly Image _arena = new() { Name = "HeroArena", Stretch = Stretch.Uniform, IsHitTestVisible = false };
     private readonly BrandLogo _headerLogo = new("logo") { Name = "MainBrand", HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top };
     private readonly Control _headerLockup = Wordmark(48);
-    private readonly Control _updateCheck = new UpdateCheckMark { Width = 14, Height = 14, IsVisible = false };
+    private readonly Control _updateCheck = new UpdateCheckMark { Name = "UpdateCheck", Width = 14, Height = 14, IsVisible = false };
     private readonly Grid _playSections = new() { ColumnDefinitions = new("*,72") };
     private readonly Border _playSplit = new()
     {
@@ -56,12 +56,10 @@ internal sealed partial class LauncherWindow
         var version = PartyRoom.Text(_controller.Version, 12, PartyRoom.Muted);
         version.TextAlignment = TextAlignment.Right; version.Margin = new Thickness(0, 2, 8, 0);
         channel.Children.Add(version);
-        var status = new Grid { ColumnDefinitions = new("Auto,*"), ColumnSpacing = 5, Width = 216,
+        var status = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 5,
             HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 0, 8, 0) };
-        _updateStatus.FontSize = 12; _updateStatus.TextAlignment = TextAlignment.Right;
-        _updateStatus.TextWrapping = TextWrapping.NoWrap;
         _updateCheck.VerticalAlignment = VerticalAlignment.Center;
-        Place(status, _updateCheck); Place(status, _updateStatus, column: 1);
+        status.Children.Add(_updateCheck); status.Children.Add(_updateStatus);
         channel.Children.Add(status); Place(header, channel, 1);
         return header;
     }
@@ -102,7 +100,7 @@ internal sealed partial class LauncherWindow
         _playLabel.FontSize = compact ? 24 : 28;
         _footerSurface.Background = settings ? PartyRoom.Ivory : PartyRoom.Sand;
         _headlineContent.IsVisible = _launchActions.IsVisible = !settings;
-        _actionRow.Margin = new Thickness(28, settings ? 10 : 22, 28, 18);
+        _actionRow.Margin = new Thickness(28, 16, 28, 12);
         // Keep the grid's cell count stable during Settings/resize layout passes.
         _actionRow.ColumnDefinitions[0].Width = !settings && secondarySettingsRow ? new GridLength(1, GridUnitType.Star) : GridLength.Auto;
         _actionRow.ColumnDefinitions[1].Width = !settings && secondarySettingsRow ? GridLength.Auto : new GridLength(1, GridUnitType.Star);
@@ -134,10 +132,8 @@ internal sealed partial class LauncherWindow
 
     private Control BuildSettings()
     {
-        var content = new StackPanel { Spacing = 20, Margin = new Thickness(28, 0, 28, 24) };
-        var back = Button("← Back to play"); back.HorizontalAlignment = HorizontalAlignment.Left;
-        back.Click += (_, _) => SetSettingsVisible(false);
-        content.Children.Add(back); content.Children.Add(PartyRoom.Heading("Settings", 40));
+        var content = new StackPanel { Spacing = 20, Margin = new Thickness(28, 20, 28, 16) };
+        content.Children.Add(PartyRoom.Heading("Settings", 40));
         content.Children.Add(PartyRoom.Text("Make the launcher work your way.", 16, PartyRoom.Muted));
         _multiple.IsChecked = _controller.AllowMultipleInstances; _multiple.FontSize = 16;
         _multiple.IsCheckedChanged += (_, _) =>
@@ -197,7 +193,9 @@ internal sealed partial class LauncherWindow
         var label = PartyRoom.Text("Settings", 17); label.FontWeight = FontWeight.Bold; settingsContent.Children.Add(label);
         _settingsNavigation.Content = settingsContent;
         _settingsNavigation.HorizontalAlignment = HorizontalAlignment.Left;
-        _settingsNavigation.VerticalAlignment = VerticalAlignment.Center;
+        // Anchor to the footer bottom on both pages, even when hidden home
+        // actions collapse or compact layouts place Settings on its own row.
+        _settingsNavigation.VerticalAlignment = VerticalAlignment.Bottom;
         _settingsNavigation.HorizontalContentAlignment = HorizontalAlignment.Center;
         _settingsNavigation.VerticalContentAlignment = VerticalAlignment.Center;
         _settingsNavigation.Padding = new Thickness(18, 12);

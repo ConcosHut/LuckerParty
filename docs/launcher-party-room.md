@@ -20,6 +20,14 @@ shared darker edge and subtle top highlight; hover increases elevation,
 pressing lowers it and disabled states remove the shadow. Existing capsule
 instance cards and their controls are retained.
 
+Empty helper text collapses completely, and the action strip uses 16px above
+and 12px below its controls. Settings anchors to the same bottom position on
+the home and Settings pages, including compact/sidebar layouts. Its open state
+has a warm, darker face, stronger edge and inset shadow to read as pressed in.
+Clicking it again, Space or Escape returns home; there is no Back button.
+The green check and Up to date text form one closely spaced, centered pair
+aligned to the right beneath the channel selector.
+
 ## Play and updates
 
 Normal desktop startup only discovers available updates. Changing Stable/Beta

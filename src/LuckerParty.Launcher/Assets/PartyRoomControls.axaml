@@ -24,6 +24,8 @@
                               HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                               VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                               RecognizesAccessKey="True" />
+            <Border x:Name="PressedInset" IsHitTestVisible="False" IsVisible="False"
+                    Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}" />
             <Border x:Name="KeyboardFocus" IsHitTestVisible="False"
                     Margin="3" CornerRadius="{TemplateBinding CornerRadius}"
                     BorderThickness="2" BorderBrush="Transparent" />
@@ -127,24 +129,32 @@
       <Setter Property="BorderBrush" Value="#E8E1D8" />
       <Setter Property="CornerRadius" Value="16" />
       <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Background" Value="#EEE7FA" />
-        <Setter Property="BorderBrush" Value="#D6C7ED" />
+        <Setter Property="Background" Value="#EEE7DB" />
+        <Setter Property="BorderBrush" Value="#D7CABB" />
       </Style>
       <!-- Checked means the Settings page is open; it survives pointer exit. -->
       <Style Selector="^:checked /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Background" Value="#E7DEFF" />
-        <Setter Property="BorderBrush" Value="#CDB9F1" />
+        <Setter Property="Background" Value="#E2D5C3" />
+        <Setter Property="BorderBrush" Value="#B7A58B" />
       </Style>
       <Style Selector="^:checked:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Background" Value="#DED1FA" />
+        <Setter Property="Background" Value="#DBCCB7" />
       </Style>
       <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Background" Value="#CCBAEE" />
-        <Setter Property="BorderBrush" Value="#BAA0E6" />
+        <Setter Property="Background" Value="#D3C2A9" />
+        <Setter Property="BorderBrush" Value="#AA9678" />
       </Style>
       <Style Selector="^:checked:pressed /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Background" Value="#CCBAEE" />
-        <Setter Property="BorderBrush" Value="#BAA0E6" />
+        <Setter Property="Background" Value="#D3C2A9" />
+        <Setter Property="BorderBrush" Value="#AA9678" />
+      </Style>
+      <Style Selector="^:checked /template/ Border#PressedInset">
+        <Setter Property="IsVisible" Value="True" />
+        <Setter Property="BoxShadow" Value="inset 0 2 5 #3020243B" />
+      </Style>
+      <Style Selector="^:pressed /template/ Border#PressedInset">
+        <Setter Property="IsVisible" Value="True" />
+        <Setter Property="BoxShadow" Value="inset 0 2 5 #3020243B" />
       </Style>
     </ControlTheme>
 

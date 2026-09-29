@@ -48,6 +48,8 @@ internal static class LauncherUiChecks
                     var chevronPosition = chevron.TranslatePoint(new Point(0, 0), window)!.Value;
                     Require(primaryPosition.X > window.Bounds.Width * .55 && primaryPosition.Y > window.Bounds.Height * .75,
                         "Primary action occupies the bottom-right action strip");
+                    Require(window.Bounds.Height - primaryPosition.Y - primary.Bounds.Height is >= 8 and <= 16,
+                        "Empty helper text does not reserve blank padding beneath Play");
                     Require(primary.Bounds.Width + chevron.Bounds.Width >= 400 && primary.Bounds.Height >= 64,
                         "Play presents an enlarged primary click target in the full-size layout");
                     Require(Math.Abs(primary.Bounds.Height - chevron.Bounds.Height) < .1 && Math.Abs(primaryPosition.Y - chevronPosition.Y) < .1,
@@ -77,6 +79,7 @@ internal static class LauncherUiChecks
                     Require(initialVersion.TranslatePoint(new Point(0,0), window)!.Value.Y < 180,
                         "Installed version sits beneath the top-right channel selector");
                     var settingsNavigation = window.GetVisualDescendants().OfType<ToggleButton>().Single(button => button.Name == "SettingsNavigation");
+                    var settingsPosition = settingsNavigation.TranslatePoint(new Point(), window)!.Value;
                     var homePage = window.GetVisualDescendants().OfType<Control>().Single(control => control.Name == "HomePage");
                     var settingsPage = window.GetVisualDescendants().OfType<Control>().Single(control => control.Name == "SettingsPage");
                     void RequireSettings(bool open, string message) => Require(settingsNavigation.IsChecked == open &&
@@ -89,10 +92,17 @@ internal static class LauncherUiChecks
                     Dispatcher.UIThread.RunJobs();
                     var settingsSurface = settingsNavigation.GetVisualDescendants().OfType<ContentPresenter>()
                         .Single(presenter => presenter.Name == "PART_ContentPresenter");
+                    var settingsInset = settingsNavigation.GetVisualDescendants().OfType<Border>().Single(border => border.Name == "PressedInset");
                     Require(settingsNavigation.IsChecked == true && settingsSurface.Background is ISolidColorBrush selectedSettings &&
-                        selectedSettings.Color == Color.Parse("#E7DEFF"),
-                        "Settings navigation remains visibly selected after the pointer leaves");
+                        selectedSettings.Color.R < 240 && settingsInset.IsVisible && settingsInset.BoxShadow.Count > 0 && settingsInset.BoxShadow[0].IsInset,
+                        "Open Settings keeps a darker pressed-in face and inset shadow after pointer exit");
                     await Save(window, output, "party-room-settings.png");
+                    var initialStatus = window.GetVisualDescendants().OfType<TextBlock>().Single(control => control.Name == "UpdateStatus");
+                    Require(initialStatus.Bounds.Width >= initialStatus.TextLayout.WidthIncludingTrailingWhitespace,
+                        $"Status label has space for its complete text ({initialStatus.Bounds.Width}/{initialStatus.TextLayout.WidthIncludingTrailingWhitespace})");
+                    RequireStationary(window, settingsNavigation, settingsPosition, "Settings stays in place when its page opens");
+                    Require(!window.GetVisualDescendants().OfType<Button>().Any(button => Equals(button.Content, "← Back to play")),
+                        "Settings page omits the redundant Back to play button");
                     PointerClick(window, settingsNavigation);
                     RequireSettings(false, "Second Settings click returns home and clears selection");
                     settingsNavigation.Focus(NavigationMethod.Tab);
@@ -117,8 +127,8 @@ internal static class LauncherUiChecks
                         "Settings switch uses the coral on state");
                     Require(sidebar.IsVisible && controller.AllowMultipleInstances, "Settings toggle reveals the instance sidebar");
                     window.Width = 1240;
-                    Click(window.GetVisualDescendants().OfType<Button>().Single(button => Equals(button.Content, "← Back to play")));
-                    RequireSettings(false, "Back to play returns home and clears the Settings selection");
+                    ToggleSettings(window);
+                    RequireSettings(false, "Settings toggle returns home and clears its pressed state");
                     Require(!toggle.IsEffectivelyVisible, "Main screen does not expose the multiple-instance toggle");
                     for (var count = 1; count <= 3; count++)
                     {
@@ -142,13 +152,13 @@ internal static class LauncherUiChecks
                     Require(!FindButton(window, "Running").IsEnabled && !sidebar.IsVisible && controller.RunningGames == 3,
                         "Turning the preference off immediately shows disabled Running without closing games");
                     Require(helper.Text != "Opens another game window", "Additional-instance helper disappears immediately when the toggle is off");
-                    Click(window.GetVisualDescendants().OfType<Button>().Single(button => Equals(button.Content, "← Back to play")));
+                    ToggleSettings(window);
                     await Save(window, output, "party-room-running.png");
                     PointerClick(window, settingsNavigation);
                     toggle.IsChecked = true;
                     Require(FindButton(window, "Play").IsEnabled && helper.Text == "Opens another game window",
                         "Turning the preference on immediately restores Play and its correct helper");
-                    Click(window.GetVisualDescendants().OfType<Button>().Single(button => Equals(button.Content, "← Back to play")));
+                    ToggleSettings(window);
                     Click(FindButton(window, "Play options"));
                     Require(FindButton(window, "Play options").ContextMenu!.IsOpen, "Installed-version fallback is behind Play options");
                     await Save(window, output, "party-room-dropdown.png");
@@ -167,7 +177,7 @@ internal static class LauncherUiChecks
                     await Wait(() => !controller.GameRunning && !controller.Busy);
                     PointerClick(window, settingsNavigation); toggle.IsChecked = false;
                     Require(!sidebar.IsVisible, "Disabling multiple instances removes the sidebar column");
-                    Click(window.GetVisualDescendants().OfType<Button>().Single(button => Equals(button.Content, "← Back to play")));
+                    ToggleSettings(window);
                     window.Width = 850; window.Height = 620;
                     await Save(window, output, "party-room-small.png");
                     var play = FindButton(window, "Play");
@@ -184,14 +194,24 @@ internal static class LauncherUiChecks
                     var versionPosition = version.TranslatePoint(new Point(0, 0), window)!.Value;
                     Require(version.IsEffectivelyVisible && versionPosition.X + version.Bounds.Width <= window.Bounds.Width,
                         "Installed version remains inside the window");
+                    settingsPosition = settingsNavigation.TranslatePoint(new Point(), window)!.Value;
+                    ToggleSettings(window);
+                    await Save(window, output, "party-room-small-settings.png");
+                    RequireStationary(window, settingsNavigation, settingsPosition, "Compact Settings toggle stays at its home position");
+                    ToggleSettings(window);
                     PointerClick(window, settingsNavigation); toggle.IsChecked = true;
-                    Click(window.GetVisualDescendants().OfType<Button>().Single(button => Equals(button.Content, "← Back to play")));
+                    ToggleSettings(window);
                     await Save(window, output, "party-room-small-sidebar.png");
                     position = play.TranslatePoint(new Point(0, 0), window)!.Value;
                     compactChevronPosition = compactChevron.TranslatePoint(new Point(0, 0), window)!.Value;
                     Require(sidebar.IsVisible && play.IsEffectivelyVisible && play.Bounds.Height >= 56 && position.X >= sidebar.Bounds.Width &&
                         compactChevronPosition.X + compactChevron.Bounds.Width <= window.Bounds.Width && position.Y + play.Bounds.Height <= window.Bounds.Height,
                         "Small sidebar layout keeps the complete primary action in the remaining window area");
+                    settingsPosition = settingsNavigation.TranslatePoint(new Point(), window)!.Value;
+                    ToggleSettings(window);
+                    await Save(window, output, "party-room-small-sidebar-settings.png");
+                    RequireStationary(window, settingsNavigation, settingsPosition, "Compact sidebar Settings toggle stays at its home position");
+                    ToggleSettings(window);
                     Console.WriteLine("LAUNCHER_UI_CHECK_PASS: layouts, fonts/art rendering, Settings, three games, Play menu and targeted Show/Close");
                 }
                 finally
@@ -240,6 +260,14 @@ internal static class LauncherUiChecks
             await Wait(() => !controller.Busy && !controller.UpdateAvailable);
             Require(FindButton(window, "Play").IsEnabled && stable.Downloads == 0,
                 "Returning to an up-to-date channel restores Play");
+            await Save(window, output, "party-room-current.png");
+            var status = window.GetVisualDescendants().OfType<TextBlock>().Single(control => control.Name == "UpdateStatus");
+            var check = window.GetVisualDescendants().OfType<Control>().Single(control => control.Name == "UpdateCheck");
+            var textPosition = status.TranslatePoint(new Point(), window)!.Value;
+            var checkPosition = check.TranslatePoint(new Point(), window)!.Value;
+            Require(check.IsEffectivelyVisible && textPosition.X - checkPosition.X - check.Bounds.Width is >= 3 and <= 8 &&
+                Math.Abs(textPosition.Y + status.Bounds.Height / 2 - checkPosition.Y - check.Bounds.Height / 2) < 1,
+                "Up-to-date check sits directly beside its text and shares its vertical center");
             stable.FailCheck = true;
             Click(FindButton(window, "Play"));
             await Wait(() => !controller.Busy && controller.Activity == LauncherActivity.Error);
@@ -255,7 +283,7 @@ internal static class LauncherUiChecks
                 "Play stops at newly discovered Update rather than installing automatically");
             PointerClick(window, window.GetVisualDescendants().OfType<ToggleButton>().Single(button => button.Name == "SettingsNavigation"));
             window.GetVisualDescendants().OfType<ToggleSwitch>().Single().IsChecked = true;
-            Click(window.GetVisualDescendants().OfType<Button>().Single(button => Equals(button.Content, "← Back to play")));
+            ToggleSettings(window);
             var fallback = (MenuItem)FindButton(window, "Play options").ContextMenu!.ItemsSource!.Cast<object>().Single();
             fallback.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
             await Wait(() => !controller.Busy && controller.RunningGames == 1);
@@ -282,6 +310,13 @@ internal static class LauncherUiChecks
 
     private static Button FindButton(Window window, string name) => window.GetVisualDescendants().OfType<Button>()
         .Single(button => AutomationProperties.GetName(button) == name);
+    private static void ToggleSettings(Window window) => PointerClick(window,
+        window.GetVisualDescendants().OfType<ToggleButton>().Single(button => button.Name == "SettingsNavigation"));
+    private static void RequireStationary(Window window, Control control, Point previous, string message)
+    {
+        var current = control.TranslatePoint(new Point(), window)!.Value;
+        Require(Math.Abs(current.X - previous.X) < .1 && Math.Abs(current.Y - previous.Y) < .1, message);
+    }
     private static void Click(Button button)
     { button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); Dispatcher.UIThread.RunJobs(); }
     private static void PointerClick(Window window, Control control)
@@ -304,6 +339,8 @@ internal static class LauncherUiChecks
     {
         await Task.Delay(200);
         Dispatcher.UIThread.RunJobs();
+        foreach (var control in window.GetVisualDescendants().OfType<Control>()) control.InvalidateMeasure();
+        window.UpdateLayout();
         foreach (var visual in window.GetVisualDescendants()) visual.InvalidateVisual();
         AvaloniaHeadlessPlatform.ForceRenderTimerTick(3);
         using var image = window.CaptureRenderedFrame() ?? throw new Exception("UI rendering failed.");
