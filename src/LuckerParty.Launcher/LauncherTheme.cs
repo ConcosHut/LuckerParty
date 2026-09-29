@@ -8,9 +8,9 @@ namespace LuckerParty.Launcher;
 
 internal static class PartyRoom
 {
-    public static readonly IBrush Ivory = Brush("#FFFDF8"), Sand = Brush("#F0E5D4"), Ink = Brush("#10192D"),
-        Muted = Brush("#636884"), Coral = Brush("#FF575E"), Lilac = Brush("#E7DEFF"),
-        Line = Brush("#E8E1D8"), Green = Brush("#19B981"), Card = Brush("#FCF8F1");
+    public static readonly IBrush Ivory = Brush("#FFFDF8"), Sand = Brush("#F1E7D7"), Ink = Brush("#20243B"),
+        Muted = Brush("#636884"), Coral = Brush("#FF6B76"), Lilac = Brush("#E7DEFF"),
+        Line = Brush("#E8E1D8"), Green = Brush("#278568"), Card = Brush("#FCF8F1");
     public static readonly FontFamily Body = new("avares://LuckerParty.Launcher/Assets/Fonts#Nunito Sans");
     public static readonly FontFamily Display = new("avares://LuckerParty.Launcher/Assets/Fonts#Lilita One");
     public static IBrush Brush(string color) => new SolidColorBrush(Color.Parse(color));

@@ -1,5 +1,5 @@
 using Avalonia;
-using Avalonia.Automation;
+using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
@@ -11,57 +11,50 @@ namespace LuckerParty.Launcher;
 
 internal sealed partial class LauncherWindow
 {
-    private readonly TextBlock _tagline = PartyRoom.Text("A SMALL ARENA. A BIGGER PARTY.", 12);
-    private readonly TextBlock _headline = PartyRoom.Heading("Ready for another round?", 40);
-    private readonly StackPanel _heroTitle = new() { Spacing = 8 };
-    private readonly Grid _heroArea = new() { RowDefinitions = new("Auto,*"), ClipToBounds = true };
-    private readonly Image _arena = new() { Stretch = Stretch.Uniform, IsHitTestVisible = false };
+    private readonly TextBlock _headline = PartyRoom.Heading("Ready for another round?", 28);
+    private readonly TextBlock _subtitle = PartyRoom.Text("New chaos. Same crew.", 17, PartyRoom.Muted);
+    private readonly StackPanel _headlineContent = new() { Spacing = 3, VerticalAlignment = VerticalAlignment.Center };
+    private readonly Image _arena = new() { Name = "HeroArena", Stretch = Stretch.Uniform, IsHitTestVisible = false };
+    private readonly BrandLogo _headerLogo = new("logo") { Name = "MainBrand", HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top };
+    private readonly Control _headerLockup = Wordmark(48);
     private readonly Control _updateCheck = new UpdateCheckMark { Width = 14, Height = 14, IsVisible = false };
-    private readonly Grid _playSections = new() { ColumnDefinitions = new("*,56") };
+    private readonly Grid _playSections = new() { ColumnDefinitions = new("*,72") };
     private readonly Border _playSplit = new()
     {
-        Name = "PlaySplitButton", HorizontalAlignment = HorizontalAlignment.Center,
-        Background = PartyRoom.Coral, CornerRadius = new CornerRadius(20), ClipToBounds = true
+        Name = "PlaySplitButton", Background = PartyRoom.Coral, CornerRadius = new CornerRadius(22),
+        Transitions = new Transitions { new BoxShadowsTransition { Property = Border.BoxShadowProperty, Duration = TimeSpan.FromMilliseconds(120) } }
     };
+    private readonly StackPanel _launchActions = new() { Spacing = 9, VerticalAlignment = VerticalAlignment.Center };
+    private readonly Grid _actionRow = new() { ColumnDefinitions = new("Auto,*,Auto"), RowDefinitions = new("Auto,Auto,Auto"), ColumnSpacing = 24 };
+    private readonly Border _footerSurface = new() { Background = PartyRoom.Sand };
     private readonly ToggleButton _settingsNavigation = new() { Name = "SettingsNavigation" };
-    private Control? _homeWordmark;
-    private double _wordmarkSize;
-    private int _heroLayout = -1;
 
-    private static Control Wordmark(double fontSize)
+    private static Control Wordmark(double size)
     {
-        var title = PartyRoom.Heading("LUCKER\nPARTY", fontSize);
-        title.LineHeight = fontSize * .9; title.TextAlignment = TextAlignment.Center;
-        var mark = new Grid { ColumnDefinitions = new("Auto,Auto") };
-        Place(mark, title);
-        Place(mark, new BrandAccents
-        {
-            Width = fontSize * .82, Height = fontSize,
-            VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(fontSize * .08, 0, 0, 0)
-        }, column: 1);
-        AutomationProperties.SetName(mark, "Lucker Party");
+        var mark = new Grid { ColumnDefinitions = new("Auto,*"), ColumnSpacing = size * .3, Width = size * 6.4, Height = size * 1.65 };
+        Place(mark, new BrandLogo("emblem") { Width = size * 2.2, Height = size * 1.65 });
+        Place(mark, new BrandLogo("wordmark") { Height = size * 1.65 }, column: 1);
         return mark;
     }
 
-    // This header stays visible on both pages. Version/status belong to the selected channel.
     private Control BuildHeader()
     {
-        var header = new Grid { RowDefinitions = new("40,Auto") };
+        // The stacked logo uses the empty upper-left of the isometric hero.
+        // Its fixed header row permits the logo to extend into the stage below.
+        var header = new Grid { RowDefinitions = new("40,84") };
         Place(header, BuildCaptionRow());
-        var channel = new StackPanel
-        {
-            Spacing = 3, HorizontalAlignment = HorizontalAlignment.Right,
-            Margin = new Thickness(24, 3, 24, 5)
-        };
+        _headerLogo.Margin = new Thickness(28, -4, 0, 0);
+        Place(header, _headerLogo, 1);
+        _headerLockup.HorizontalAlignment = HorizontalAlignment.Left;
+        _headerLockup.VerticalAlignment = VerticalAlignment.Top;
+        _headerLockup.Margin = new Thickness(28, 0, 0, 0);
+        Place(header, _headerLockup, 1);
+        var channel = new StackPanel { Spacing = 3, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(24, 3, 24, 5) };
         channel.Children.Add(ChannelSelector());
         var version = PartyRoom.Text(_controller.Version, 12, PartyRoom.Muted);
         version.TextAlignment = TextAlignment.Right; version.Margin = new Thickness(0, 2, 8, 0);
         channel.Children.Add(version);
-        var status = new StackPanel
-        {
-            Orientation = Orientation.Horizontal, Spacing = 5,
-            HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 0, 8, 0)
-        };
+        var status = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 5, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 0, 8, 0) };
         _updateStatus.FontSize = 12; _updateStatus.TextAlignment = TextAlignment.Right;
         _updateCheck.VerticalAlignment = VerticalAlignment.Center;
         status.Children.Add(_updateCheck); status.Children.Add(_updateStatus);
@@ -71,86 +64,68 @@ internal sealed partial class LauncherWindow
 
     private Control BuildHome()
     {
-        var home = new Grid { RowDefinitions = new("*,Auto,Auto,Auto"), Margin = new Thickness(28, 0, 28, 12) };
-        _tagline.LetterSpacing = 1.1; _tagline.FontWeight = FontWeight.Bold;
-        _heroTitle.Children.Add(_tagline);
         using var stream = AssetLoader.Open(new Uri("avares://LuckerParty.Launcher/Assets/party-room-arena.png"));
-        _arena.Source = new Bitmap(stream); _arena.VerticalAlignment = VerticalAlignment.Center;
-        _arena.HorizontalAlignment = HorizontalAlignment.Right;
-        var backdrop = new PartyRoomBackdrop { IsHitTestVisible = false };
-        Grid.SetRowSpan(backdrop, 2); Grid.SetColumnSpan(backdrop, 2); Place(_heroArea, backdrop);
-        Place(_heroArea, _arena, 1); Place(_heroArea, _heroTitle);
-        Place(home, _heroArea);
-        var headline = new StackPanel { Spacing = 2, Margin = new Thickness(0, 0, 0, 14) };
-        _headline.TextAlignment = TextAlignment.Center;
-        var subtitle = PartyRoom.Text("New chaos. Same crew.", 17, PartyRoom.Muted);
-        subtitle.TextAlignment = TextAlignment.Center; subtitle.FontWeight = FontWeight.Bold;
-        headline.Children.Add(_headline); headline.Children.Add(subtitle); Place(home, headline, 1);
-        var playContent = new StackPanel
-        {
-            Orientation = Orientation.Horizontal, Spacing = 12,
-            HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center
-        };
-        playContent.Children.Add(new LauncherIcon("play") { Width = 24, Height = 24, Foreground = Brushes.White });
-        playContent.Children.Add(_playLabel); _play.Content = playContent;
-        _play.HorizontalAlignment = HorizontalAlignment.Stretch; _play.VerticalAlignment = VerticalAlignment.Stretch;
-        _more.HorizontalAlignment = HorizontalAlignment.Stretch; _more.VerticalAlignment = VerticalAlignment.Stretch;
-        _play.CornerRadius = _more.CornerRadius = new CornerRadius(0);
-        _more.Padding = new Thickness(16);
-        _more.BorderThickness = new Thickness(1, 0, 0, 0); _more.BorderBrush = PartyRoom.Brush("#FFB0B3");
-        Place(_playSections, _play); Place(_playSections, _more, column: 1);
-        _playSplit.Child = _playSections; Place(home, _playSplit, 2);
-        var details = new StackPanel { Spacing = 6, Margin = new Thickness(0, 8, 0, 0), MaxWidth = 640 };
-        _message.TextAlignment = TextAlignment.Center;
-        details.Children.Add(_message); details.Children.Add(_progress); Place(home, details, 3);
-        UpdateHomeLayout(); return home;
+        _arena.Source = new Bitmap(stream);
+        RenderOptions.SetBitmapInterpolationMode(_arena, BitmapInterpolationMode.HighQuality);
+        _arena.VerticalAlignment = VerticalAlignment.Bottom;
+        _arena.HorizontalAlignment = HorizontalAlignment.Center;
+        return new Grid { Margin = new Thickness(22, 0, 22, 0), Children = { _arena } };
     }
 
     private void UpdateHomeLayout()
     {
-        var windowWidth = Bounds.Width > 0 ? Bounds.Width : Width;
-        var windowHeight = Bounds.Height > 0 ? Bounds.Height : Height;
-        var width = windowWidth - (_controller.AllowMultipleInstances ? 304 : 0) - 56;
-        var shortWindow = windowHeight < 780;
-        var narrow = width < 680;
-        var compact = narrow || shortWindow;
-        var sideBySide = shortWindow && !narrow;
-        var overlay = !compact;
-        var layout = overlay ? 2 : sideBySide ? 1 : 0;
-        if (_heroLayout != layout)
-        {
-            _heroArea.RowDefinitions = new(overlay || sideBySide ? "*" : "Auto,*");
-            _heroArea.ColumnDefinitions = new(sideBySide ? "Auto,*" : "*");
-            Grid.SetRow(_arena, overlay || sideBySide ? 0 : 1);
-            Grid.SetColumn(_arena, sideBySide ? 1 : 0);
-            _heroLayout = layout;
-        }
-        var size = compact ? 48d : 72d;
-        if (_homeWordmark is null || _wordmarkSize != size)
-        {
-            if (_homeWordmark is not null) _heroTitle.Children.Remove(_homeWordmark);
-            _homeWordmark = Wordmark(size); _wordmarkSize = size; _heroTitle.Children.Add(_homeWordmark);
-        }
-        _heroTitle.HorizontalAlignment = HorizontalAlignment.Left;
-        _heroTitle.VerticalAlignment = VerticalAlignment.Top;
-        _heroTitle.Margin = new Thickness(6, 0, sideBySide ? 14 : 0, 0);
-        _tagline.FontSize = compact ? 10 : 12;
-        _tagline.HorizontalAlignment = HorizontalAlignment.Left;
-        _headline.FontSize = compact ? 30 : 42;
-        // The image has an empty upper-left corner. The wide layout shares it
-        // with the brand, leaving more room for the arena and the main action.
-        // A short window uses columns; a narrow sidebar layout uses rows.
-        _arena.HorizontalAlignment = sideBySide ? HorizontalAlignment.Center : HorizontalAlignment.Right;
-        _arena.VerticalAlignment = VerticalAlignment.Bottom;
-        _arena.MaxWidth = overlay ? width * .9 : double.PositiveInfinity;
-        _arena.Margin = new Thickness(0, overlay ? 40 : 0, 0, 0);
-        var playHeight = compact ? 58d : 64d;
-        _playSplit.Width = Math.Min(compact ? 350 : 410, Math.Max(0, width));
+        var width = (Bounds.Width > 0 ? Bounds.Width : Width) - (_controller.AllowMultipleInstances ? 304 : 0);
+        var height = Bounds.Height > 0 ? Bounds.Height : Height;
+        var settings = _settings?.IsVisible == true;
+        var compact = height < 780 || width < 1000;
+        var stacked = width < 680;
+        var secondarySettingsRow = width < 960;
+        _headerLogo.IsVisible = !settings && !_controller.AllowMultipleInstances;
+        _headerLockup.IsVisible = !_headerLogo.IsVisible;
+        _headerLogo.Width = _headerLogo.Height = compact ? 180 : 228;
+        _headerLockup.Width = width < 680 ? 220 : 307;
+        _headerLockup.Height = width < 680 ? 60 : 79;
+        _headline.FontSize = compact ? 24 : 28;
+        _subtitle.FontSize = compact ? 15 : 17;
+        _arena.Margin = new Thickness(0, compact ? 14 : 0, 0, 0);
+        var playHeight = compact ? 64d : 76d;
+        _playSplit.Width = Math.Min(compact ? 400 : 440, Math.Max(0, width - 56));
         _playSplit.Height = _playSections.Height = _play.Height = _more.Height = playHeight;
+        _launchActions.Width = _playSplit.Width;
         _more.Width = playHeight;
         _more.Padding = new Thickness((playHeight - 24) / 2);
         _playSections.ColumnDefinitions[1].Width = new GridLength(playHeight);
-        _playLabel.FontSize = compact ? 22 : 24;
+        _playLabel.FontSize = compact ? 24 : 28;
+        _footerSurface.Background = settings ? PartyRoom.Ivory : PartyRoom.Sand;
+        _headlineContent.IsVisible = _launchActions.IsVisible = !settings;
+        _actionRow.Margin = new Thickness(28, settings ? 10 : 22, 28, 18);
+        // Keep the grid's cell count stable during Settings/resize layout passes.
+        _actionRow.ColumnDefinitions[0].Width = !settings && secondarySettingsRow ? new GridLength(1, GridUnitType.Star) : GridLength.Auto;
+        _actionRow.ColumnDefinitions[1].Width = !settings && secondarySettingsRow ? GridLength.Auto : new GridLength(1, GridUnitType.Star);
+        _actionRow.ColumnDefinitions[2].Width = !settings && !secondarySettingsRow ? GridLength.Auto : new GridLength(0);
+        _settingsNavigation.Margin = !settings && secondarySettingsRow ? new Thickness(0, 12, 0, 0) : default;
+        _launchActions.Margin = !settings && stacked ? new Thickness(0, 12, 0, 0) : default;
+        Grid.SetRow(_settingsNavigation, !settings && stacked ? 2 : !settings && secondarySettingsRow ? 1 : 0);
+        Grid.SetColumn(_settingsNavigation, 0);
+        Grid.SetRow(_headlineContent, 0);
+        Grid.SetColumn(_headlineContent, secondarySettingsRow ? 0 : 1);
+        Grid.SetColumnSpan(_headlineContent, stacked ? 2 : 1);
+        Grid.SetRow(_launchActions, stacked ? 1 : 0);
+        Grid.SetColumn(_launchActions, stacked ? 0 : secondarySettingsRow ? 1 : 2);
+        Grid.SetColumnSpan(_launchActions, stacked ? 2 : 1);
+        _launchActions.HorizontalAlignment = HorizontalAlignment.Right;
+        UpdatePlayShadow();
+    }
+
+    private void UpdatePlayShadow()
+    {
+        var pressed = _play.IsPressed || _more.IsPressed;
+        var hover = _playSplit.IsPointerOver;
+        _playSplit.BoxShadow = !_play.IsEnabled ? default : new BoxShadows(new BoxShadow
+        {
+            OffsetY = pressed ? 2 : hover ? 9 : 6, Blur = pressed ? 7 : hover ? 24 : 18,
+            Color = Color.Parse(hover ? "#42DB5263" : "#2ADB5263")
+        });
     }
 
     private Control BuildSettings()
@@ -185,45 +160,54 @@ internal sealed partial class LauncherWindow
 
     private Control BuildFooter()
     {
-        var footer = new Grid { Margin = new Thickness(24, 0, 24, 12) };
+        _headlineContent.Children.Add(_headline); _headlineContent.Children.Add(_subtitle);
+        var playContent = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+        playContent.Children.Add(new LauncherIcon("play") { Width = 24, Height = 24, Foreground = Brushes.White });
+        playContent.Children.Add(_playLabel); _play.Content = playContent;
+        _play.HorizontalAlignment = _more.HorizontalAlignment = HorizontalAlignment.Stretch;
+        _play.VerticalAlignment = _more.VerticalAlignment = VerticalAlignment.Stretch;
+        _play.CornerRadius = _more.CornerRadius = new CornerRadius(0);
+        _more.BorderThickness = new Thickness(1, 0, 0, 0); _more.BorderBrush = PartyRoom.Brush("#FFB7BD");
+        Place(_playSections, _play); Place(_playSections, _more, column: 1);
+        var face = new Grid();
+        Place(face, new Border { Child = _playSections, CornerRadius = new CornerRadius(22), ClipToBounds = true });
+        // One shared edge/highlight avoids a seam or unequal rounding between halves.
+        Place(face, new Border
+        {
+            CornerRadius = new CornerRadius(22), BorderThickness = new Thickness(1), BorderBrush = PartyRoom.Brush("#CF4F5D"), IsHitTestVisible = false,
+            Background = new LinearGradientBrush
+            {
+                StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
+                GradientStops = new GradientStops { new GradientStop(Color.Parse("#16FFFFFF"), 0), new GradientStop(Colors.Transparent, .55) }
+            }
+        });
+        _playSplit.Child = face;
+        _playSplit.PointerEntered += (_, _) => UpdatePlayShadow();
+        _playSplit.PointerExited += (_, _) => UpdatePlayShadow();
+        foreach (var button in new[] { _play, _more }) button.PropertyChanged += (_, change) =>
+        {
+            if (change.Property == Avalonia.Controls.Button.IsPressedProperty || change.Property == IsEnabledProperty) UpdatePlayShadow();
+        };
+        _launchActions.Children.Add(_playSplit);
+        _message.TextAlignment = TextAlignment.Right;
+        _launchActions.Children.Add(_message); _launchActions.Children.Add(_progress);
         var settingsContent = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10 };
         settingsContent.Children.Add(new LauncherIcon("gear") { Width = 24, Height = 24 });
-        var text = PartyRoom.Text("Settings", 17); text.FontWeight = FontWeight.Bold; settingsContent.Children.Add(text);
+        var label = PartyRoom.Text("Settings", 17); label.FontWeight = FontWeight.Bold; settingsContent.Children.Add(label);
         _settingsNavigation.Content = settingsContent;
         _settingsNavigation.HorizontalAlignment = HorizontalAlignment.Left;
+        _settingsNavigation.VerticalAlignment = VerticalAlignment.Center;
         _settingsNavigation.HorizontalContentAlignment = HorizontalAlignment.Center;
         _settingsNavigation.VerticalContentAlignment = VerticalAlignment.Center;
         _settingsNavigation.Padding = new Thickness(18, 12);
         _settingsNavigation.Height = 50; _settingsNavigation.MinWidth = 154;
-        _settingsNavigation.CornerRadius = new CornerRadius(16);
-        _settingsNavigation.Classes.Add("settings-nav");
-        AutomationProperties.SetName(_settingsNavigation, "Settings");
+        _settingsNavigation.CornerRadius = new CornerRadius(16); _settingsNavigation.Classes.Add("settings-nav");
+        Avalonia.Automation.AutomationProperties.SetName(_settingsNavigation, "Settings");
         _settingsNavigation.IsCheckedChanged += (_, _) => SetSettingsVisible(_settingsNavigation.IsChecked == true);
-        Place(footer, _settingsNavigation);
-        return new Border
-        {
-            BorderBrush = PartyRoom.Line, BorderThickness = new Thickness(0, 1, 0, 0),
-            Padding = new Thickness(0, 10, 0, 0), Child = footer
-        };
-    }
-}
-
-internal sealed class BrandAccents : Control
-{
-    public override void Render(DrawingContext context)
-    {
-        var unit = Bounds.Width / 54;
-        DrawSquare(context, new Rect(12 * unit, 6 * unit, 19 * unit, 19 * unit), "#FF575E", -7);
-        DrawSquare(context, new Rect(2 * unit, 34 * unit, 19 * unit, 19 * unit), "#FF9D22", -5);
-        DrawSquare(context, new Rect(32 * unit, 28 * unit, 19 * unit, 19 * unit), "#AD7DFF", 14);
-    }
-
-    private static void DrawSquare(DrawingContext context, Rect bounds, string color, double degrees)
-    {
-        var center = bounds.Center;
-        var transform = Matrix.CreateTranslation(-center.X, -center.Y)
-            * Matrix.CreateRotation(degrees * Math.PI / 180) * Matrix.CreateTranslation(center.X, center.Y);
-        using (context.PushTransform(transform)) context.DrawRectangle(PartyRoom.Brush(color), null, bounds, 3, 3);
+        Place(_actionRow, _settingsNavigation); Place(_actionRow, _headlineContent); Place(_actionRow, _launchActions);
+        _footerSurface.Child = _actionRow;
+        UpdateHomeLayout();
+        return _footerSurface;
     }
 }
 
@@ -234,22 +218,5 @@ internal sealed class UpdateCheckMark : Control
         using var scale = context.PushTransform(Matrix.CreateScale(Bounds.Width / 14, Bounds.Height / 14));
         context.DrawEllipse(PartyRoom.Green, null, new Point(7, 7), 7, 7);
         context.DrawGeometry(null, new Pen(Brushes.White, 1.5), Geometry.Parse("M 3.5,7 L 6,9.5 L 10.5,4.5"));
-    }
-}
-
-// A few soft marks give the ivory canvas depth without adding a competing image.
-internal sealed class PartyRoomBackdrop : Control
-{
-    public override void Render(DrawingContext context)
-    {
-        var lilac = PartyRoom.Brush("#22AD7DFF");
-        var coral = PartyRoom.Brush("#18FF575E");
-        context.DrawEllipse(lilac, null, new Point(Bounds.Width * .055, Bounds.Height * .72), 5, 5);
-        context.DrawEllipse(coral, null, new Point(Bounds.Width * .085, Bounds.Height * .76), 3, 3);
-        context.DrawEllipse(lilac, null, new Point(Bounds.Width * .93, Bounds.Height * .07), 4, 4);
-        var pen = new Pen(PartyRoom.Brush("#20FF9D22"), 2);
-        var x = Bounds.Width * .88; var y = Bounds.Height * .035;
-        context.DrawLine(pen, new Point(x - 4, y), new Point(x + 4, y));
-        context.DrawLine(pen, new Point(x, y - 4), new Point(x, y + 4));
     }
 }

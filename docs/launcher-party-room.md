@@ -1,9 +1,24 @@
 # Party Room launcher
 
-The launcher uses a warm ivory, sand, coral and lilac palette, a bundled Lilita
-One wordmark/display font, Nunito Sans body text, and a capsule-arena illustration.
+The launcher uses a warm ivory, sand, coral and lilac palette, the finalized
+Clover Peak/Leafcut vector logo, Lilita One headlines, Nunito Sans body text,
+and the approved four-world isometric arena illustration.
 Avalonia controls remain native, keyboard accessible and independently testable;
 the illustration contains no user interface.
+
+The large stacked logo occupies the upper-left of the normal home screen.
+Settings and the sidebar layout use a compact horizontal lockup. The flat logo
+is deliberately kept distinct from the detailed hero, preserving recognizable
+shapes at small sizes. Its exact SVG paths render through `BrandLogo` without
+an installed logo font or a raster conversion. The hero uses high-quality
+bitmap interpolation when scaled down.
+
+A sand action strip groups the headline and Settings with a large bottom-right
+Play split button: 440×76 normally, 400×64 in compact layouts. Narrow windows
+reflow the actions into additional rows. Play has a restrained coral shadow,
+shared darker edge and subtle top highlight; hover increases elevation,
+pressing lowers it and disabled states remove the shadow. Existing capsule
+instance cards and their controls are retained.
 
 ## Play and updates
 
@@ -64,11 +79,12 @@ still block replacement; a fresh launcher waits until they close.
 
 ## Verification
 
-`python tools/dev.py check` exercises controller ownership using three real
+`python tools/dev.py check --suite launcher` exercises controller ownership using three real
 child processes and the rendered Avalonia home, Settings, multi-instance and
 small-window layouts with the embedded fonts/art. It tests the Play dropdown,
 sidebar visibility, channel deferral, targeted Show/Close, actual pointer hover,
-keyboard focus, split-button geometry and immediate preference/state changes.
+keyboard focus, split-button geometry, bottom-right action placement, narrow
+sidebar layout and immediate preference/state changes.
 PNGs are written
 under ignored `artifacts/launcher-ui-checks/` for visual inspection.
 

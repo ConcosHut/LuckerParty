@@ -7,6 +7,29 @@ in parallel on separate files, then verify the combined result before release.
 The first polish pass shipped in Beta 25. The following iteration improves
 space usage and Settings navigation, with native verification in the Windows VM.
 
+## Selected branding and Party Stage integration — September 29, 2026
+
+- [x] Embed the finalized Clover Peak emblem and Leafcut lettering as exact SVG paths.
+- [x] Preserve the flat logo geometry, colors and negative space; omit texture/outline effects.
+- [x] Replace the hero with the approved four-world V4 composite, preserving local repairs.
+- [x] Enlarge the upper-left logo and stage; use horizontal branding in Settings/sidebar views.
+- [x] Add the sand action strip and bottom-right 440×76 Play target (400×64 compact).
+- [x] Share one split-button edge, highlight and coral shadow with hover/press/disabled states.
+- [x] Retain current capsule instance cards, contextual version, Settings toggle and update guards.
+- [x] Verify the focused launcher suite and inspect home, hover, Settings, Running, dropdown,
+      instance and narrow-window renders, including narrow sidebar layout.
+- [x] Verify an isolated native Windows desktop preview: SVG/art rendering, working-area
+      placement, both sidebar modes, Settings toggle and Back deselection. The 1160×720
+      client fits at (60,16) on the VM's 1280×752 working area in desktop session 6.
+- [x] Close the owned preview, remove its temporary task and stop the idle VM.
+- [ ] Publish a new player version. This UI pass is implemented locally; it does not
+      change updater or gameplay code. Full multiplayer/installed-update suites were
+      not repeated for the visual pass; publication CI runs those checks.
+
+Evidence lives under ignored `artifacts/launcher-ui-checks/` and
+`artifacts/windows-vm/launcher-branding-desktop/`. Protected emblem and wordmark
+SHA-256 values still match `assets/brand/status.json`.
+
 ## Composition and Settings follow-up
 
 - [x] Move the main brand to the upper-left and enlarge the arena in both sidebar modes.

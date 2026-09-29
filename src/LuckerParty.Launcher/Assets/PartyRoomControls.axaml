@@ -46,14 +46,14 @@
 
       <!-- Both halves of Play keep their size, shape and color on interaction. -->
       <Style Selector="^.primary /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Background" Value="#FF575E" />
+        <Setter Property="Background" Value="#FF6B76" />
         <Setter Property="Foreground" Value="White" />
       </Style>
       <Style Selector="^.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Background" Value="#ED464F" />
+        <Setter Property="Background" Value="#EF5967" />
       </Style>
       <Style Selector="^.primary:pressed /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Background" Value="#D93643" />
+        <Setter Property="Background" Value="#D94A59" />
       </Style>
       <Style Selector="^.primary:disabled /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="#CF656C" />
@@ -110,7 +110,7 @@
     <ControlTheme x:Key="PartyRoomSettingsNavigationTheme" TargetType="ToggleButton"
                   BasedOn="{StaticResource PartyRoomButtonTheme}">
       <Setter Property="Background" Value="#F5F0E8" />
-      <Setter Property="Foreground" Value="#10192D" />
+      <Setter Property="Foreground" Value="#20243B" />
       <Setter Property="BorderThickness" Value="1" />
       <Setter Property="BorderBrush" Value="#E8E1D8" />
       <Setter Property="CornerRadius" Value="16" />
@@ -139,7 +139,7 @@
     <!-- These are ToggleSwitch's required input parts. Keeping its canvas and
          moving panel preserves click, drag, Space and animated knob positioning. -->
     <ControlTheme x:Key="PartyRoomToggleTheme" TargetType="ToggleSwitch">
-      <Setter Property="Foreground" Value="#10192D" />
+      <Setter Property="Foreground" Value="#20243B" />
       <Setter Property="Background" Value="#E7DEFF" />
       <Setter Property="BorderBrush" Value="#CBBEE5" />
       <Setter Property="HorizontalAlignment" Value="Left" />
@@ -186,16 +186,16 @@
         <Setter Property="Background" Value="#CCBAEE" />
       </Style>
       <Style Selector="^:checked">
-        <Setter Property="Background" Value="#FF575E" />
-        <Setter Property="BorderBrush" Value="#FF575E" />
+        <Setter Property="Background" Value="#FF6B76" />
+        <Setter Property="BorderBrush" Value="#FF6B76" />
       </Style>
       <Style Selector="^:checked:pointerover">
-        <Setter Property="Background" Value="#ED464F" />
-        <Setter Property="BorderBrush" Value="#ED464F" />
+        <Setter Property="Background" Value="#EF5967" />
+        <Setter Property="BorderBrush" Value="#EF5967" />
       </Style>
       <Style Selector="^:checked:pressed">
-        <Setter Property="Background" Value="#D93643" />
-        <Setter Property="BorderBrush" Value="#D93643" />
+        <Setter Property="Background" Value="#D94A59" />
+        <Setter Property="BorderBrush" Value="#D94A59" />
       </Style>
       <Style Selector="^:disabled">
         <Setter Property="Background" Value="#E9E3EF" />
@@ -223,7 +223,7 @@
     <ControlTheme x:Key="PartyRoomMenuTheme" TargetType="ContextMenu">
       <Setter Property="Focusable" Value="True" />
       <Setter Property="Background" Value="#FFFDF8" />
-      <Setter Property="Foreground" Value="#10192D" />
+      <Setter Property="Foreground" Value="#20243B" />
       <Setter Property="BorderBrush" Value="#E8E1D8" />
       <Setter Property="BorderThickness" Value="1" />
       <Setter Property="CornerRadius" Value="14" />
@@ -241,7 +241,7 @@
     <!-- This compact item is for the launcher's single fallback action. -->
     <ControlTheme x:Key="PartyRoomMenuItemTheme" TargetType="MenuItem">
       <Setter Property="Padding" Value="14,10" />
-      <Setter Property="Foreground" Value="#10192D" />
+      <Setter Property="Foreground" Value="#20243B" />
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="FontWeight" Value="SemiBold" />
       <Setter Property="FocusAdorner" Value="{x:Null}" />

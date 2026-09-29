@@ -87,6 +87,11 @@ GitHub Actions verifies both platforms and publishes them together in a draft
 before exposing it. Never overwrite a published version; advance version.json.
 Launcher window state is coordinated in LauncherApp.cs; layout/chrome/sidebar
 live in separate partial-class files and control themes in Assets/PartyRoomControls.axaml.
+The finalized Clover Peak/Leafcut SVG sources live in assets/brand/ and render
+natively through BrandLogo.cs. Preserve their geometry and colors. The approved
+four-world hero is Assets/party-room-arena.png; keep regional art fixes intact.
+The home screen uses a sand action strip with a large bottom-right Play button
+and a restrained coral shadow; narrow layouts reflow the actions.
 Parallel edits may share a checkout when file ownership is disjoint; run builds
 only after integration. See docs/launcher-polish-checklist.md for the UI pass.
 

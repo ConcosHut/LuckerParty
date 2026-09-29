@@ -1,0 +1,22 @@
+{
+  "emblem": {
+    "state": "finalized",
+    "approved_by": "user",
+    "approved_on": "2026-09-29",
+    "master": "lucker-party-emblem.svg",
+    "sha256": "bc16392a9bb4c331fbe062ba1d5ba68add3b1198c63afe2d7dd0f756c4b905c7",
+    "instruction": "Preserve approved emblem geometry, colors, transparent gaps and star opening during text-layout exploration."
+  },
+  "wordmark": {
+    "state": "selected direction; cleaned vector prepared for review",
+    "selected_by": "user",
+    "selected_on": "2026-09-29",
+    "direction": "Leafcut",
+    "master": "lucker-party-wordmark.svg",
+    "full_logo": "lucker-party-logo.svg",
+    "sha256": "f23fada818c6bc7c3c918997970c50d4eefd9062be7515e14f63b29f9fbdeae7",
+    "source": "artifacts/brand-exploration/research-round-v7/lettering-imagegen/02-leafcut.png",
+    "instruction": "Preserve the selected image-generated Leafcut letterforms, star counter in A, and separate letters during placement studies. The finalized emblem remains protected.",
+    "ideation_preference": "Use image generation for new lettering ideation; convert selected directions to cleaned editable paths."
+  }
+}

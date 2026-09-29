@@ -52,7 +52,7 @@ internal sealed partial class LauncherWindow : Window
         _message.Name = "PlayHelper";
         Title = "Lucker Party"; Background = PartyRoom.Ivory; Foreground = PartyRoom.Ink;
         FontFamily = PartyRoom.Body; FontSize = 14; RequestedThemeVariant = ThemeVariant.Light;
-        Width = controller.AllowMultipleInstances ? 1240 : 1000; Height = 840; MinWidth = 820; MinHeight = 620;
+        Width = controller.AllowMultipleInstances ? 1464 : 1160; Height = 840; MinWidth = 820; MinHeight = 620;
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
         Styles.Add(PartyRoom.ButtonStyles());
         _play = Button("", PartyRoom.Coral, Brushes.White); _play.Classes.Add("primary");
@@ -65,7 +65,7 @@ internal sealed partial class LauncherWindow : Window
         _settings = BuildSettings(); _settings.Name = "SettingsPage"; _settings.IsVisible = false;
         _sidebar = BuildSidebar(); _shell.Children.Add(_sidebar);
         var main = new Grid { RowDefinitions = new("Auto,*,Auto") };
-        main.Children.Add(BuildHeader());
+        var header = BuildHeader(); header.ZIndex = 2; main.Children.Add(header);
         var pages = new Grid(); pages.Children.Add(_home); pages.Children.Add(_settings); Grid.SetRow(pages, 1); main.Children.Add(pages);
         var footer = BuildFooter(); Grid.SetRow(footer, 2); main.Children.Add(footer);
         Grid.SetColumn(main, 1); _shell.Children.Add(main);

@@ -46,6 +46,8 @@ internal static class LauncherUiChecks
                     var primary = FindButton(window, "Play"); var chevron = FindButton(window, "Play options");
                     var primaryPosition = primary.TranslatePoint(new Point(0, 0), window)!.Value;
                     var chevronPosition = chevron.TranslatePoint(new Point(0, 0), window)!.Value;
+                    Require(primaryPosition.X > window.Bounds.Width * .55 && primaryPosition.Y > window.Bounds.Height * .75,
+                        "Primary action occupies the bottom-right action strip");
                     Require(primary.Bounds.Width + chevron.Bounds.Width >= 400 && primary.Bounds.Height >= 64,
                         "Play presents an enlarged primary click target in the full-size layout");
                     Require(Math.Abs(primary.Bounds.Height - chevron.Bounds.Height) < .1 && Math.Abs(primaryPosition.Y - chevronPosition.Y) < .1,
@@ -111,7 +113,7 @@ internal static class LauncherUiChecks
                     window.KeyRelease(Key.Space, RawInputModifiers.None);
                     Dispatcher.UIThread.RunJobs();
                     Require(toggle.IsChecked == true, "Custom Settings switch retains Space-key activation");
-                    Require(toggleTrack.Background is ISolidColorBrush onTrack && onTrack.Color == Color.Parse("#FF575E"),
+                    Require(toggleTrack.Background is ISolidColorBrush onTrack && onTrack.Color == ((ISolidColorBrush)PartyRoom.Coral).Color,
                         "Settings switch uses the coral on state");
                     Require(sidebar.IsVisible && controller.AllowMultipleInstances, "Settings toggle reveals the instance sidebar");
                     window.Width = 1240;
@@ -182,6 +184,14 @@ internal static class LauncherUiChecks
                     var versionPosition = version.TranslatePoint(new Point(0, 0), window)!.Value;
                     Require(version.IsEffectivelyVisible && versionPosition.X + version.Bounds.Width <= window.Bounds.Width,
                         "Installed version remains inside the window");
+                    PointerClick(window, settingsNavigation); toggle.IsChecked = true;
+                    Click(window.GetVisualDescendants().OfType<Button>().Single(button => Equals(button.Content, "← Back to play")));
+                    await Save(window, output, "party-room-small-sidebar.png");
+                    position = play.TranslatePoint(new Point(0, 0), window)!.Value;
+                    compactChevronPosition = compactChevron.TranslatePoint(new Point(0, 0), window)!.Value;
+                    Require(sidebar.IsVisible && play.IsEffectivelyVisible && play.Bounds.Height >= 56 && position.X >= sidebar.Bounds.Width &&
+                        compactChevronPosition.X + compactChevron.Bounds.Width <= window.Bounds.Width && position.Y + play.Bounds.Height <= window.Bounds.Height,
+                        "Small sidebar layout keeps the complete primary action in the remaining window area");
                     Console.WriteLine("LAUNCHER_UI_CHECK_PASS: layouts, fonts/art rendering, Settings, three games, Play menu and targeted Show/Close");
                 }
                 finally
