@@ -3,6 +3,7 @@ using Avalonia.Animation;
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -60,7 +61,8 @@ internal sealed partial class LauncherWindow : Window
         _play.Name = "PrimaryPlay"; AutomationProperties.SetName(_play, "Play"); AutomationProperties.SetName(_more, "Play options");
         _stable = ChannelButton("Stable", "stable"); _beta = ChannelButton("Beta", "beta");
         _home = BuildHome();
-        _settings = BuildSettings(); _settings.IsVisible = false;
+        _home.Name = "HomePage";
+        _settings = BuildSettings(); _settings.Name = "SettingsPage"; _settings.IsVisible = false;
         _sidebar = BuildSidebar(); _shell.Children.Add(_sidebar);
         var main = new Grid { RowDefinitions = new("Auto,*,Auto") };
         main.Children.Add(BuildHeader());
@@ -82,11 +84,7 @@ internal sealed partial class LauncherWindow : Window
         _timer = new DispatcherTimer(TimeSpan.FromSeconds(1), DispatcherPriority.Background, (_, _) => RefreshInstances());
         Opened += async (_, _) =>
         {
-            if (Screens.ScreenFromWindow(this) is { } screen)
-            {
-                var available = screen.WorkingArea.Size.ToSize(1 / screen.Scaling);
-                Height = Math.Min(Height, available.Height - 32); Width = Math.Min(Width, available.Width - 32);
-            }
+            FitWindowToWorkingArea();
             _timer.Start(); Refresh();
             await RunAsync(prepareOnly: !Program.Options.Resume);
         };
@@ -96,6 +94,20 @@ internal sealed partial class LauncherWindow : Window
             { args.Cancel = true; if (controller.GameRunning) WindowState = WindowState.Minimized; }
             else _timer.Stop();
         };
+    }
+
+    private void SetSettingsVisible(bool visible)
+    {
+        _settings.IsVisible = visible;
+        _home.IsVisible = !visible;
+        if (_settingsNavigation is { } navigation)
+        {
+            if (navigation.IsChecked != visible)
+                navigation.SetCurrentValue(ToggleButton.IsCheckedProperty, (bool?)visible);
+            ToolTip.SetTip(navigation, visible ? "Back to play" : "Open launcher settings");
+            if (!visible) navigation.Focus();
+        }
+        UpdateHomeLayout();
     }
 
     private static Button Button(object content, IBrush? background = null, IBrush? foreground = null)

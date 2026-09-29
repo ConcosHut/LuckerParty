@@ -107,6 +107,35 @@
       </Style>
     </ControlTheme>
 
+    <ControlTheme x:Key="PartyRoomSettingsNavigationTheme" TargetType="ToggleButton"
+                  BasedOn="{StaticResource PartyRoomButtonTheme}">
+      <Setter Property="Background" Value="#F5F0E8" />
+      <Setter Property="Foreground" Value="#10192D" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="BorderBrush" Value="#E8E1D8" />
+      <Setter Property="CornerRadius" Value="16" />
+      <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#EEE7FA" />
+        <Setter Property="BorderBrush" Value="#D6C7ED" />
+      </Style>
+      <!-- Checked means the Settings page is open; it survives pointer exit. -->
+      <Style Selector="^:checked /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#E7DEFF" />
+        <Setter Property="BorderBrush" Value="#CDB9F1" />
+      </Style>
+      <Style Selector="^:checked:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#DED1FA" />
+      </Style>
+      <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#CCBAEE" />
+        <Setter Property="BorderBrush" Value="#BAA0E6" />
+      </Style>
+      <Style Selector="^:checked:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#CCBAEE" />
+        <Setter Property="BorderBrush" Value="#BAA0E6" />
+      </Style>
+    </ControlTheme>
+
     <!-- These are ToggleSwitch's required input parts. Keeping its canvas and
          moving panel preserves click, drag, Space and animated knob positioning. -->
     <ControlTheme x:Key="PartyRoomToggleTheme" TargetType="ToggleSwitch">
@@ -246,5 +275,9 @@
 
   <Style Selector="ToggleSwitch">
     <Setter Property="Theme" Value="{StaticResource PartyRoomToggleTheme}" />
+  </Style>
+
+  <Style Selector="ToggleButton.settings-nav">
+    <Setter Property="Theme" Value="{StaticResource PartyRoomSettingsNavigationTheme}" />
   </Style>
 </Styles>

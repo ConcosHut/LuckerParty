@@ -66,6 +66,9 @@ matching OS. Build commands own a workspace lock; export platforms sequentially.
 Keep update SDK startup auto-apply disabled, hold the launcher session guard until
 all game instances exit, and keep preferences/logs outside replaced install files.
 The Party Room launcher prepares updates on startup without launching a game.
+Settings is toggleable navigation with a persistent selected state; Back and
+Escape return to play and clear selection. Startup windows fit and recenter in
+the display's working area using logical dimensions and pixel positions.
 Its settings opt-in reveals a sidebar with targeted Show/Close and permits additional Play launches of the installed
 build while games run; updates and channel changes still require every child to exit.
 GitHub Actions verifies both platforms and publishes them together in a draft

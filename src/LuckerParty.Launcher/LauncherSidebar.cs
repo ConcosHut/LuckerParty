@@ -15,23 +15,25 @@ internal sealed partial class LauncherWindow
         var rail = new Grid { RowDefinitions = new("Auto,Auto,*,Auto"), Margin = new Thickness(16, 30, 16, 22) };
         var wordmark = Wordmark(36); wordmark.HorizontalAlignment = HorizontalAlignment.Left;
         wordmark.Margin = new Thickness(8, 0, 0, 0);
+        ConfigureDragRegion(wordmark);
         Place(rail, wordmark);
         var header = new StackPanel
         {
             Orientation = Orientation.Horizontal, Spacing = 10,
-            Margin = new Thickness(6, 28, 0, 16), VerticalAlignment = VerticalAlignment.Center
+            Margin = new Thickness(6, 28, 0, 18), VerticalAlignment = VerticalAlignment.Center
         };
-        var heading = PartyRoom.Text("Running instances", 17); heading.FontWeight = FontWeight.ExtraBold;
+        var heading = PartyRoom.Text("Running instances", 19); heading.FontWeight = FontWeight.ExtraBold;
         heading.VerticalAlignment = VerticalAlignment.Center; header.Children.Add(heading);
-        _count.FontWeight = FontWeight.Bold; _count.VerticalAlignment = VerticalAlignment.Center;
+        _count.FontSize = 16; _count.FontWeight = FontWeight.Bold; _count.VerticalAlignment = VerticalAlignment.Center;
         header.Children.Add(new Border
         {
             Background = PartyRoom.Lilac, CornerRadius = new CornerRadius(20),
-            MinWidth = 28, Padding = new Thickness(8, 2), Child = _count
+            MinWidth = 32, Padding = new Thickness(8, 4), Child = _count
         });
         Place(rail, header, 1);
+        _instances.Spacing = 14;
         Place(rail, new ScrollViewer { Content = _instances, Margin = new Thickness(0, 0, 0, 16) }, 2);
-        var hint = PartyRoom.Text("Updates wait until all game windows close.", 12, PartyRoom.Muted);
+        var hint = PartyRoom.Text("Updates wait until all game windows close.", 13, PartyRoom.Muted);
         hint.Margin = new Thickness(6, 0); Place(rail, hint, 3);
         return new Border { Name = "InstanceSidebar", Width = 304, Background = PartyRoom.Sand, Child = rail };
     }
@@ -71,9 +73,9 @@ internal sealed partial class LauncherWindow
     {
         var content = new StackPanel { Spacing = 12, HorizontalAlignment = HorizontalAlignment.Center };
         content.Children.Add(new CapsuleThumbnail(1) { Width = 68, Height = 90, HorizontalAlignment = HorizontalAlignment.Center });
-        var title = PartyRoom.Text("Your party starts here", 16); title.FontWeight = FontWeight.ExtraBold;
+        var title = PartyRoom.Text("Your party starts here", 18); title.FontWeight = FontWeight.ExtraBold;
         title.TextAlignment = TextAlignment.Center; content.Children.Add(title);
-        var hint = PartyRoom.Text("Press Play. Each game window will appear here with its own Show and Close controls.", 13, PartyRoom.Muted);
+        var hint = PartyRoom.Text("Press Play to start a game. Your windows will appear here so you can show or close each one.", 14, PartyRoom.Muted);
         hint.TextAlignment = TextAlignment.Center; content.Children.Add(hint);
         return new Border
         {
@@ -84,16 +86,16 @@ internal sealed partial class LauncherWindow
 
     private (Border Card, TextBlock Time) BuildInstanceCard(GameInstance game)
     {
-        var row = new Grid { ColumnDefinitions = new("64,*") };
+        var row = new Grid { ColumnDefinitions = new("64,*"), RowDefinitions = new("Auto,Auto") };
         Place(row, new CapsuleThumbnail(game.Number) { Width = 64, Height = 90, VerticalAlignment = VerticalAlignment.Center });
         var details = new StackPanel { Spacing = 7, Margin = new Thickness(12, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center };
         var title = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 7 };
         var dot = new Border { Width = 8, Height = 8, CornerRadius = new CornerRadius(4), Background = PartyRoom.Green, VerticalAlignment = VerticalAlignment.Center };
         title.Children.Add(dot);
-        var label = PartyRoom.Text($"Instance {game.Number:00}", 16); label.FontWeight = FontWeight.ExtraBold;
+        var label = PartyRoom.Text($"Instance {game.Number:00}", 18); label.FontWeight = FontWeight.ExtraBold;
         title.Children.Add(label); details.Children.Add(title);
-        var time = PartyRoom.Text("Running · just now", 12, PartyRoom.Muted); details.Children.Add(time);
-        var actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Margin = new Thickness(0, 3, 0, 0) };
+        var time = PartyRoom.Text("Running · just now", 14, PartyRoom.Muted); details.Children.Add(time);
+        var actions = new Grid { ColumnDefinitions = new("*,*"), ColumnSpacing = 8, Margin = new Thickness(0, 14, 0, 0) };
         var show = InstanceAction("Show", "eye", PartyRoom.Lilac);
         show.Click += async (_, _) => await _controller.ShowInstanceAsync(game.Identity);
         var close = InstanceAction("Close", "close", PartyRoom.Brush("#ECE9E6"));
@@ -101,11 +103,13 @@ internal sealed partial class LauncherWindow
             force: _controller.Instances.Any(instance => instance.Identity == game.Identity && instance.CloseFailed));
         AutomationProperties.SetName(show, $"Show instance {game.Number}"); AutomationProperties.SetName(close, $"Close instance {game.Number}");
         ToolTip.SetTip(show, "Bring this game window to the front.");
-        actions.Children.Add(show); actions.Children.Add(close); details.Children.Add(actions); Place(row, details, column: 1);
+        Place(actions, show); Place(actions, close, column: 1);
+        Place(row, details, column: 1);
+        Place(row, actions, 1); Grid.SetColumnSpan(actions, 2);
         var card = new Border
         {
             Background = PartyRoom.Card, BorderBrush = PartyRoom.Brush("#E8DFD2"), BorderThickness = new Thickness(1),
-            CornerRadius = new CornerRadius(18), Padding = new Thickness(11, 15), Child = row,
+            CornerRadius = new CornerRadius(18), Padding = new Thickness(16), Child = row,
             BoxShadow = new BoxShadows(new BoxShadow { OffsetY = 2, Blur = 8, Color = Color.Parse("#0936291B") }),
             Tag = new InstanceCardElements(dot, ((StackPanel)close.Content!).Children.OfType<TextBlock>().Single(), show, close)
         };
@@ -115,9 +119,10 @@ internal sealed partial class LauncherWindow
     private static Button InstanceAction(string label, string icon, IBrush background)
     {
         var content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 5, VerticalAlignment = VerticalAlignment.Center };
-        content.Children.Add(new InstanceActionIcon(icon) { Width = 13, Height = 13, VerticalAlignment = VerticalAlignment.Center });
-        var text = PartyRoom.Text(label, 12); text.FontWeight = FontWeight.Bold; content.Children.Add(text);
-        var button = Button(content, background); button.Padding = new Thickness(8, 8); button.MinHeight = 34;
+        content.Children.Add(new InstanceActionIcon(icon) { Width = 15, Height = 15, VerticalAlignment = VerticalAlignment.Center });
+        var text = PartyRoom.Text(label, 14); text.FontWeight = FontWeight.Bold; content.Children.Add(text);
+        var button = Button(content, background); button.Padding = new Thickness(8, 10); button.MinHeight = 44;
+        button.HorizontalAlignment = HorizontalAlignment.Stretch;
         return button;
     }
 }

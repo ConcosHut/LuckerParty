@@ -59,10 +59,27 @@ internal sealed partial class LauncherWindow
             }
             else if (args.Key == Key.Escape && _settings.IsVisible)
             {
-                _settings.IsVisible = false; _home.IsVisible = true;
-                UpdateHomeLayout(); args.Handled = true;
+                SetSettingsVisible(false); args.Handled = true;
             }
         };
+    }
+
+    private void FitWindowToWorkingArea()
+    {
+        if (WindowState != WindowState.Normal || Screens.ScreenFromWindow(this) is not { } screen) return;
+        var area = screen.WorkingArea;
+        var scaling = screen.Scaling > 0 ? screen.Scaling : 1;
+        // Window dimensions are logical; screen bounds and Position are pixels.
+        // Lower the resize minimum too when a small display cannot fit it.
+        var availableWidth = Math.Max(1, area.Width / scaling - 32);
+        var availableHeight = Math.Max(1, area.Height / scaling - 32);
+        MinWidth = Math.Min(MinWidth, availableWidth);
+        MinHeight = Math.Min(MinHeight, availableHeight);
+        Width = Math.Min(Width, availableWidth); Height = Math.Min(Height, availableHeight);
+        Position = new PixelPoint(
+            area.X + (int)Math.Round((area.Width - Width * scaling) / 2),
+            area.Y + (int)Math.Round((area.Height - Height * scaling) / 2));
+        UpdateHomeLayout();
     }
 
     private void RestoreCloseMenu()

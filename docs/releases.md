@@ -20,6 +20,10 @@ Changing channels prepares that version without starting the game. Close all
 games before changing channels. The installed version and update status are shown
 once beneath the top-right channel selector.
 
+**Settings** is toggleable navigation: click it again to return to Play. Its
+lilac selected state stays visible while Settings is open. Space activates it;
+**Back to play** and Escape also return home and clear selection.
+
 The launcher stays alive while games run; closing its window during play
 minimizes it so it can be restored from the taskbar. Another invocation defers
 updates until that session exits. A launcher crash also leaves recorded child
@@ -124,8 +128,9 @@ requests check/package but do not publish. Actions and editor downloads are
 pinned; publishing alone has `contents: write`. The launcher locks both
 platform dependency graphs. To change packages deliberately, regenerate with
 `dotnet restore src/LuckerParty.Launcher/LuckerParty.Launcher.csproj -p:RestoreLockedMode=false --force-evaluate`
-and review the resulting lock-file changes. Windows 10/11 desktop testing
-still uses the actual PC; server/headless CI does not verify mouse feel.
+and review the resulting lock-file changes. Windows 10/11 launcher desktop
+testing uses the [dedicated VM](windows-vm.md); physical-PC playtesting still
+verifies hardware graphics and mouse feel that server/headless CI cannot establish.
 
 `version.json` supplies the next three-part stable version. Master's package
 version is `<base>-beta.<workflow-run-number>`; Release uses `<base>`. Published

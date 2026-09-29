@@ -4,8 +4,21 @@ Scope: approved Party Room mockups, the screenshot review, and the seven user
 additions. Keep Avalonia and the existing C# updater/process controller. Work
 in parallel on separate files, then verify the combined result before release.
 
-Implementation and verification are complete. Beta 25 is published, and the
-updated Windows launcher is open and ready to play.
+The first polish pass shipped in Beta 25. The following iteration improves
+space usage and Settings navigation, with native verification in the Windows VM.
+
+## Composition and Settings follow-up
+
+- [x] Move the main brand to the upper-left and enlarge the arena in both sidebar modes.
+- [x] Grow normal Play to 410×64, with a 350×58 compact layout and a flush square chevron.
+- [x] Tighten the headline/action grouping and add subtle drawn background accents.
+- [x] Give Settings a larger pill target with normal, hover, pressed and selected states.
+- [x] Toggle Settings open/closed by click or Space; Back/Escape also clear selection.
+- [x] Expand sidebar Show/Close to 44px targets with readable card text.
+- [x] Fit and recenter startup windows using the display's actual scaling and working area.
+- [x] Verify actual pointer/keyboard toggling, page visibility and split-button geometry.
+- [x] Verify native Windows placement, both sidebar modes and Settings selection.
+- [ ] Verify installed updates on Windows and Linux and publish the resulting Beta.
 
 ## Window, composition and brand — layout agent
 
@@ -88,9 +101,30 @@ addressed with complete Avalonia control themes and custom window chrome.
 
 ## Follow-up found in the Windows VM
 
-- [ ] Recenter or clamp the window position after its startup size is reduced
+- [x] Recenter or clamp the window position after its startup size is reduced
   to fit the working area. On the VM's 1280×800 desktop, the 1240×840 initial
   sidebar window shrinks to 1240×720 but retains its original centered position,
   leaving the caption buttons above the screen. The client capture renders
   correctly and Play is ready; the console capture exposes the positioning issue.
-  Evidence: ignored `artifacts/windows-vm/launcher-desktop-trial/`.
+  Initial evidence: ignored `artifacts/windows-vm/launcher-desktop-trial/`.
+  `FitWindowToWorkingArea()` now computes logical sizes by dividing by display
+  scaling and centers the final size in the screen's pixel working area.
+
+## Follow-up verification
+
+- The launcher integration checks pass real pointer/Space Settings activation,
+  repeated-click close, persistent lilac selection after pointer exit, Back and
+  Escape synchronization, enlarged/flush split-button geometry, three concurrent
+  children, and targeted Show/Close.
+- `python tools/check_distribution.py --target linux` passed actual installed
+  updates, failures/recovery, channel transitions and preference retention.
+- Windows VM run `run-1790648468147440715` passed both `dev.py check` (including
+  all 45 multiplayer scenarios) and actual installed-update checks in session 5.
+- A native desktop task verified Settings open/close, Back deselection, both
+  sidebar modes and an enabled Play control. The 1240×720 client now sits at
+  (20,16), fully inside the VM's 1280×752 working area, with visible captions.
+- The shorter-window composition was refined after that package run, rebuilt
+  separately in an isolated preview and verified on the same desktop. Final
+  captures/status are under ignored `artifacts/windows-vm/launcher-final-desktop/`;
+  headless large, small, selected, hover and multi-instance captures are under
+  `artifacts/launcher-ui-checks/`.
