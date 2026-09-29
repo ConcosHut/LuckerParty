@@ -5,6 +5,12 @@ Status: implemented, published, and verified on Windows and Linux. September 28,
 Operational commands are maintained in [releases.md](releases.md). This is the execution plan for the
 [distribution proposal](distribution-plan.md).
 
+September 29 follow-up: the desktop flow now separates discovery from Update
+and Play. Opening the launcher/changing channels checks metadata only; an
+explicit Update installs and restarts to Play without starting a game, including
+old persisted launch-after-update intent. The original sequence below records
+the initial implementation; [releases.md](releases.md) defines current behavior.
+
 ## Outcome and scope
 
 Players install once, then use the Lucker Party shortcut. The launcher checks

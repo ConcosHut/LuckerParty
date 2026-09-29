@@ -162,6 +162,7 @@ try
         await WaitFor(() => !controller.GameRunning);
     }
 
+    await UpdateFlowChecks.Run(directory);
     await LauncherUiChecks.Run(installation, Path.Combine(directory, "ui-data"));
 
     var releases = await new ExposedStableSource(new FixtureDownloader()).Read();

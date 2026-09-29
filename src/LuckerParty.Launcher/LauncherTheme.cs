@@ -35,11 +35,17 @@ internal static class PartyRoom
 
 internal sealed class LauncherIcon(string kind) : Control
 {
+    public string Kind
+    {
+        get => kind;
+        set { if (kind == value) return; kind = value; InvalidateVisual(); }
+    }
     public override void Render(DrawingContext context)
     {
         var pen = new Pen(Foreground ?? PartyRoom.Ink, 2);
         if (kind == "play") context.DrawGeometry(Foreground ?? PartyRoom.Ink, null, Geometry.Parse("M 5,2 L 19,12 L 5,22 Z"));
         else if (kind == "chevron") context.DrawGeometry(null, pen, Geometry.Parse("M 5,9 L 12,16 L 19,9"));
+        else if (kind == "download") context.DrawGeometry(null, pen, Geometry.Parse("M 12,2 L 12,15 M 6,10 L 12,16 L 18,10 M 4,17 L 4,22 L 20,22 L 20,17"));
         else
         {
             context.DrawEllipse(null, pen, new Point(12, 12), 7, 7);

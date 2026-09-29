@@ -44,6 +44,7 @@ internal sealed partial class LauncherWindow : Window
     private readonly Control _home, _settings;
     private readonly DispatcherTimer _timer;
     private bool _changingSetting;
+    private bool _closed;
     private string _lastStateMessage = "";
 
     public LauncherWindow(LauncherController controller)
@@ -79,20 +80,32 @@ internal sealed partial class LauncherWindow : Window
         PartyRoom.StyleMenu(_more.ContextMenu);
         ((MenuItem)_more.ContextMenu.ItemsSource!.Cast<object>().First()).Click += async (_, _) => await RunAsync(playInstalled: true);
         _more.Click += (_, _) => _more.ContextMenu.Open(_more);
-        _play.Click += async (_, _) => await RunAsync();
-        controller.Changed += state => Dispatcher.UIThread.Post(() => StateChanged(state));
+        _play.Click += async (_, _) =>
+        {
+            // Update is an explicit action. A normal Play click may discover a
+            // newer version, but cannot silently install it or launch past it.
+            if (_controller.UpdateAvailable) await RunAsync(prepareOnly: true);
+            else await RunAsync(prepareOnly: _controller.Activity == LauncherActivity.Error, discoverOnly: true);
+        };
+        controller.Changed += ControllerChanged;
         _timer = new DispatcherTimer(TimeSpan.FromSeconds(1), DispatcherPriority.Background, (_, _) => RefreshInstances());
         Opened += async (_, _) =>
         {
             FitWindowToWorkingArea();
             _timer.Start(); Refresh();
-            await RunAsync(prepareOnly: !Program.Options.Resume);
+            await RunAsync(prepareOnly: true, discoverOnly: !Program.Options.Resume);
         };
         Closing += (_, args) =>
         {
             if (controller.Busy || controller.GameRunning)
             { args.Cancel = true; if (controller.GameRunning) WindowState = WindowState.Minimized; }
             else _timer.Stop();
+        };
+        Closed += (_, _) =>
+        {
+            _closed = true;
+            controller.Changed -= ControllerChanged;
+            _timer.Stop();
         };
     }
 
@@ -130,7 +143,7 @@ internal sealed partial class LauncherWindow : Window
         button.Click += async (_, _) =>
         {
             if (_controller.Channel == channel) return;
-            _controller.SelectChannel(channel); Refresh(); await RunAsync(prepareOnly: true);
+            _controller.SelectChannel(channel); Refresh(); await RunAsync(prepareOnly: true, discoverOnly: true);
         };
         return button;
     }
@@ -152,13 +165,18 @@ internal sealed partial class LauncherWindow : Window
             Padding = new Thickness(4), Child = track
         };
     }
-    private async Task RunAsync(bool playInstalled = false, bool prepareOnly = false)
+    private async Task RunAsync(bool playInstalled = false, bool prepareOnly = false, bool discoverOnly = false)
     {
-        var task = _controller.RunAsync(playInstalled, prepareOnly); Refresh();
+        var task = _controller.RunAsync(playInstalled, prepareOnly, discoverOnly); Refresh();
         var result = await task;
         if (result == 0 && _controller.CheckOnly) { Close(); return; }
         Refresh();
     }
+    private void ControllerChanged(LauncherState state) => Dispatcher.UIThread.Post(() =>
+    {
+        if (!_closed) StateChanged(state);
+    });
+
     private void StateChanged(LauncherState state)
     {
         _progress.Value = state.Progress;
@@ -167,7 +185,7 @@ internal sealed partial class LauncherWindow : Window
         if (state.Message.StartsWith("GAME_EXITED", StringComparison.Ordinal) && !_controller.GameRunning)
         {
             WindowState = WindowState.Normal; Show();
-            if (!_controller.Busy) _ = RunAsync(prepareOnly: true);
+            if (!_controller.Busy) _ = RunAsync(prepareOnly: true, discoverOnly: true);
         }
         Refresh();
     }
@@ -175,7 +193,8 @@ internal sealed partial class LauncherWindow : Window
     {
         _sidebar.IsVisible = _controller.AllowMultipleInstances;
         var canPlay = !_controller.Busy && (!_controller.GameRunning || _controller.AllowMultipleInstances);
-        _play.IsEnabled = _more.IsEnabled = canPlay;
+        _more.IsEnabled = canPlay;
+        _play.IsEnabled = canPlay && (!_controller.UpdateAvailable || !_controller.GameRunning);
         _stable.IsEnabled = _beta.IsEnabled = !_controller.Busy && !_controller.GameRunning;
         _multiple.IsEnabled = !_controller.Busy;
         _channelThumb.X = _controller.Channel == "beta" ? 112 : 0;
@@ -187,15 +206,25 @@ internal sealed partial class LauncherWindow : Window
             LauncherActivity.Checking => "Checking…", LauncherActivity.Downloading => "Updating…",
             LauncherActivity.Applying => "Applying…", _ => "Starting…"
         } : singleGameBlocksPlay ? "Running"
-          : _controller.Activity == LauncherActivity.Error ? "Retry update" : "Play";
+          : _controller.Activity == LauncherActivity.Error ? "Retry update"
+          : _controller.UpdateAvailable ? "Update" : "Play";
+        var updateAction = _controller.UpdateAvailable;
+        _play.Classes.Set("update-action", updateAction);
+        _more.Classes.Set("update-action", updateAction);
+        _playSplit.Background = updateAction ? PartyRoom.Green : PartyRoom.Coral;
+        _playEdge.BorderBrush = PartyRoom.Brush(updateAction ? "#1C6650" : "#CF4F5D");
+        _more.BorderBrush = PartyRoom.Brush(updateAction ? "#8ABBAB" : "#FFB7BD");
+        _playIcon.Kind = updateAction ? "download" : "play";
         // The same refresh runs after setting changes as after controller events.
         // Helper text therefore cannot retain an obsolete multi-instance hint.
         _message.Text = _controller.Busy && _controller.Activity is LauncherActivity.Checking or LauncherActivity.Downloading or LauncherActivity.Applying
             ? _lastStateMessage
             : singleGameBlocksPlay ? "Close the game to play again."
-            : _controller.GameRunning && _controller.AllowMultipleInstances ? "Opens another game window"
             : _controller.Activity == LauncherActivity.Error && _lastStateMessage.StartsWith("LAUNCHER_ERROR: ", StringComparison.Ordinal)
-                ? _lastStateMessage[16..] + " Use Play options to launch the installed version." : "";
+                ? _lastStateMessage[16..] + " Use Play options to launch the installed version."
+            : _controller.UpdateAvailable ? _controller.GameRunning ? "Close all game windows to update."
+                : $"Install {_controller.AvailableVersion} for {_controller.Channel}."
+            : _controller.GameRunning && _controller.AllowMultipleInstances ? "Opens another game window" : "";
         var channelHint = _controller.GameRunning ? "Close all game windows to change channels."
             : _controller.Busy ? "Wait for the current update or launch to finish." : null;
         ToolTip.SetTip(_stable, channelHint); ToolTip.SetTip(_beta, channelHint);

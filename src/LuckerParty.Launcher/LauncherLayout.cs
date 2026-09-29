@@ -24,6 +24,8 @@ internal sealed partial class LauncherWindow
         Name = "PlaySplitButton", Background = PartyRoom.Coral, CornerRadius = new CornerRadius(22),
         Transitions = new Transitions { new BoxShadowsTransition { Property = Border.BoxShadowProperty, Duration = TimeSpan.FromMilliseconds(120) } }
     };
+    private readonly Border _playEdge = new() { CornerRadius = new CornerRadius(22), BorderThickness = new Thickness(1), IsHitTestVisible = false };
+    private readonly LauncherIcon _playIcon = new("play") { Width = 24, Height = 24, Foreground = Brushes.White };
     private readonly StackPanel _launchActions = new() { Spacing = 9, VerticalAlignment = VerticalAlignment.Center };
     private readonly Grid _actionRow = new() { ColumnDefinitions = new("Auto,*,Auto"), RowDefinitions = new("Auto,Auto,Auto"), ColumnSpacing = 24 };
     private readonly Border _footerSurface = new() { Background = PartyRoom.Sand };
@@ -54,10 +56,12 @@ internal sealed partial class LauncherWindow
         var version = PartyRoom.Text(_controller.Version, 12, PartyRoom.Muted);
         version.TextAlignment = TextAlignment.Right; version.Margin = new Thickness(0, 2, 8, 0);
         channel.Children.Add(version);
-        var status = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 5, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 0, 8, 0) };
+        var status = new Grid { ColumnDefinitions = new("Auto,*"), ColumnSpacing = 5, Width = 216,
+            HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 0, 8, 0) };
         _updateStatus.FontSize = 12; _updateStatus.TextAlignment = TextAlignment.Right;
+        _updateStatus.TextWrapping = TextWrapping.NoWrap;
         _updateCheck.VerticalAlignment = VerticalAlignment.Center;
-        status.Children.Add(_updateCheck); status.Children.Add(_updateStatus);
+        Place(status, _updateCheck); Place(status, _updateStatus, column: 1);
         channel.Children.Add(status); Place(header, channel, 1);
         return header;
     }
@@ -124,7 +128,7 @@ internal sealed partial class LauncherWindow
         _playSplit.BoxShadow = !_play.IsEnabled ? default : new BoxShadows(new BoxShadow
         {
             OffsetY = pressed ? 2 : hover ? 9 : 6, Blur = pressed ? 7 : hover ? 24 : 18,
-            Color = Color.Parse(hover ? "#42DB5263" : "#2ADB5263")
+            Color = Color.Parse(_controller.UpdateAvailable ? hover ? "#42278568" : "#2A278568" : hover ? "#42DB5263" : "#2ADB5263")
         });
     }
 
@@ -162,7 +166,7 @@ internal sealed partial class LauncherWindow
     {
         _headlineContent.Children.Add(_headline); _headlineContent.Children.Add(_subtitle);
         var playContent = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
-        playContent.Children.Add(new LauncherIcon("play") { Width = 24, Height = 24, Foreground = Brushes.White });
+        playContent.Children.Add(_playIcon);
         playContent.Children.Add(_playLabel); _play.Content = playContent;
         _play.HorizontalAlignment = _more.HorizontalAlignment = HorizontalAlignment.Stretch;
         _play.VerticalAlignment = _more.VerticalAlignment = VerticalAlignment.Stretch;
@@ -172,15 +176,12 @@ internal sealed partial class LauncherWindow
         var face = new Grid();
         Place(face, new Border { Child = _playSections, CornerRadius = new CornerRadius(22), ClipToBounds = true });
         // One shared edge/highlight avoids a seam or unequal rounding between halves.
-        Place(face, new Border
-        {
-            CornerRadius = new CornerRadius(22), BorderThickness = new Thickness(1), BorderBrush = PartyRoom.Brush("#CF4F5D"), IsHitTestVisible = false,
-            Background = new LinearGradientBrush
+        _playEdge.Background = new LinearGradientBrush
             {
                 StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
                 GradientStops = new GradientStops { new GradientStop(Color.Parse("#16FFFFFF"), 0), new GradientStop(Colors.Transparent, .55) }
-            }
-        });
+            };
+        Place(face, _playEdge);
         _playSplit.Child = face;
         _playSplit.PointerEntered += (_, _) => UpdatePlayShadow();
         _playSplit.PointerExited += (_, _) => UpdatePlayShadow();

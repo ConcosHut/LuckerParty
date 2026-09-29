@@ -22,19 +22,25 @@ instance cards and their controls are retained.
 
 ## Play and updates
 
-Normal desktop startup checks and installs available updates, then waits for Play.
-Changing Stable/Beta prepares that channel without starting a game. The segment
+Normal desktop startup only discovers available updates. Changing Stable/Beta
+only discovers that channel's version, without downloading or installing. The segment
 thumb animates between two always-visible choices. The installed version appears
 once beneath the top-right selector beside update status. Selected channel text
 stays white on coral; unselected text stays navy, including while games block
 channel switching. A tooltip explains that restriction.
 
-Play checks/applies updates before starting one game. The button shows progress
-or Retry update when appropriate; a single-instance running game shows Running.
+When the selected channel has a different version, Play becomes a green Update
+button with a download icon and target-version helper. Clicking Update installs
+that version and restarts the launcher to Play; it never starts the game. This
+also applies to an older launcher's saved launch-after-update intent. Play checks
+again before starting one game; a newly discovered mismatch requires a separate
+Update click. The button shows progress or Retry update when appropriate;
+a single-instance running game shows Running.
 Its narrow, flush chevron offers Play installed version as
-the explicit offline fallback. Update restart intent distinguishes preparation
-from a user-requested launch, so an update cannot turn startup preparation into
-an unexpected game launch.
+the explicit offline fallback. Headless automation retains its explicit
+update-and-prepare or update-and-launch commands; `--discover-only` exercises
+the metadata-only path without either side effect. A small updater adapter keeps
+check/download/apply boundaries independently observable in interaction tests.
 
 ## Local multiplayer
 
@@ -84,11 +90,14 @@ child processes and the rendered Avalonia home, Settings, multi-instance and
 small-window layouts with the embedded fonts/art. It tests the Play dropdown,
 sidebar visibility, channel deferral, targeted Show/Close, actual pointer hover,
 keyboard focus, split-button geometry, bottom-right action placement, narrow
-sidebar layout and immediate preference/state changes.
+sidebar layout and immediate preference/state changes. Update-policy checks cover
+startup/channel discovery without downloading, explicit Update, retry, legacy
+restart intent, the green hover state and deferral while games use the install.
 PNGs are written
 under ignored `artifacts/launcher-ui-checks/` for visual inspection.
 
 `python tools/check_distribution.py --target linux` (or windows on Windows)
-checks real installed preparation across an updater restart, subsequent single
+checks metadata-only discovery with zero package requests, real installed
+preparation across an updater restart, subsequent single
 launch, offline recovery, Stable/Beta changes and retained settings. Native
 desktop focus and high-DPI feel still benefit from human playtesting.

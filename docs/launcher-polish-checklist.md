@@ -7,6 +7,24 @@ in parallel on separate files, then verify the combined result before release.
 The first polish pass shipped in Beta 25. The following iteration improves
 space usage and Settings navigation, with native verification in the Windows VM.
 
+## Explicit Update interaction — September 29, 2026
+
+- [x] Opening, channel selection and last-game exit discover metadata without downloading/applying.
+- [x] Present a green Update action and target version on a mismatch; keep current-version Play coral.
+- [x] Install only on an explicit Update click and return the restarted desktop to Play.
+- [x] Convert older saved launch-after-update intent to ready-only behavior.
+- [x] Use a check-only compatibility flag to prevent the old Stable launcher from starting a game on downgrade.
+- [x] Keep all-child/session guards, offline installed-version Play and retry behavior.
+- [x] Ignore queued controller events after a launcher window closes.
+- [x] Verify actual UI clicks, Update hover, retry, channel changes, last-game deferral and explicit install.
+- [x] Verify real Linux metadata-only discovery without package requests, HTTP update failures/recovery,
+      upgrade/downgrade and retained settings. New headless discovery uses the same controller path.
+- [ ] Publish after the Windows and Linux CI release gate passes.
+
+Local evidence: ignored `artifacts/explicit-update-launcher.log`,
+`artifacts/explicit-update-distribution.log` and
+`artifacts/launcher-ui-checks/party-room-update.png`.
+
 ## Selected branding and Party Stage integration — September 29, 2026
 
 - [x] Embed the finalized Clover Peak emblem and Leafcut lettering as exact SVG paths.

@@ -77,7 +77,12 @@ Use `python tools/dev.py pack --target windows` for isolated Dev packages and
 matching OS. Build commands own a workspace lock; export platforms sequentially.
 Keep update SDK startup auto-apply disabled, hold the launcher session guard until
 all game instances exit, and keep preferences/logs outside replaced install files.
-The Party Room launcher prepares updates on startup without launching a game.
+The Party Room launcher discovers updates on startup and channel selection without
+downloading, applying or launching a game. A version mismatch replaces Play with
+a green Update action; only that action installs, then returns to Play on restart.
+Desktop restart always clears launch-after-update intent, including older versions'
+saved intent. Headless automation retains explicit prepare/launch behavior;
+`--headless --discover-only` checks metadata without installing or launching.
 Settings is toggleable navigation with a persistent selected state; Back and
 Escape return to play and clear selection. Startup windows fit and recenter in
 the display's working area using logical dimensions and pixel positions.

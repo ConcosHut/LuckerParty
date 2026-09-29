@@ -42,8 +42,10 @@ else:
 
 class Handler(http.server.SimpleHTTPRequestHandler):
     mode = 'normal'
+    package_requests = 0
     def log_message(self, *_): pass
     def do_GET(self):
+        if self.path.endswith('.nupkg'): Handler.package_requests += 1
         if self.path.endswith('.nupkg') and self.mode != 'normal':
             self.send_response(200)
             self.send_header('Content-Length','1024' if self.mode == 'interrupt' else '8')
@@ -58,14 +60,25 @@ server = http.server.ThreadingHTTPServer(('127.0.0.1',0),functools.partial(Handl
 threading.Thread(target=server.serve_forever,daemon=True).start()
 url = f'http://127.0.0.1:{server.server_port}'
 
-def invoke(*extra, expected=0, version=None, ready_version=None):
+def invoke(*extra, expected=0, version=None, ready_version=None, available_version=None):
     log = data / 'launcher.log'
     offset = len(log.read_text(encoding='utf-8')) if log.exists() else 0
     game_log = data / 'game.log'
     game_offset = len(game_log.read_text(encoding='utf-8')) if game_log.exists() else 0
+    package_requests = Handler.package_requests
     result = subprocess.run([str(executable),'--headless',*extra],capture_output=True,text=True,errors='replace',timeout=120)
     if result.returncode != expected: raise RuntimeError(f'Unexpected exit {result.returncode}: {result.stdout} {result.stderr}')
-    if ready_version:
+    if available_version:
+        text = log.read_text(encoding='utf-8')[offset:]
+        if f'target={available_version} ' not in text or 'UPDATE_AVAILABLE ' not in text:
+            raise RuntimeError('Discovery did not report the selected version: '+text)
+        if any(event in text for event in ['Downloading ', 'Applying ', 'GAME_STARTED']) or Handler.package_requests != package_requests:
+            raise RuntimeError('Discovery downloaded, applied or started a game: '+text)
+        preferences = json.loads((data/'preferences.json').read_text(encoding='utf-8'))
+        if preferences.get('pendingLaunch') is not None or preferences.get('games') or preferences.get('game'):
+            raise RuntimeError('Discovery wrote launch/update intent or started a game')
+        print(text.strip(),flush=True)
+    elif ready_version:
         end = time.monotonic()+90
         while time.monotonic() < end:
             text = log.read_text(encoding='utf-8')[offset:] if log.exists() else ''
@@ -106,6 +119,7 @@ try:
     # Fresh package identities avoid a previously cached, valid B skipping the
     # simulated failure; rerun with a fresh initial/version set when needed.
     Handler.mode = 'interrupt'
+    invoke('--feed',url,'--channel','stable','--discover-only',available_version=args.stable_version)
     invoke('--feed',url,'--check-only',expected=1)
     Handler.mode = 'corrupt'
     invoke('--feed',url,'--check-only',expected=1)
@@ -113,11 +127,13 @@ try:
     Handler.mode = 'normal'
     invoke('--feed',url,'--channel','stable','--prepare-only',ready_version=args.stable_version)
     invoke('--no-update','--game-smoke',version=args.stable_version)
+    invoke('--feed',url,'--channel','beta','--discover-only',available_version=args.beta_version)
     invoke('--feed',url,'--channel','beta','--game-smoke',version=args.beta_version)
+    invoke('--feed',url,'--channel','stable','--discover-only',available_version=args.stable_version)
     invoke('--feed',url,'--channel','stable','--game-smoke',version=args.stable_version)
     preferences = json.loads((data/'preferences.json').read_text(encoding='utf-8'))
     if preferences['channel'] != 'stable' or not preferences.get('allowMultipleInstances') or sentinel.read_text() != 'preserve-me': raise RuntimeError('Preferences/saved data changed')
     if preferences.get('pendingLaunch') is not None or preferences.get('game') is not None or preferences.get('games'): raise RuntimeError('Session intent was not consumed')
-    print('INSTALLED_UPDATE_CHECK_PASS: install, offline, interrupted/corrupt download, HTTP A->B, Stable->Beta->older Stable, one launch and retained settings',flush=True)
+    print('INSTALLED_UPDATE_CHECK_PASS: metadata-only discovery with zero package requests, install, offline, interrupted/corrupt download, HTTP A->B, Stable->Beta->older Stable, one launch and retained settings',flush=True)
 finally:
     server.shutdown()

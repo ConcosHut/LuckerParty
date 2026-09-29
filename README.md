@@ -9,7 +9,9 @@ come later.
 
 Download the Windows Stable installer or Linux Stable AppImage from
 [GitHub Releases](https://github.com/ConcosHut/LuckerParty/releases/latest).
-The launcher updates automatically on opening, then waits for Play. Choose Beta for
+The launcher checks for updates on opening. If the selected channel has a different
+version, click Update to install it, then Play. Changing Stable/Beta only checks
+that channel; it does not install or start a game. Choose Beta for
 development updates; return to Stable at any time. Offline play, installation,
 release promotion, and recovery are covered in [the release runbook](docs/releases.md).
 

@@ -59,6 +59,18 @@
         <Setter Property="Background" Value="#CF656C" />
         <Setter Property="Foreground" Value="White" />
       </Style>
+      <Style Selector="^.primary.update-action /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#278568" />
+      </Style>
+      <Style Selector="^.primary.update-action:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#217158" />
+      </Style>
+      <Style Selector="^.primary.update-action:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#195943" />
+      </Style>
+      <Style Selector="^.primary.update-action:disabled /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#718F83" />
+      </Style>
       <Style Selector="^.primary:focus-visible /template/ Border#KeyboardFocus">
         <Setter Property="BorderBrush" Value="White" />
       </Style>

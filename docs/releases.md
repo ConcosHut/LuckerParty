@@ -11,12 +11,16 @@ Older "Prototype 01.1" labels describe the movement milestone, not a release
 version. The multiplayer sandbox is available through Beta.
 Runs from the Godot editor show "DEVELOPMENT" instead of an installed version.
 
-The launcher automatically checks and installs updates on opening, then waits
-for **Play**. The Play button also checks before starting a game. If checking
-or downloading fails, choose **Retry update** or use the Play button's chevron
-for **Play installed version**. Select **Beta** to receive development builds;
+The launcher checks for updates on opening without downloading or installing.
+If the selected channel has a different version, **Play** becomes a green
+**Update** button. Click it to install that version; the launcher restarts and
+returns to **Play**, without starting a game. Play checks again before launching;
+if it discovers a different version, it presents Update and waits for another
+click. If checking or downloading fails, choose **Retry update** or use the
+button's chevron for **Play installed version**. Select **Beta** to receive development builds;
 select **Stable** to return to the current stable build, even when it is older.
-Changing channels prepares that version without starting the game. Close all
+Changing channels only checks that channel and refreshes the available version
+and Update/Play action. It never automatically installs or starts the game. Close all
 games before changing channels. The installed version and update status are shown
 once beneath the top-right channel selector.
 
@@ -75,10 +79,23 @@ A future save format migration must define downgrade behavior separately.
 
 For offline troubleshooting, `--headless --no-update` starts the installed game directly.
 `--headless --prepare-only` updates and reports readiness without starting a game.
+`--headless --discover-only` only checks the selected channel's release metadata;
+it reports `UPDATE_AVAILABLE` when there is a different version, without any
+package download, update restart or game launch. Headless automation with an
+explicit launch/check/prepare command retains its existing install behavior.
 `--headless --no-update --game-smoke` runs the bounded gameplay scenario through
 the launcher; `--headless --check-only` updates and reports version without
 starting a game. Update restart intent is stored once and consumed by the new
-launcher. Startup auto-apply in the SDK is disabled so session guards run first.
+launcher. Desktop restarts always return to Play, including older versions'
+saved launch-after-update intent. Startup auto-apply in the SDK is disabled so
+session guards run first.
+
+The current Stable release predates the Party Room launcher. Switching to that
+older package also restores its old UI. Desktop Update writes the older
+launcher's recognized check-only intent, preventing an automatic game launch;
+that legacy launcher closes after preparation rather than showing the new Play
+screen. New launchers consume the compatibility flag and stay open at Play.
+Publishing this Beta does not promote the same changes to Stable.
 
 ## Developer commands
 

@@ -4,7 +4,7 @@ using Velopack.Sources;
 
 namespace LuckerParty.Launcher;
 
-internal enum LauncherActivity { Ready, Checking, Downloading, Applying, Error }
+internal enum LauncherActivity { Ready, Checking, UpdateAvailable, Downloading, Applying, Error }
 internal sealed record LauncherState(string Message, int Progress = 0, bool Running = false, string Notes = "",
     LauncherActivity Activity = LauncherActivity.Ready);
 internal sealed record GameInstance(GameSession Identity, int Number, DateTime StartedAt, bool Closing, bool CloseFailed);
@@ -27,6 +27,7 @@ internal sealed class LauncherController
     private readonly string _dataDirectory;
     private Preferences _preferences;
     private readonly BuildInfo _build;
+    private readonly Func<IUpdateSource, UpdateOptions, ILauncherUpdater> _createUpdater;
     private readonly object _sync = new();
     private readonly object _logSync = new();
     private readonly Dictionary<int, OwnedGame> _games = new();
@@ -43,13 +44,16 @@ internal sealed class LauncherController
     }
     public LauncherActivity Activity { get; private set; } = LauncherActivity.Ready;
     public string UpdateStatus { get; private set; } = "Getting ready";
+    public string? AvailableVersion { get; private set; }
+    public bool UpdateAvailable => AvailableVersion is not null;
     public bool AllowMultipleInstances { get { lock (_sync) return _preferences.AllowMultipleInstances; } }
     public bool CheckOnly => _options.CheckOnly;
     public string Channel => _options.Channel ?? _preferences.Channel;
     public string Version => _build.Version;
     public string DataDirectory => _dataDirectory;
 
-    public LauncherController(LaunchOptions options, string? directory = null, string? dataDirectory = null)
+    public LauncherController(LaunchOptions options, string? directory = null, string? dataDirectory = null,
+        Func<IUpdateSource, UpdateOptions, ILauncherUpdater>? createUpdater = null)
     {
         _directory = directory ?? AppContext.BaseDirectory;
         _distribution = Distribution.Load(_directory);
@@ -61,12 +65,16 @@ internal sealed class LauncherController
         _preferences = JsonFiles.Read<Preferences>(_preferencesPath) ?? new() { Channel = _distribution.Channel };
         LaunchOptions.ValidateChannel(_preferences.Channel);
         _options = options;
+        _createUpdater = createUpdater ?? ((source, settings) => new VelopackLauncherUpdater(source, settings));
     }
 
     public void SelectChannel(string channel)
     {
         if (Busy || GameRunning) throw new InvalidOperationException("Close all game instances before changing channels.");
         _options = _options with { Channel = LaunchOptions.ValidateChannel(channel), NoUpdate = false, Resume = false };
+        AvailableVersion = null;
+        Activity = LauncherActivity.Ready;
+        UpdateStatus = "Getting ready";
     }
 
     public void SetAllowMultipleInstances(bool enabled)
@@ -94,7 +102,7 @@ internal sealed class LauncherController
         Changed?.Invoke(new(message, progress, running, notes, Activity));
     }
 
-    public async Task<int> RunAsync(bool playInstalled = false, bool prepareOnly = false)
+    public async Task<int> RunAsync(bool playInstalled = false, bool prepareOnly = false, bool discoverOnly = false)
     {
         lock (_sync)
         {
@@ -105,6 +113,7 @@ internal sealed class LauncherController
         try
         {
             var skipUpdate = _options.NoUpdate;
+            discoverOnly |= _options.DiscoverOnly;
             lock (_sync)
             {
                 _guard ??= new SessionGuard(_dataDirectory);
@@ -129,7 +138,14 @@ internal sealed class LauncherController
                 {
                     if (_preferences.PendingLaunch is null || _preferences.PendingVersion != _build.Version)
                         throw new InvalidOperationException("Update restart did not reach the requested version. Retry or play the installed build.");
-                    _options = _preferences.PendingLaunch with { Resume = false };
+                    _options = _preferences.PendingLaunch with
+                    {
+                        Resume = false,
+                        CheckOnly = _options.Headless && _preferences.PendingLaunch.CheckOnly,
+                        // A desktop update always returns to Play, including
+                        // older versions' persisted launch-after-update intent.
+                        PrepareOnly = !_options.Headless || _preferences.PendingLaunch.PrepareOnly
+                    };
                     skipUpdate = true; // Skip once, then check again on subsequent Play clicks.
                     UpdateStatus = "Up to date";
                     _preferences.PendingLaunch = null;
@@ -145,7 +161,7 @@ internal sealed class LauncherController
             {
                 var source = CreateSource();
                 var transition = Channel != _distribution.Channel;
-                var manager = new UpdateManager(source, new UpdateOptions
+                var manager = _createUpdater(source, new UpdateOptions
                 {
                     ExplicitChannel = $"{_distribution.Platform}-{Channel}",
                     AllowVersionDowngrade = transition
@@ -154,33 +170,48 @@ internal sealed class LauncherController
                 {
                     UpdateStatus = "Checking for updates";
                     Report($"Checking {Channel} updates…", activity: LauncherActivity.Checking);
-                    var update = await manager.CheckForUpdatesAsync().WaitAsync(TimeSpan.FromSeconds(30));
-                    if (update is not null)
+                    var update = await manager.CheckAsync().WaitAsync(TimeSpan.FromSeconds(30));
+                    if (update is not null && update.TargetFullRelease.Version.ToString() != _build.Version)
                     {
                         var target = update.TargetFullRelease;
+                        AvailableVersion = target.Version.ToString();
+                        if (discoverOnly)
+                        {
+                            UpdateStatus = "Update available";
+                            Report($"UPDATE_AVAILABLE installed={_build.Version} target={AvailableVersion} channel={Channel}",
+                                notes: target.NotesMarkdown ?? "", activity: LauncherActivity.UpdateAvailable);
+                            return 0;
+                        }
                         UpdateStatus = "Downloading update";
                         Report($"Downloading {target.Version}…", notes: target.NotesMarkdown ?? "", activity: LauncherActivity.Downloading);
                         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(10));
-                        await manager.DownloadUpdatesAsync(update, progress =>
+                        await manager.DownloadAsync(update, progress =>
                             Changed?.Invoke(new($"Downloading {target.Version}…", progress, Notes: target.NotesMarkdown ?? "", Activity: LauncherActivity.Downloading)), timeout.Token);
                         lock (_sync)
                         {
-                            _preferences.PendingLaunch = _options with { Channel = Channel, Resume = false, PrepareOnly = prepareOnly || _options.PrepareOnly };
+                            _preferences.PendingLaunch = _options with
+                            {
+                                Channel = Channel, Resume = false, PrepareOnly = prepareOnly || _options.PrepareOnly,
+                                // Older Stable launchers know CheckOnly but not
+                                // PrepareOnly. Stop them from launching on downgrade.
+                                CheckOnly = !_options.Headless || _options.CheckOnly
+                            };
                             _preferences.PendingVersion = target.Version.ToString();
                             JsonFiles.Write(_preferencesPath, _preferences);
                         }
                         UpdateStatus = "Applying update";
                         Report($"Applying {target.Version}; launcher will restart.", activity: LauncherActivity.Applying);
                         // Only this guarded launcher is active; no game has started yet.
-                        manager.ApplyUpdatesAndRestart(target, ["--resume", .. (_options.Headless ? new[] { "--headless" } : [])]);
+                        manager.ApplyAndRestart(target, ["--resume", .. (_options.Headless ? new[] { "--headless" } : [])]);
                         return 0;
                     }
-                    if (transition) throw new InvalidOperationException($"No build is available for {Channel}.");
+                    if (transition && update is null) throw new InvalidOperationException($"No build is available for {Channel}.");
+                    AvailableVersion = null;
                     UpdateStatus = "Up to date";
                 }
                 else { UpdateStatus = "Developer build"; Report("Unpackaged developer launch; installation updates are unavailable."); }
             }
-            else if (!GameRunning && (playInstalled || _options.NoUpdate)) UpdateStatus = "Installed version";
+            else if (!GameRunning && !UpdateAvailable && (playInstalled || _options.NoUpdate)) UpdateStatus = "Installed version";
             if (_options.CheckOnly || prepareOnly || _options.PrepareOnly)
             {
                 Report($"LAUNCHER_READY version={_build.Version} channel={_distribution.Channel}", activity: LauncherActivity.Ready);

@@ -200,12 +200,84 @@ internal static class LauncherUiChecks
                     await Wait(() => !controller.GameRunning && !controller.Busy);
                     window.Close();
                 }
+                await CheckUpdateInteraction(installation, data + "-updates", output);
                 return 0;
             }, CancellationToken.None).ConfigureAwait(false);
         }
         // The headless session completes Dispatch on its worker; disposing there
         // would join the same worker. Dispose on a separate pool task.
         finally { await Task.Run(session.Dispose); }
+    }
+
+    private static async Task CheckUpdateInteraction(string installation, string data, string output)
+    {
+        var stable = new FixtureUpdater { Update = FixtureUpdater.Release("2.0.0") };
+        var beta = new FixtureUpdater { Update = FixtureUpdater.Release("2.1.0-beta.1") };
+        var controller = new LauncherController(new LaunchOptions(), installation, data,
+            (_, options) => options.ExplicitChannel!.EndsWith("-beta") ? beta : stable);
+        var window = new LauncherWindow(controller);
+        window.Show();
+        try
+        {
+            await Wait(() => !controller.Busy && controller.UpdateAvailable);
+            Require(FindButton(window, "Update").IsEnabled && stable.Downloads == 0 && stable.Applies == 0 && !controller.GameRunning,
+                "Opening the desktop launcher presents Update without installing or starting a game");
+            Click(FindButton(window, "Beta release channel"));
+            await Wait(() => !controller.Busy && controller.AvailableVersion == "2.1.0-beta.1");
+            Require(beta.Downloads == 0 && beta.Applies == 0 && !controller.GameRunning,
+                "Clicking Beta changes the target and Update state without installing or launching");
+            var updateButton = FindButton(window, "Update");
+            var origin = updateButton.TranslatePoint(new Point(), window)!.Value;
+            window.MouseMove(new Point(origin.X + updateButton.Bounds.Width / 2, origin.Y + updateButton.Bounds.Height / 2));
+            Dispatcher.UIThread.RunJobs();
+            var surface = updateButton.GetVisualDescendants().OfType<ContentPresenter>().Single(control => control.Name == "PART_ContentPresenter");
+            Require(surface.Background is ISolidColorBrush color && color.Color.G > color.Color.R + 40 && color.Color.G > color.Color.B,
+                "Update uses a distinct green hover treatment instead of Play's coral");
+            window.MouseMove(new Point(5, 5));
+            await Save(window, output, "party-room-update.png");
+            stable.Update = null;
+            Click(FindButton(window, "Stable release channel"));
+            await Wait(() => !controller.Busy && !controller.UpdateAvailable);
+            Require(FindButton(window, "Play").IsEnabled && stable.Downloads == 0,
+                "Returning to an up-to-date channel restores Play");
+            stable.FailCheck = true;
+            Click(FindButton(window, "Play"));
+            await Wait(() => !controller.Busy && controller.Activity == LauncherActivity.Error);
+            stable.FailCheck = false;
+            Click(FindButton(window, "Retry update"));
+            await Wait(() => !controller.Busy && controller.Activity == LauncherActivity.Ready);
+            Require(!controller.GameRunning && FindButton(window, "Play").IsEnabled,
+                "Retrying failed discovery returns to Play without unexpectedly launching a game");
+            stable.Update = FixtureUpdater.Release("2.0.0");
+            Click(FindButton(window, "Play"));
+            await Wait(() => !controller.Busy && controller.UpdateAvailable);
+            Require(stable.Downloads == 0 && !controller.GameRunning,
+                "Play stops at newly discovered Update rather than installing automatically");
+            PointerClick(window, window.GetVisualDescendants().OfType<ToggleButton>().Single(button => button.Name == "SettingsNavigation"));
+            window.GetVisualDescendants().OfType<ToggleSwitch>().Single().IsChecked = true;
+            Click(window.GetVisualDescendants().OfType<Button>().Single(button => Equals(button.Content, "← Back to play")));
+            var fallback = (MenuItem)FindButton(window, "Play options").ContextMenu!.ItemsSource!.Cast<object>().Single();
+            fallback.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            await Wait(() => !controller.Busy && controller.RunningGames == 1);
+            Require(!FindButton(window, "Update").IsEnabled && FindButton(window, "Play options").IsEnabled && stable.Downloads == 0,
+                "Update waits for running games while installed-version Play stays available for multiple instances");
+            var checksBeforeExit = stable.Checks;
+            await controller.CloseInstanceAsync(controller.Instances.Single().Identity);
+            await Wait(() => !controller.GameRunning && !controller.Busy && stable.Checks > checksBeforeExit && updateButton.IsEnabled);
+            Require(FindButton(window, "Update").IsEnabled && stable.Downloads == 0,
+                "Last game exit checks again without automatically updating");
+            Click(FindButton(window, "Update"));
+            await Wait(() => !controller.Busy && stable.Applies == 1);
+            Require(stable.Downloads == 1 && !controller.GameRunning &&
+                JsonFiles.Read<Preferences>(Path.Combine(data, "preferences.json"))!.PendingLaunch is { PrepareOnly: true },
+                "Explicit Update installs once and saves restart-to-Play intent");
+        }
+        finally
+        {
+            foreach (var game in controller.Instances) await controller.CloseInstanceAsync(game.Identity, force: true);
+            await Wait(() => !controller.GameRunning && !controller.Busy);
+            window.Close();
+        }
     }
 
     private static Button FindButton(Window window, string name) => window.GetVisualDescendants().OfType<Button>()
