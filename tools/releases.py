@@ -11,7 +11,9 @@ ROOT = Path(__file__).resolve().parents[1]
 REPOSITORY = 'ConcosHut/LuckerParty'
 
 def gh(*args, capture=False):
-    return subprocess.run(['gh',*args],cwd=ROOT,check=True,text=True,capture_output=capture)
+    # GitHub CLI emits UTF-8 JSON, including release notes. Windows' default
+    # code page cannot decode curly quotes and other international text.
+    return subprocess.run(['gh',*args],cwd=ROOT,check=True,text=True,encoding='utf-8',capture_output=capture)
 
 def releases():
     return json.loads(gh('api',f'repos/{REPOSITORY}/releases?per_page=100',capture=True).stdout)

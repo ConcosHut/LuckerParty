@@ -259,4 +259,9 @@ also exposed stale status-row measurement: refreshing now invalidates that row,
 and the final capture shows its complete text without a test-only remeasurement.
 The trial closed its own launcher and removed its temporary task. The VM was
 shut down after inspection. Full multiplayer/installed-update suites were not
-repeated locally for this UI pass; cross-platform release publication is pending.
+repeated locally for this UI pass. The initial release run passed game/launcher
+and real installation/update tests on both platforms, but Windows failed fetching
+the previous release: its default cp1252 decoder rejected UTF-8 curly quotes in
+GitHub JSON. `tools/releases.py` now explicitly decodes GitHub CLI output as
+UTF-8. A read-only API check preserved the prior release's curly quotes.
+Cross-platform release publication with that build-script fix is pending.
