@@ -7,6 +7,7 @@ from pathlib import Path
 import socket
 import subprocess
 import time
+from test_control_files import replace_control_file
 
 ROOT = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
@@ -50,7 +51,7 @@ class Peer:
         values.update(revision=self.revision, port=port)
         temporary = self.control.with_suffix('.tmp')
         temporary.write_text(json.dumps(values), encoding='utf-8')
-        os.replace(temporary, self.control)
+        replace_control_file(temporary, self.control)
 
     def command(self, command, value=0, **extra):
         self.send(action='party', command=command, value=value, **extra)

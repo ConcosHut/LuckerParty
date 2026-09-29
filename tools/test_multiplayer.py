@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Real, bounded ENet host/client scenarios. No router/firewall changes."""
-import argparse,json,os,socket,subprocess,time
+import argparse,json,socket,subprocess,time
 from pathlib import Path
+from test_control_files import replace_control_file
 
 ROOT=Path(__file__).resolve().parents[1]
 p=argparse.ArgumentParser(description=__doc__)
@@ -23,7 +24,7 @@ class Peer:
         processes.append(self)
     def send(self,**values):
         self.revision+=1;values.update(revision=self.revision,port=self.port)
-        temp=self.control.with_suffix('.tmp');temp.write_text(json.dumps(values),encoding='utf-8');os.replace(temp,self.control)
+        temp=self.control.with_suffix('.tmp');temp.write_text(json.dumps(values),encoding='utf-8');replace_control_file(temp,self.control)
     def read(self):
         try:return json.loads(self.probe.read_text(encoding='utf-8'))
         except (FileNotFoundError,json.JSONDecodeError,PermissionError):return {}
