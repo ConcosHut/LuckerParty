@@ -11,7 +11,7 @@ Older "Prototype 01.1" labels describe the movement milestone, not a release
 version. The multiplayer sandbox is available through Beta.
 Runs from the Godot editor show "DEVELOPMENT" instead of an installed version.
 
-The launcher checks for updates on opening without downloading or installing.
+The current Beta launcher checks for updates on opening without downloading or installing.
 If the selected channel has a different version, **Play** becomes a green
 **Update** button. Click it to install that version; the launcher restarts and
 returns to **Play**, without starting a game. Play checks again before launching;

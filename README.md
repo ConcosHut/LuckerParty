@@ -9,11 +9,13 @@ come later.
 
 Download the Windows Stable installer or Linux Stable AppImage from
 [GitHub Releases](https://github.com/ConcosHut/LuckerParty/releases/latest).
-The launcher checks for updates on opening. If the selected channel has a different
+The current Beta launcher checks for updates on opening. If the selected channel has a different
 version, click Update to install it, then Play. Changing Stable/Beta only checks
 that channel; it does not install or start a game. Choose Beta for
 development updates; return to Stable at any time. Offline play, installation,
 release promotion, and recovery are covered in [the release runbook](docs/releases.md).
+Older Stable packages still include the legacy launcher; choose Beta for the
+current Party Room interface and multiplayer sandbox.
 
 For multiplayer play, choose Beta in the launcher, enter your display name, then
 Host lobby or enter the host IP and Join lobby. The default port is UDP 27015.

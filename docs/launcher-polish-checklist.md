@@ -19,11 +19,22 @@ space usage and Settings navigation, with native verification in the Windows VM.
 - [x] Verify actual UI clicks, Update hover, retry, channel changes, last-game deferral and explicit install.
 - [x] Verify real Linux metadata-only discovery without package requests, HTTP update failures/recovery,
       upgrade/downgrade and retained settings. New headless discovery uses the same controller path.
-- [ ] Publish after the Windows and Linux CI release gate passes.
+- [x] Publish Beta 28 after the Windows and Linux CI release gate passes.
 
 Local evidence: ignored `artifacts/explicit-update-launcher.log`,
 `artifacts/explicit-update-distribution.log` and
 `artifacts/launcher-ui-checks/party-room-update.png`.
+
+[Beta 28](https://github.com/ConcosHut/LuckerParty/releases/tag/v0.3.0-beta.28)
+was published from commit `b5961cb` after
+[CI](https://github.com/ConcosHut/LuckerParty/actions/runs/36569897929) passed
+both platform builds, full game/launcher checks and actual installed-update
+checks, including the new discovery scenarios. The public Beta feeds and
+Windows Setup/Linux AppImage point to this release. Native Windows desktop
+appearance was not requalified for this interaction change; the existing
+chrome/fonts/assets remain, and the new Update state was reviewed in the
+rendered UI suite. The old Stable version retains its legacy launcher and
+closes rather than automatically launching a game after the compatibility restart.
 
 ## Selected branding and Party Stage integration — September 29, 2026
 
