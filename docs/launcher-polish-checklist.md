@@ -221,4 +221,14 @@ pointer/keyboard toggling, position comparisons, status alignment and unchanged
 update/child-control checks. Final wide, narrow and sidebar renders were reviewed
 under ignored `artifacts/launcher-ui-checks/`. No fonts, native chrome, gameplay
 or updater logic changed; a fresh native VM/full local update cycle was not run.
-Cross-platform release verification and publication are pending.
+[Beta 29 CI](https://github.com/ConcosHut/LuckerParty/actions/runs/36573018939)
+passed game/launcher checks, real installation/update checks and packaging on
+Windows and Linux for commit `90f90d4`, then published both together. The first
+Windows run passed the launcher suite but timed out waiting for initial client
+prediction to settle in the unchanged multiplayer scenario (9 pending inputs,
+threshold below 8). A failed-job retry passed with the same source and checks;
+no assertion or gameplay code was changed to bypass the timeout.
+[Beta 29](https://github.com/ConcosHut/LuckerParty/releases/tag/v0.3.0-beta.29)
+is public; both update feeds select its new full package, and release asset
+digests match the published checksum list. Final render capture explicitly
+remeasures controls before drawing to avoid stale text widths in headless frames.
