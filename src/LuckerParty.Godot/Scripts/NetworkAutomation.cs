@@ -74,6 +74,7 @@ public partial class NetworkAutomation : Node
                         case "party": Root.Session.PartyAction(message.Command, message.Value, message.PartyId, message.Attempt); break;
                         case "capture": if (message.CapturePath is { } capture) Root.CaptureUi(capture); break;
                         case "ui-click": Root.ClickPartyAction(message.Command); break;
+                        case "ui-key": Root.PartyKeyForScenario(message.Command, message.Value != 0); break;
                         case "quit": WriteProbe(); GetTree().Quit(); return;
                     }
                 }
@@ -113,6 +114,7 @@ public partial class NetworkAutomation : Node
             cameraFrames = _cameraFrames, cameraStationary = _cameraStationary, largestCameraStep = _largestCameraStep,
             session.Status, message = Root.LastMessage,
             party = session.PartyState,
+            partyMenu = Root.PartyMenuOpen, partyStandings = Root.PartyStandingsVisible,
             players = session.Players.Select(p => new
             {
                 id = p.Key, p.Value.Name, p.Value.Slot, local = p.Key == Multiplayer.GetUniqueId(),

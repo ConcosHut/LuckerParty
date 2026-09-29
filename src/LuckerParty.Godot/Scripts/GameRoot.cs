@@ -14,6 +14,8 @@ public partial class GameRoot : Node
     private bool _automationMode;
     public MultiplayerSession Session { get; private set; } = null!;
     public TestBed? World { get; private set; }
+    public bool PartyMenuOpen => _party?.MenuOpen == true;
+    public bool PartyStandingsVisible => _party?.StandingsVisible == true;
     public string LastMessage { get; private set; } = "";
 
     public override void _Ready()
@@ -171,4 +173,9 @@ public partial class GameRoot : Node
         GD.Print($"PARTY_CAPTURE: {path} {error}");
     }
     public void ClickPartyAction(string text) => _party?.ClickForScenario(text);
+    public void PartyKeyForScenario(string key, bool pressed)
+    {
+        if (_party is not null && Enum.TryParse<Key>(key, out var code))
+            GetViewport().PushInput(new InputEventKey { Keycode = code, PhysicalKeycode = code, Pressed = pressed }, true);
+    }
 }

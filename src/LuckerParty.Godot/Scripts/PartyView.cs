@@ -15,6 +15,8 @@ public partial class PartyView : CanvasLayer
     private long _drawnRevision = -1;
     private double _receivedAt;
     private bool _menu, _standings, _needsRedraw, _renderedMenu;
+    public bool MenuOpen => _menu;
+    public bool StandingsVisible => _standings && !_menu;
 
     public override void _Ready()
     {
@@ -80,15 +82,17 @@ public partial class PartyView : CanvasLayer
         _timer.Text = state.Deadline > 0 ? $"{Math.Ceiling(remaining):0}s" : "";
     }
 
-    public override void _UnhandledInput(InputEvent input)
+    public override void _Input(InputEvent input)
     {
         if (input is not InputEventKey { Echo: false } key) return;
-        if (key.Keycode == Key.Escape && key.Pressed) { _menu = !_menu; DrawState(); GetViewport().SetInputAsHandled(); }
-        if (key.Keycode == Key.Tab) { _standings = key.Pressed; DrawState(); GetViewport().SetInputAsHandled(); }
+        if (key.Keycode == Key.Escape && key.Pressed) { _standings = false; _menu = !_menu; DrawState(); GetViewport().SetInputAsHandled(); }
+        // Before GUI focus navigation consumes Tab. Inside the menu, Tab
+        // remains available for moving between the name field and actions.
+        if (key.Keycode == Key.Tab && !_menu) { _standings = key.Pressed; DrawState(); GetViewport().SetInputAsHandled(); }
     }
 
     public override void _Notification(int what)
-    { if (what == NotificationApplicationFocusOut) { _menu = true; if (_state is not null) DrawState(); } }
+    { if (what == NotificationApplicationFocusOut) { _menu = true; _standings = false; if (_state is not null) DrawState(); } }
 
     private void DrawState()
     {
@@ -146,7 +150,7 @@ public partial class PartyView : CanvasLayer
                 else Text(_actions, "Waiting for the host to play again.");
                 break;
         }
-        Action(_actions, _menu ? "Resume" : "Menu", () => { _menu = !_menu; DrawState(); });
+        Action(_actions, _menu ? "Resume" : "Menu", () => { _standings = false; _menu = !_menu; DrawState(); });
     }
 
     private void DrawRoster(PartySnapshot state, PartyMemberView? self)

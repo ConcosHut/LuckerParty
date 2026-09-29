@@ -58,7 +58,8 @@ without a participating host is follow-up work.
 - Party heartbeats keep idle UI/spectators alive independently of movement input.
   State changes and one-second clock refreshes use reliable, bounded snapshots.
 - UI: editable `UI/PartyShell.tscn`, shared `PartyTheme.tres`, bundled brand/fonts
-  and `PartyView.cs`. Pointer presses survive roster refreshes; choice callbacks
+  and `PartyView.cs`. Pointer presses survive roster refreshes; open menu fields retain focus and
+  Tab/Esc shortcuts run before GUI navigation; choice callbacks
   retain the displayed party/throw identity. Connections/scores outlive screens.
 
 ## Focused verification
@@ -96,7 +97,8 @@ Playtest those with friends before balancing or expanding the playlist.
 
 - Linux game suite passed the existing movement/camera and 45 sandbox network
   scenarios alongside the new party flow. The final focused party pass completed
-  31 real-process scenarios, including viewport pointer clicks.
+  37 real-process scenarios, including viewport pointer clicks and Tab/Esc
+  routing after a button has focus.
 - Native Windows 11 VM run `run-1790697204394564875` passed 37 scenarios using
   normal gameplay clocks, one rendered host and headless clients. Reviewed the
   1280×720 menu, lobby, instructions, private choice and joint-podium captures.
@@ -106,6 +108,7 @@ Playtest those with friends before balancing or expanding the playlist.
 
 Two failures improved the harness: refreshing controls during a held mouse
 press could lose the release; the UI now coalesces redraws until the press ends.
+Tab standings now runs before GUI keyboard navigation can consume the key.
 A graphical timeout assertion initially allowed exactly the sum of the normal
 choice/reveal/results clocks; it now adds scheduling/replication allowance.
 Keep these checks focused; the normal two-platform CI release gates still cover
