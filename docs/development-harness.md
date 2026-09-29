@@ -11,7 +11,9 @@ Inspired by OpenAI's February 11, 2026 article:
 This plan adapts those ideas for Lucker Party. Prototype 01 implements the pinned
 toolchain, shared command wrapper, core dependency boundary, bounded movement
 scenario, screenshot capture, and Windows/Linux packaging. CI, installed-update checks and multi-process multiplayer checks are implemented.
-Seeded minigames and round/scoring events remain future work. See
+The party harness now exercises lobby ownership, private RPS choices, score
+awards, winners, timeouts and replay. Phase/result logs explain score awards.
+Seeded random minigames remain future work. See [party verification](party-prototype.md),
 [prototype verification](prototype-01.md) and [commands](../README.md).
 
 ## Small initial foundation

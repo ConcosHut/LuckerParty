@@ -1,0 +1,131 @@
+[gd_resource type="Theme" load_steps=12 format=3]
+
+[ext_resource type="FontFile" path="res://UI/Assets/NunitoSans-Regular.ttf" id="1"]
+[ext_resource type="FontFile" path="res://UI/Assets/LilitaOne-Regular.ttf" id="2"]
+[ext_resource type="FontFile" path="res://UI/Assets/NunitoSans-Bold.ttf" id="3"]
+
+[sub_resource type="StyleBoxFlat" id="panel"]
+bg_color = Color(0.965, 0.94, 0.89, 1)
+content_margin_left = 24.0
+content_margin_right = 24.0
+content_margin_top = 20.0
+content_margin_bottom = 20.0
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_left = 20
+corner_radius_bottom_right = 20
+
+[sub_resource type="StyleBoxFlat" id="normal"]
+bg_color = Color(1, 0.40, 0.47, 1)
+content_margin_left = 22.0
+content_margin_right = 22.0
+content_margin_top = 14.0
+content_margin_bottom = 14.0
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_left = 14
+corner_radius_bottom_right = 14
+shadow_color = Color(0.80, 0.28, 0.36, 0.12)
+shadow_size = 5
+shadow_offset = Vector2(0, 3)
+
+[sub_resource type="StyleBoxFlat" id="hover"]
+bg_color = Color(0.96, 0.32, 0.41, 1)
+content_margin_left = 22.0
+content_margin_right = 22.0
+content_margin_top = 14.0
+content_margin_bottom = 14.0
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_left = 14
+corner_radius_bottom_right = 14
+
+[sub_resource type="StyleBoxFlat" id="pressed"]
+bg_color = Color(0.85, 0.25, 0.34, 1)
+content_margin_left = 22.0
+content_margin_right = 22.0
+content_margin_top = 16.0
+content_margin_bottom = 12.0
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_left = 14
+corner_radius_bottom_right = 14
+
+[sub_resource type="StyleBoxFlat" id="disabled"]
+bg_color = Color(0.87, 0.84, 0.81, 1)
+content_margin_left = 22.0
+content_margin_right = 22.0
+content_margin_top = 14.0
+content_margin_bottom = 14.0
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_left = 14
+corner_radius_bottom_right = 14
+
+[sub_resource type="StyleBoxFlat" id="focus"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.13, 0.15, 0.24, 1)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_left = 14
+corner_radius_bottom_right = 14
+
+[sub_resource type="StyleBoxFlat" id="field"]
+bg_color = Color(1, 0.992, 0.973, 1)
+content_margin_left = 12.0
+content_margin_right = 12.0
+content_margin_top = 8.0
+content_margin_bottom = 8.0
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.76, 0.73, 0.68, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_left = 8
+corner_radius_bottom_right = 8
+
+[sub_resource type="StyleBoxFlat" id="field_focus"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.13, 0.15, 0.24, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_left = 8
+corner_radius_bottom_right = 8
+
+[resource]
+default_font = ExtResource("1")
+default_font_size = 18
+Label/colors/font_color = Color(0.13, 0.15, 0.24, 1)
+Heading/base_type = &"Label"
+Heading/fonts/font = ExtResource("2")
+Heading/font_sizes/font_size = 40
+Button/fonts/font = ExtResource("3")
+Button/colors/font_color = Color(1, 1, 1, 1)
+Button/colors/font_hover_color = Color(1, 1, 1, 1)
+Button/colors/font_pressed_color = Color(1, 1, 1, 1)
+Button/colors/font_disabled_color = Color(0.35, 0.36, 0.41, 1)
+Button/styles/normal = SubResource("normal")
+Button/styles/hover = SubResource("hover")
+Button/styles/pressed = SubResource("pressed")
+Button/styles/disabled = SubResource("disabled")
+Button/styles/focus = SubResource("focus")
+PanelContainer/styles/panel = SubResource("panel")
+LineEdit/colors/font_color = Color(0.13, 0.15, 0.24, 1)
+LineEdit/colors/caret_color = Color(0.13, 0.15, 0.24, 1)
+LineEdit/colors/font_placeholder_color = Color(0.45, 0.46, 0.51, 1)
+LineEdit/colors/selection_color = Color(0.83, 0.78, 0.96, 1)
+LineEdit/colors/font_selected_color = Color(0.13, 0.15, 0.24, 1)
+LineEdit/styles/normal = SubResource("field")
+LineEdit/styles/focus = SubResource("field_focus")
+VBoxContainer/constants/separation = 12
+HBoxContainer/constants/separation = 16

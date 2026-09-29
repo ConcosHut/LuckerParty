@@ -318,7 +318,7 @@ class WindowsVm:
                     print(f'Windows test phase: {previous_phase}', flush=True)
                 if status['state'] in ('passed', 'failed'):
                     names = ['status.json', 'integration.log']
-                    for phase in ('game', 'distribution'):
+                    for phase in ('game', 'party', 'distribution'):
                         if f'{phase}ExitCode' in status:
                             names += [f'{phase}.stdout.log', f'{phase}.stderr.log']
                     for name in names:
@@ -351,7 +351,7 @@ def main():
     screenshot = commands.add_parser('screenshot')
     screenshot.add_argument('--output', type=Path, default=ROOT / 'artifacts/windows-vm/desktop.png')
     check = commands.add_parser('check')
-    check.add_argument('--suite', choices=['game', 'distribution', 'all'], default='all')
+    check.add_argument('--suite', choices=['game', 'party', 'distribution', 'all'], default='all')
     check.add_argument('--timeout', type=int, default=2700)
     collect = commands.add_parser('collect')
     collect.add_argument('run_id')

@@ -1,9 +1,8 @@
 # Lucker Party
 
-A small first-person test bed: a gray grid floor, four colored solid boxes,
-walking, sprinting, jumping, mouse look, reset, and an Escape menu. The multiplayer
-prototype adds direct-IP hosting/joining, names and remote capsules. Minigames
-come later.
+A multiplayer party prototype with direct-IP lobbies, readiness, player colors
+and one complete rock-paper-scissors minigame: hidden choices, points, champions
+and replay. The first-person sandbox remains available for practice and debugging.
 
 ## Install and play
 
@@ -15,10 +14,12 @@ that channel; it does not install or start a game. Choose Beta for
 development updates; return to Stable at any time. Offline play, installation,
 release promotion, and recovery are covered in [the release runbook](docs/releases.md).
 Older Stable packages still include the legacy launcher; choose Beta for the
-current Party Room interface and multiplayer sandbox.
+current Party Room interface and multiplayer party prototype.
 
 For multiplayer play, choose Beta in the launcher, enter your display name, then
-Host lobby or enter the host IP and Join lobby. The default port is UDP 27015.
+Host party or enter the host IP and Join. Every active player readies up, then
+the host starts the party. See [the party guide](docs/party-prototype.md) for rules
+and scoring. The default port is UDP 27015.
 See [the multiplayer runbook](docs/multiplayer.md) for LAN/internet hosting,
 server commands, architecture, and verification.
 
@@ -29,17 +30,20 @@ play. This build targets normal Intel/AMD 64-bit Windows PCs.
 
 | Control | Action |
 | --- | --- |
-| WASD / arrow keys | Move |
+| WASD / arrow keys | Move in Sandbox/Practice |
 | Mouse | Look |
 | Shift | Sprint |
 | Space | Jump |
 | R | Reset position and view |
-| Escape | Open/close menu and release/capture mouse |
+| Escape | Open/close menu; shared multiplayer time keeps running |
+| Tab | Show party standings while held |
 | F3 | Show frame timing and movement diagnostics |
 | F4 | Compare smooth camera translation with the original stepping |
 | F5 | Practice only: switch physics between 60 Hz and a diagnostic 10 Hz |
 
 Switching away from the game opens the menu. Use Resume when you return.
+The movement controls below apply to Sandbox/Practice; the Party uses on-screen
+choices and server-owned timers.
 Walk into boxes to check collision, and jump onto the low green step.
 
 The camera now interpolates player position between physics ticks while mouse
@@ -84,6 +88,8 @@ python tools/dev.py check
 python tools/dev.py check --suite launcher
 python tools/dev.py check --suite core
 python tools/dev.py check --suite game
+python tools/dev.py check --suite party
+python tools/windows_vm.py check --suite party
 python tools/dev.py export --target windows
 python tools/dev.py export --target linux
 python tools/dev.py pack --target windows --profile player
@@ -104,12 +110,13 @@ Generated tools, build outputs, and artifacts are excluded from Git.
 
 ## Structure and verification
 
-- `src/LuckerParty.Core`: plain C# movement settings, input codec, and name rules.
+- `src/LuckerParty.Core`: plain C# party/RPS/scoring rules, movement settings, input codec and names.
 - `src/LuckerParty.Godot`: scenes, input, character physics, rendering, and UI.
 - `src/LuckerParty.Launcher`: standalone updater UI and guarded game process.
 - `tools/dev.py`: shared Windows/Linux build, run, check, export, and pack commands.
 - `tools/check_distribution.py`: real installed updater and failure checks.
-- `tools/test_multiplayer.py`: real multi-process ENet and latency/loss checks.
+- `tools/test_multiplayer.py`: real multi-process sandbox ENet and latency/loss checks.
+- `tools/test_party.py`: real lobby/RPS/late-join/disconnect/replay checks and UI captures.
 - `docs`: design brief, development harness plan, and playtest instructions.
 
 `check` builds the project, checks the core dependency boundary, imports the

@@ -8,8 +8,10 @@ instructions are in [README.md](README.md).
 
 The first multiplayer sandbox uses Godot 4.5.2 .NET and C# on .NET 8 (SDK 8.0.425). It implements
 a first-person sandbox with a main menu, eight-player direct-IP ENet lobbies,
-server-owned movement, prediction and names. Practice retains F3/F4/F5 diagnostics. The original s&box project is
-https://github.com/ConcosHut/LuckerParty. Minigames come later.
+server-owned movement, prediction and names. Practice retains F3/F4/F5 diagnostics. The first party adds a real lobby and
+one complete RPS minigame with hidden hands, scoring, joint winners and replay.
+See [docs/party-prototype.md](docs/party-prototype.md). The original s&box project
+is https://github.com/ConcosHut/LuckerParty.
 
 ## Working principles
 
@@ -37,6 +39,9 @@ From the repository root, with the pinned SDK and Godot .NET editor available:
   without a game build or Godot import; use for launcher-only iteration.
 - `python tools/dev.py check --suite core`: portable input/name/rule checks only.
 - `python tools/dev.py check --suite game`: game/core/network checks without the launcher UI suite.
+- `python tools/dev.py check --suite party`: focused core/real-process party checks;
+  add `--graphical` to inspect the host UI with headless clients.
+- `python tools/windows_vm.py check --suite party`: focused native party UI/network checks.
 - `python tools/dev.py run`: launch the graphical test bed.
 - `python tools/dev.py export --target windows`: package the Windows x64 build.
 - `python tools/dev.py export --target linux`: package the Linux x64 build.
@@ -115,7 +120,11 @@ verification are in [docs/multiplayer.md](docs/multiplayer.md). Network physics
 stays at 60 Hz. Preserve the independent camera presentation history during
 reconciliation; resetting it on every snapshot causes high-refresh stepping.
 
-The next gameplay milestone is proposed in [docs/party-mvp-plan.md](docs/party-mvp-plan.md),
-based on the legacy lobby/UI and the broader minigame vision. Implement a real
-lobby and one complete RPS-only party before expanding to luck and 2D games;
-the plan is not evidence these features already exist.
+The broader gameplay roadmap is in [docs/party-mvp-plan.md](docs/party-mvp-plan.md).
+The real lobby and RPS-only party are implemented; Lucky Doors/playlist and Dodge
+Drop follow. Native Godot UI uses UI/PartyShell.tscn, PartyTheme.tres and an editor
+ComponentPreview.tscn. Wire protocol is 2. Party members have optional avatars;
+keep sandbox movement separate. Server snapshots contain only permitted private
+state. Late joins spectate, host departure ends the session and below two active
+players cancels the game without an award. Shared clocks never pause for menus.
+Preserve held button presses and open name fields during roster refreshes.

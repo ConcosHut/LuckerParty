@@ -1,15 +1,17 @@
-# Multiplayer sandbox
+# Multiplayer: party and sandbox
 
 Multiplayer is a core principle: the host owns player membership, movement and
-collision outcomes. Future minigames, random outcomes and scoring must define
-server ownership, late-join state and disconnect behavior too.
+collision outcomes. The [first party prototype](party-prototype.md) adds
+server-owned lobby state, private RPS hands, deadlines, scores and replay.
+Future minigames must define late-join/disconnect behavior too.
 
 ## Play
 
 Choose **Beta** in the launcher for the multiplayer prototype. In the game:
 
 1. Enter a display name (up to 24 characters).
-2. Choose **Host lobby**, or enter the host's IP/hostname and choose **Join lobby**.
+2. Choose **Host party**, or enter the host's IP/hostname and choose **Join**.
+   For the 3D test bed, choose **Multiplayer sandbox** instead.
 3. Use the same port on both machines; the default is **UDP 27015**.
 
 To test on one PC, enable **Settings → Allow multiple game instances** in the
@@ -17,7 +19,8 @@ launcher. Its Play buttons remain available while games run. Host in the first
 game and join `127.0.0.1` in subsequent games, using the same port. Each game can
 use a different display name. Launcher updates wait until every instance closes.
 
-Hosting opens the existing arena immediately, as a playable sandbox lobby.
+Party hosting opens the roster/Ready lobby; see [party flow and rules](party-prototype.md).
+Sandbox hosting opens the existing arena immediately.
 Other players are colored capsules with names overhead. Up to eight players can
 join, including a listen host. WASD, mouse look, sprint, jump and reset work.
 Players collide with the world; they pass through each other in this iteration.
@@ -65,8 +68,11 @@ LuckerParty.exe --headless -- --server --port 27015
 
 `--server` has no fake host player and accepts eight actual clients. Run only one
 server per port. A failed command-line host exits nonzero. A direct graphical
-host/client can also start with `-- --host --name Alice --port 27015` or
+sandbox host/client can also start with `-- --host --name Alice --port 27015` or
 `-- --join 192.168.1.100 --name Bob --port 27015`. Quote names containing spaces.
+
+Add `--party` to a listen-host `--host` launch for the party lobby. Dedicated
+`--server --party` is rejected: a party currently needs a participating listen host.
 
 Direct server launches bypass the updater's session guard. Stop that server
 before replacing its export/installation; use separate complete versioned
@@ -80,9 +86,11 @@ not included.
   membership, handshake, inputs and snapshots.
 - `FirstPersonPlayer`: host physics, local prediction/reconciliation, independent
   camera presentation history and remote capsule interpolation.
-- Plain C# core: bounded input wire format and display-name rules, without Godot.
+- `PartyNetwork`/`PartyView`: authoritative rule adapter and native Godot party UI.
+- Plain C# core: party phases, private choices and scoring, bounded input and names.
+- Party members have no mandatory avatar; sandbox members keep their 3D controller.
 
-Protocol 1 and arena revision `sandbox-v1` are negotiated separately from package
+Protocol 2 and arena revision `sandbox-v1` are negotiated separately from package
 versions. A new peer registers once; the server validates its name and assigns a
 spawn slot. Reliable roster/name updates use channel 0, input batches use channel
 1 and snapshots channel 2. Clients cannot select the peer whose inputs they

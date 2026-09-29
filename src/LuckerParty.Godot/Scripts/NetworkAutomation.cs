@@ -22,12 +22,13 @@ public partial class NetworkAutomation : Node
     private readonly JsonSerializerOptions _json = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, PropertyNameCaseInsensitive = true };
 
     public int RequestedProtocol => _control.Protocol ?? MultiplayerSession.Protocol;
+    public bool FastParty => _control.FastParty;
 
     public NetworkInput Input(NetworkInput original)
     {
         if (ControlPath is null) return original;
-        var local = Root.Session.Players.Values.FirstOrDefault(p => p.Avatar.LocalControl);
-        if (local is not null) local.Avatar.InterpolateCameraPosition = !_control.RawCamera;
+        var local = Root.Session.Players.Values.FirstOrDefault(p => p.Avatar?.LocalControl == true);
+        if (local is not null) local.Avatar!.InterpolateCameraPosition = !_control.RawCamera;
         var command = original with { X = _control.X, Y = _control.Y, Yaw = _control.Yaw,
             Pitch = _control.Pitch, Sprint = _control.Sprint, Jump = _jump, Reset = _reset };
         _jump = false; _reset = false;
@@ -37,7 +38,7 @@ public partial class NetworkAutomation : Node
     public override void _Process(double delta)
     {
         _elapsed += delta; _poll += delta;
-        var local = Root.Session.Players.Values.FirstOrDefault(p => p.Avatar.LocalControl)?.Avatar;
+        var local = Root.Session.Players.Values.FirstOrDefault(p => p.Avatar?.LocalControl == true)?.Avatar;
         if (local is not null && Math.Abs(_control.X) + Math.Abs(_control.Y) > .1f)
         {
             if (_lastCamera is { } previous)
@@ -63,13 +64,16 @@ public partial class NetworkAutomation : Node
                     _jump = message.Jump; _reset = message.Reset;
                     switch (message.Action)
                     {
-                        case "host": Root.Session.Host(message.Name, message.Port, message.Dedicated); break;
+                        case "host": Root.Session.Host(message.Name, message.Port, message.Dedicated, message.Party); break;
                         case "join": Root.Session.Join(message.Name, message.Address, message.Port); break;
                         case "rename": Root.Session.ChangeName(message.Name); break;
                         case "pause": Root.World?.SetPaused(true); break;
                         case "resume": Root.World?.SetPaused(false); break;
                         case "leave": Root.Session.Leave("Left the lobby."); break;
                         case "bad-input": Root.Session.SendInputs(new byte[] { 16, 0, 0 }); break;
+                        case "party": Root.Session.PartyAction(message.Command, message.Value, message.PartyId, message.Attempt); break;
+                        case "capture": if (message.CapturePath is { } capture) Root.CaptureUi(capture); break;
+                        case "ui-click": Root.ClickPartyAction(message.Command); break;
                         case "quit": WriteProbe(); GetTree().Quit(); return;
                     }
                 }
@@ -108,12 +112,13 @@ public partial class NetworkAutomation : Node
             version = GameBuild.Version, elapsed = _elapsed, revision = _revision, session.Active, session.IsServer, session.LocalName,
             cameraFrames = _cameraFrames, cameraStationary = _cameraStationary, largestCameraStep = _largestCameraStep,
             session.Status, message = Root.LastMessage,
+            party = session.PartyState,
             players = session.Players.Select(p => new
             {
-                id = p.Key, p.Value.Name, p.Value.Slot, local = p.Value.Avatar.LocalControl,
-                x = p.Value.Avatar.Position.X, y = p.Value.Avatar.Position.Y, z = p.Value.Avatar.Position.Z,
-                ack = p.Value.Avatar.LastInput, pending = p.Value.Avatar.PendingInputs,
-                correction = p.Value.Avatar.LargestCorrection
+                id = p.Key, p.Value.Name, p.Value.Slot, local = p.Key == Multiplayer.GetUniqueId(),
+                x = p.Value.Avatar?.Position.X, y = p.Value.Avatar?.Position.Y, z = p.Value.Avatar?.Position.Z,
+                ack = p.Value.Avatar?.LastInput, pending = p.Value.Avatar?.PendingInputs,
+                correction = p.Value.Avatar?.LargestCorrection
             }).ToArray()
         };
         var temporary = ProbePath + ".tmp";
@@ -135,6 +140,13 @@ public partial class NetworkAutomation : Node
         public int Port { get; init; } = MultiplayerSession.DefaultPort;
         public bool RawCamera { get; init; }
         public bool Dedicated { get; init; }
+        public bool Party { get; init; }
+        public bool FastParty { get; init; }
+        public string Command { get; init; } = "";
+        public int Value { get; init; }
+        public long? PartyId { get; init; }
+        public int? Attempt { get; init; }
+        public string? CapturePath { get; init; }
         public int? Protocol { get; init; }
         public float X { get; init; }
         public float Y { get; init; }

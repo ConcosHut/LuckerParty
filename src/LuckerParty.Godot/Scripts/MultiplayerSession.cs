@@ -7,17 +7,18 @@ public sealed class SessionPlayer
 {
     public required string Name { get; set; }
     public required int Slot { get; init; }
-    public required FirstPersonPlayer Avatar { get; init; }
+    public FirstPersonPlayer? Avatar { get; init; }
     public SortedDictionary<int, NetworkInput> Inputs { get; } = new();
     public double LastRename { get; set; } = -1000;
     public double LastInputAt { get; set; }
     public int PacketsThisTick { get; set; }
+    public double LastPartyRequest { get; set; } = -1000;
 }
 
 // All RPCs stay at /root/Main/Network, including through menu/leave/rejoin.
 public partial class MultiplayerSession : Node
 {
-    public const int Protocol = 1, MaxPlayers = 8, DefaultPort = 27015;
+    public const int Protocol = 2, MaxPlayers = 8, DefaultPort = 27015;
     private const string ArenaRevision = "sandbox-v1";
     private ENetMultiplayerPeer? _peer;
     private readonly Dictionary<int, SessionPlayer> _players = new();
@@ -50,9 +51,10 @@ public partial class MultiplayerSession : Node
         Multiplayer.ServerDisconnected += ServerDisconnected;
     }
 
-    public bool Host(string name, int port, bool dedicated = false)
+    public bool Host(string name, int port, bool dedicated = false, bool party = false)
     {
         if (Active) return false;
+        if (party && dedicated) { OwnerRoot.SetMessage("Party mode needs a listen host. Use --host --party."); return false; }
         if (port is < 1024 or > 65535) { OwnerRoot.SetMessage("Choose a port from 1024 to 65535."); return false; }
         var peer = new ENetMultiplayerPeer();
         peer.SetBindIP("*");
@@ -63,13 +65,15 @@ public partial class MultiplayerSession : Node
             Status = "Host failed"; return false;
         }
         Begin(peer, name, port, dedicated);
+        IsParty = party;
+        if (party) InitializeParty();
         HostAddresses = string.Join(" or ", IP.GetLocalAddresses().Where(address =>
             System.Net.IPAddress.TryParse(address, out var ip)
             && ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork
             && !System.Net.IPAddress.IsLoopback(ip)).Take(3));
         if (HostAddresses.Length == 0) HostAddresses = "127.0.0.1 (same computer)";
         Address = "0.0.0.0"; Status = "Hosting";
-        OwnerRoot.EnterArena();
+        if (party) OwnerRoot.EnterParty(); else OwnerRoot.EnterArena();
         if (!dedicated) SpawnPeer(1, LocalName, 0);
         GD.Print($"NET_HOST: port={Port} dedicated={Dedicated} protocol={Protocol}");
         return true;
@@ -105,7 +109,6 @@ public partial class MultiplayerSession : Node
     {
         if (!Active) return;
         Status = "Joining";
-        OwnerRoot.EnterArena();
         RpcId(1, MethodName.Register, Automation?.RequestedProtocol ?? Protocol, ArenaRevision, LocalName);
     }
 
@@ -125,12 +128,14 @@ public partial class MultiplayerSession : Node
             RpcId(id, MethodName.Rejected, "This lobby uses a different game protocol or is full. Update both games and try again.");
             DisconnectLater(id); return;
         }
+        RpcId(id, MethodName.Welcome, IsParty);
         foreach (var member in _players)
             RpcId(id, MethodName.SpawnPeer, member.Key, member.Value.Name, member.Value.Slot);
         var slot = Enumerable.Range(0, MaxPlayers).First(s => _players.Values.All(p => p.Slot != s));
         name = PlayerNames.Clean(name);
         SpawnPeer(id, name, slot);
         Rpc(MethodName.SpawnPeer, id, name, slot);
+        if (IsParty) PublishParty();
         GD.Print($"NET_JOIN: id={id} name={name} players={_players.Count}");
     }
 
@@ -153,14 +158,23 @@ public partial class MultiplayerSession : Node
             OwnerRoot.World?.SetLocalName(name);
         }
         if (_players.TryGetValue(id, out var existing))
-        { existing.Name = name; existing.Avatar.SetDisplayName(name); return; }
-        OwnerRoot.EnterArena();
-        var spawn = new Vector3(-10 + (slot % 4) * 6, .05f, 10 - (slot / 4) * 4);
-        var avatar = OwnerRoot.World!.SpawnPlayer(id, name, spawn);
+        {
+            existing.Name = name; existing.Avatar?.SetDisplayName(name);
+            if (IsServer && IsParty) { _partyRules!.Rename(id, name); PublishParty(); }
+            return;
+        }
+        FirstPersonPlayer? avatar = null;
+        if (!IsParty)
+        {
+            OwnerRoot.EnterArena();
+            var spawn = new Vector3(-10 + (slot % 4) * 6, .05f, 10 - (slot / 4) * 4);
+            avatar = OwnerRoot.World!.SpawnPlayer(id, name, spawn);
+        }
         _players[id] = new() { Name = name, Slot = slot, Avatar = avatar, LastInputAt = Now };
+        if (IsServer && IsParty) { _partyRules!.Join(id, name, Now); PublishParty(); }
         if (id == Multiplayer.GetUniqueId())
         { Status = "Connected"; _connectionDeadline = 0; _lastSnapshotAt = Now; }
-        GD.Print($"NET_MEMBER: id={id} name={name} local={avatar.LocalControl}");
+        GD.Print($"NET_MEMBER: id={id} name={name} local={id == Multiplayer.GetUniqueId()}");
     }
 
     private void PeerDisconnected(long id)
@@ -175,7 +189,8 @@ public partial class MultiplayerSession : Node
     private void DespawnPeer(int id)
     {
         if (!_players.Remove(id, out var player)) return;
-        player.Avatar.SetPhysicsProcess(false); player.Avatar.QueueFree();
+        player.Avatar?.SetPhysicsProcess(false); player.Avatar?.QueueFree();
+        if (IsServer && IsParty) { _partyRules!.Leave(id, Now); PublishParty(); }
         GD.Print($"NET_LEFT: id={id} players={_players.Count}");
     }
 
@@ -217,7 +232,8 @@ public partial class MultiplayerSession : Node
     [Rpc(MultiplayerApi.RpcMode.AnyPeer, TransferMode = MultiplayerPeer.TransferModeEnum.UnreliableOrdered, TransferChannel = 1)]
     private void SubmitInputs(byte[] batch)
     {
-        if (!IsServer || !_players.TryGetValue(Multiplayer.GetRemoteSenderId(), out var player)
+        if (IsParty || !IsServer || !_players.TryGetValue(Multiplayer.GetRemoteSenderId(), out var player)
+            || player.Avatar is null
             || ++player.PacketsThisTick > 8) return;
         try
         {
@@ -245,6 +261,7 @@ public partial class MultiplayerSession : Node
     {
         if (!Active) return;
         _tick++;
+        TickParty();
         if (IsServer)
         {
             foreach (var player in _players.Values) player.PacketsThisTick = 0;
@@ -255,7 +272,7 @@ public partial class MultiplayerSession : Node
                 if (Multiplayer.GetPeers().Contains(silent.Key)) _peer!.DisconnectPeer(silent.Key);
                 DespawnPeer(silent.Key); Rpc(MethodName.DespawnPeer, silent.Key);
             }
-            if (_tick % 2 == 0 && Multiplayer.GetPeers().Length > 0)
+            if (!IsParty && _tick % 2 == 0 && Multiplayer.GetPeers().Length > 0)
                 Rpc(MethodName.Snapshot, EncodeSnapshot());
         }
         else
@@ -273,7 +290,7 @@ public partial class MultiplayerSession : Node
         writer.Write(_tick); writer.Write((byte)_players.Count);
         foreach (var member in _players)
         {
-            var s = member.Value.Avatar.State;
+            var s = member.Value.Avatar!.State;
             writer.Write(member.Key); writer.Write(s.Ack);
             writer.Write(s.Position.X); writer.Write(s.Position.Y); writer.Write(s.Position.Z);
             writer.Write(s.Velocity.X); writer.Write(s.Velocity.Y); writer.Write(s.Velocity.Z);
@@ -302,7 +319,7 @@ public partial class MultiplayerSession : Node
                 var position = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
                 var velocity = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
                 var state = new PlayerState(position, velocity, reader.ReadSingle(), reader.ReadSingle(), reader.ReadBoolean(), ack);
-                if (_players.TryGetValue(id, out var player)) player.Avatar.ReceiveState(state);
+                if (_players.TryGetValue(id, out var player)) player.Avatar?.ReceiveState(state);
             }
         }
         catch (EndOfStreamException) { }
@@ -315,6 +332,7 @@ public partial class MultiplayerSession : Node
         _peer?.Dispose(); _peer = null;
         _players.Clear(); _awaitingRegistration.Clear(); _snapshot = null;
         _connectionDeadline = 0;
+        IsParty = false; _partyRules = null; PartyState = null;
         OwnerRoot.ReturnToMenu(message);
         GD.Print($"NET_ENDED: {message}");
     }

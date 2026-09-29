@@ -1,7 +1,8 @@
 # Multiplayer party MVP — implementation plan
 
-Status: proposed, September 29, 2026. The shipped game remains the multiplayer
-sandbox; this document plans the next gameplay milestone.
+Status: implementation started, September 29, 2026. Milestones 1–2 (real lobby
+and a complete RPS-only party) are implemented. See [party prototype](party-prototype.md)
+for current behavior and verification. Lucky Doors/playlist and Dodge Drop remain planned.
 
 ## Goal and product direction
 
@@ -133,9 +134,9 @@ but gameplay snapshots must not disclose future outcomes.
 
 ### Godot integration
 
-Current `SessionPlayer.Avatar` is required, and `SpawnPeer` always creates a
-`FirstPersonPlayer` in `TestBed`. Separate connection/party membership from
-avatar lifetime. Keep proven 3D movement/prediction in its adapter; choice games
+`SessionPlayer.Avatar` is now optional: Party creates members without a 3D
+avatar; Sandbox still creates `FirstPersonPlayer` in `TestBed`. Connection/party
+membership is separate from avatar lifetime. Keep proven 3D movement/prediction in its adapter; choice games
 need no avatar, while Dodge Drop owns a separate 2D view. Preserve the sandbox
 as a selectable practice/development mode.
 
@@ -226,6 +227,6 @@ return to lobby and play again without reconnecting. Late/missing/disconnected
 players cannot stall or control the party. Logs record party/game/phase,
 reproduction data and the reason for every score change.
 
-Next action: implement milestone 1, followed immediately by the RPS-only party.
-Review a populated lobby and first complete party before expanding the catalog.
-No gameplay code or player release changes are made by this plan.
+Next action: playtest the populated lobby and complete RPS party, then implement
+milestone 3. The three-game acceptance criteria above remain the full MVP target;
+the RPS milestone does not claim to complete that target.

@@ -139,8 +139,9 @@ def main():
         fcntl.flock(build_lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", choices=["build", "run", "check", "export", "pack"])
-    parser.add_argument("--suite", choices=["all", "launcher", "core", "game"], default="all",
+    parser.add_argument("--suite", choices=["all", "launcher", "core", "game", "party"], default="all",
                         help="Focused check suite (default: all). Launcher/core do not require Godot.")
+    parser.add_argument("--graphical", action="store_true", help="Render party UI during --suite party checks")
     parser.add_argument("--target", choices=["windows", "linux"], default="windows")
     parser.add_argument("--godot", default=os.environ.get("GODOT_BIN"))
     parser.add_argument("--dotnet", default=os.environ.get("DOTNET_BIN"))
@@ -152,6 +153,8 @@ def main():
     args = parser.parse_args()
     if args.command != "check" and args.suite != "all":
         parser.error("--suite applies only to check")
+    if args.graphical and not (args.command == "check" and args.suite == "party"):
+        parser.error("--graphical applies only to check --suite party")
     dotnet = tool_path("dotnet", args.dotnet, [ROOT / ".tools/dotnet/dotnet", ROOT / ".tools/dotnet/dotnet.exe"])
     environment = os.environ.copy()
     environment["PATH"] = str(Path(dotnet).resolve().parent) + os.pathsep + environment.get("PATH", "")
@@ -171,7 +174,7 @@ def main():
         run([dotnet, "run", "--project", str(ROOT / "tests" / project)], environment, timeout=60)
         return
     run([dotnet, "build", str(PROJECT / "LuckerParty.Godot.csproj")], environment)
-    if args.command != "check" or args.suite != "game":
+    if args.command != "check" or args.suite not in ("game", "party"):
         run([dotnet, "build", str(LAUNCHER / "LuckerParty.Launcher.csproj")], environment)
     if args.command == "build":
         return
@@ -184,6 +187,10 @@ def main():
     run(base + ["--headless", "--editor", "--import"], environment, inspect=True)
     if args.command == "run":
         run(base, environment, timeout=None)
+    elif args.command == "check" and args.suite == "party":
+        run([dotnet, "run", "--project", str(ROOT / "tests/LuckerParty.Core.Checks")], environment, timeout=60)
+        run([sys.executable, str(ROOT / "tools/test_party.py"), "--godot", godot,
+             *(["--graphical"] if args.graphical else [])], environment, timeout=120)
     elif args.command == "check":
         output = run(base + ["--headless", "--fixed-fps", "60", "--", "--smoke-test"],
                      environment, timeout=60, inspect=True)
@@ -198,6 +205,7 @@ def main():
             run([dotnet, "run", "--project", str(ROOT / "tests/LuckerParty.Launcher.Checks")], environment, timeout=60)
         run([dotnet, "run", "--project", str(ROOT / "tests/LuckerParty.Core.Checks")], environment, timeout=60)
         run([sys.executable, str(ROOT / "tools/test_multiplayer.py"), "--godot", godot], environment, timeout=180)
+        run([sys.executable, str(ROOT / "tools/test_party.py"), "--godot", godot], environment, timeout=120)
     else:
         output = export_game(args, base, environment, version)
         if args.command == "pack":

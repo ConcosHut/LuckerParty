@@ -57,13 +57,16 @@ cameras remain a later addition.
 The first multiplayer sandbox supports eight players with direct-IP ENet hosting,
 server-owned movement, named capsules and a menu. See [multiplayer](multiplayer.md).
 Multiplayer is a core design principle: gameplay rules must define network
-ownership and late-join/disconnect behavior. Complete minigames, matchmaking,
-relays and the full party framework follow later.
+ownership and late-join/disconnect behavior. Matchmaking, relays and the full
+party framework follow later.
 
-## Next milestone (planned)
+## Party milestone
 
-The [multiplayer party MVP plan](party-mvp-plan.md) reviews the legacy lobby/UI
-and proposes a real lobby, portable party/scoring flow and three small games:
-rock-paper-scissors, lucky doors and a 2D dodge game. Build one complete party
-with RPS first, then extend it to multiple game presentations. The shipped
-sandbox remains the starting point; these features are not implemented yet.
+The [first party prototype](party-prototype.md) implements a multiplayer lobby
+and one complete rock-paper-scissors party: readiness, colors, spectators, hidden
+choices, deadlines, points, tied winners and replay on the same connections.
+Native Godot UI shares the launcher branding. Sandbox remains selectable.
+
+The [MVP plan](party-mvp-plan.md) reviews the legacy lobby/UI and broader vision.
+Next: Lucky Doors and playlist flow, then a 2D Dodge Drop game. The eventual
+three-game loop and persistent statistics remain follow-up work.

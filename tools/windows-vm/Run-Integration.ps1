@@ -6,7 +6,7 @@ $env:UseSharedCompilation = 'false'
 $env:DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER = '1'
 $root = 'C:\LuckerParty'
 $request = Get-Content "$root\request.json" -Raw | ConvertFrom-Json
-if ($request.id -notmatch '^run-[0-9]+$' -or $request.suite -notin @('game', 'distribution', 'all')) { throw 'Invalid integration request' }
+if ($request.id -notmatch '^run-[0-9]+$' -or $request.suite -notin @('game', 'party', 'distribution', 'all')) { throw 'Invalid integration request' }
 $output = "$root\runs\$($request.id)"
 if (Test-Path $output) { throw 'Run directory already exists; refusing to reuse it' }
 New-Item -ItemType Directory $output | Out-Null
@@ -69,6 +69,9 @@ try {
     if ($LASTEXITCODE -ne 0) { throw '.NET SDK startup failed' }
     if ($request.suite -in @('game', 'all')) {
         Invoke-Check 'game' @('tools/dev.py', 'check')
+    }
+    if ($request.suite -eq 'party') {
+        Invoke-Check 'party' @('tools/dev.py', 'check', '--suite', 'party', '--graphical')
     }
     if ($request.suite -in @('distribution', 'all')) {
         Invoke-Check 'distribution' @('tools/check_distribution.py', '--target', 'windows')

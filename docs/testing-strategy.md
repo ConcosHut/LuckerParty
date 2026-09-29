@@ -35,6 +35,7 @@ per OS, extra builds/imports/exports, and repeated local/CI work dominate.
 | Launcher layout, copy, colors, Settings UI | `dev.py check --suite launcher`; inspect affected final renders | One native Windows desktop trial for chrome, DPI, fonts, focus or OS integration |
 | Launcher child control, session guard, update/restart/preferences | Launcher suite | Installed-update suite on the affected OS; native process/desktop trial for Windows behavior |
 | Portable rules, input or names | `dev.py check --suite core` | Game suite when engine/network consumers are affected |
+| Party rules, lobby/RPS UI or party transport | `dev.py check --suite party` | `windows_vm.py check --suite party` for native UI; game suite for shared movement/transport edits |
 | Movement, camera, network, game menus/scenes | `dev.py check --suite game` | Hardware playtest for graphics, input feel or high-refresh behavior |
 | Shared runtime/dependency/export/package changes | Full `dev.py check` | Actual installs on affected OSes; use CI for the other platform when sufficient |
 | Documentation only | Check links/diff | No builds or player release |
@@ -45,7 +46,11 @@ UI checks; it does not build/import/export the game. `--suite core` similarly
 runs only the portable checks. `--suite game` includes movement, camera, the
 game-side launcher control protocol, core and all real multiplayer scenarios,
 but skips the standalone launcher build/UI suite. Default `check` / `--suite all`
-preserves full coverage. The core dependency boundary and workspace lock remain.
+preserves full coverage. `--suite party` builds/imports the game and runs core
+and multi-process party scenarios, skipping unrelated movement/launcher checks.
+Add `--graphical` for the rendered host and UI captures. Normal timings run in
+graphical checks; accelerated clocks are local headless automation only.
+The core dependency boundary and workspace lock remain.
 
 Initial warm local measurements were 14.6s for launcher and 1.2s for core, both
 with a deliberately unavailable Godot path. Fresh restores or slower machines

@@ -18,3 +18,4 @@ Require(PlayerNames.Clean("Élodie 東京")=="Élodie 東京","Names retain inte
 Require(PlayerNames.Clean("   ")=="Player","Empty names have a usable fallback");
 Require(PlayerNames.Clean(new string('A',100)).Length==24,"Names have a bounded display length");
 Console.WriteLine("CORE_NETWORK_CHECK_PASS: malformed, nonfinite, repeated inputs and display name rules");
+PartyChecks.Run(Require);

@@ -1,9 +1,8 @@
-The launcher keeps a single logo in the main area and expands Play/Update across its width.
+The first multiplayer party is playable. Host a party, ready up with friends, play rock-paper-scissors, collect points and crown the winner. Play again keeps everyone connected.
 
-- Update has a small “New version · {version}” label beneath it, replacing the installation/channel instruction and following the selected Stable or Beta channel.
-- The instances sidebar starts directly with Running instances instead of repeating the logo.
-- The hero's perimeter blends into the background gradient, softening the opaque image and shadow cutoff while preserving the approved artwork.
+- Two to eight connected players/spectators; choose a name, player color and role. The host sets one to five throws and starts only when every active player is ready.
+- Choices remain private until reveal. The server controls deadlines, results and points; ties crown joint champions. Late arrivals spectate and disconnects cannot stall the party.
+- Native Godot party screens use the finalized logo, bundled fonts and launcher palette. Tab shows standings; Esc opens the session menu without pausing the party.
+- Multiplayer sandbox and Practice offline retain the first-person test bed. Network protocol is now 2; update all participants to this build.
 
-Opening the launcher and selecting Stable/Beta still only checks for updates. Click Update to install, then Play to launch. Updates and channel changes wait until every game instance closes.
-
-Verified locally with launcher interaction checks and final wide, compact, sidebar, Update and Updating renders. Publication requires gameplay, launcher and real installation/update checks on Windows and Linux.
+This is the RPS-only milestone. Lucky Doors, a multi-game playlist and Dodge Drop are next. Internet hosting still requires a reachable address and UDP port forwarding.

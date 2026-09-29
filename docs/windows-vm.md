@@ -27,7 +27,10 @@ limited privileges, no stored task password, and no execution time limit. Update
 replacement/restart therefore survives the SSH command ending. It uses Dev
 package IDs, keeping test installs separate from player installations.
 
-Use `check --suite game` or `check --suite distribution` for a focused run.
+Use `check --suite party` for focused party rules/network/UI checks with one
+rendered host and headless clients. Captures stay in the guest run's
+`source/artifacts/party-checks/`; phase logs and status are collected locally.
+Use `check --suite game` or `check --suite distribution` for the other focused runs.
 The VM helper's `game` label runs the complete `dev.py check`, including launcher
 checks; it is distinct from `dev.py check --suite game`. Routine launcher-only
 edits normally use the local launcher suite and a targeted native desktop trial
