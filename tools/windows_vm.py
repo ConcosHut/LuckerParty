@@ -371,7 +371,11 @@ def main():
     elif args.command == 'start':
         vm.start(args.install)
     elif args.command == 'status':
-        print(json.dumps(vm.qmp('query-status'), indent=2))
+        try:
+            status = vm.qmp('query-status')
+        except (FileNotFoundError, ConnectionRefusedError):
+            status = {'status': 'stopped', 'running': False}
+        print(json.dumps(status, indent=2))
     elif args.command == 'ready':
         vm.wait_ready()
     elif args.command == 'stop':
