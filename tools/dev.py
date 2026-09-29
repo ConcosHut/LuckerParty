@@ -111,6 +111,15 @@ def run(command, environment, timeout=180, inspect=False):
     result.check_returncode()
 
 
+def check_core_boundary():
+    # Keep engine dependencies out of the portable core, including focused runs.
+    import xml.etree.ElementTree as ET
+    core = ET.parse(ROOT / "src/LuckerParty.Core/LuckerParty.Core.csproj")
+    references = core.findall(".//ProjectReference") + core.findall(".//PackageReference")
+    if any("godot" in reference.get("Include", "").lower() for reference in references):
+        raise RuntimeError("Core cannot reference Godot; keep engine integration in LuckerParty.Godot.")
+
+
 def main():
     # Godot/MSBuild share intermediate files across targets. Own the workspace
     # for the entire command rather than allowing concurrent exports to race.
@@ -130,6 +139,8 @@ def main():
         fcntl.flock(build_lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", choices=["build", "run", "check", "export", "pack"])
+    parser.add_argument("--suite", choices=["all", "launcher", "core", "game"], default="all",
+                        help="Focused check suite (default: all). Launcher/core do not require Godot.")
     parser.add_argument("--target", choices=["windows", "linux"], default="windows")
     parser.add_argument("--godot", default=os.environ.get("GODOT_BIN"))
     parser.add_argument("--dotnet", default=os.environ.get("DOTNET_BIN"))
@@ -139,6 +150,8 @@ def main():
     parser.add_argument("--feed", help="Optional local/private update feed for development packages")
     parser.add_argument("--output-dir", help="Velopack release directory; retained to generate deltas")
     args = parser.parse_args()
+    if args.command != "check" and args.suite != "all":
+        parser.error("--suite applies only to check")
     dotnet = tool_path("dotnet", args.dotnet, [ROOT / ".tools/dotnet/dotnet", ROOT / ".tools/dotnet/dotnet.exe"])
     environment = os.environ.copy()
     environment["PATH"] = str(Path(dotnet).resolve().parent) + os.pathsep + environment.get("PATH", "")
@@ -151,14 +164,15 @@ def main():
     version = args.version or json.loads((ROOT / "version.json").read_text())["version"]
     if not re.fullmatch(r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)(?:-[A-Za-z0-9.-]+)?", version):
         raise RuntimeError("Version must be a three-part SemVer with optional prerelease")
+    check_core_boundary()
+    if args.command == "check" and args.suite in ("launcher", "core"):
+        project = "LuckerParty.Launcher.Checks" if args.suite == "launcher" else "LuckerParty.Core.Checks"
+        # dotnet run builds its own dependencies; no separate build or editor import.
+        run([dotnet, "run", "--project", str(ROOT / "tests" / project)], environment, timeout=60)
+        return
     run([dotnet, "build", str(PROJECT / "LuckerParty.Godot.csproj")], environment)
-    run([dotnet, "build", str(LAUNCHER / "LuckerParty.Launcher.csproj")], environment)
-    # Keep engine dependencies out of the portable core.
-    import xml.etree.ElementTree as ET
-    core = ET.parse(ROOT / "src/LuckerParty.Core/LuckerParty.Core.csproj")
-    references = core.findall(".//ProjectReference") + core.findall(".//PackageReference")
-    if any("godot" in reference.get("Include", "").lower() for reference in references):
-        raise RuntimeError("Core cannot reference Godot; keep engine integration in LuckerParty.Godot.")
+    if args.command != "check" or args.suite != "game":
+        run([dotnet, "build", str(LAUNCHER / "LuckerParty.Launcher.csproj")], environment)
     if args.command == "build":
         return
     editor_pattern = "**/Godot*mono_win64_console.exe" if os.name == "nt" else "**/Godot*mono_linux.x86_64"
@@ -180,7 +194,8 @@ def main():
         if "CAMERA_CHECK_PASS:" not in output:
             raise RuntimeError("Camera interpolation scenario did not report completion")
         run([sys.executable, str(ROOT / "tools/test_launcher_control.py"), *base, "--headless", "--", "--launcher-control"], environment, timeout=60)
-        run([dotnet, "run", "--project", str(ROOT / "tests/LuckerParty.Launcher.Checks")], environment, timeout=60)
+        if args.suite == "all":
+            run([dotnet, "run", "--project", str(ROOT / "tests/LuckerParty.Launcher.Checks")], environment, timeout=60)
         run([dotnet, "run", "--project", str(ROOT / "tests/LuckerParty.Core.Checks")], environment, timeout=60)
         run([sys.executable, str(ROOT / "tools/test_multiplayer.py"), "--godot", godot], environment, timeout=180)
     else:

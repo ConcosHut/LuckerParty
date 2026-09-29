@@ -77,6 +77,9 @@ local tools under `.tools/`. `--dotnet` / `DOTNET_BIN` can override the SDK host
 python tools/dev.py build
 python tools/dev.py run
 python tools/dev.py check
+python tools/dev.py check --suite launcher
+python tools/dev.py check --suite core
+python tools/dev.py check --suite game
 python tools/dev.py export --target windows
 python tools/dev.py export --target linux
 python tools/dev.py pack --target windows --profile player
@@ -115,6 +118,13 @@ frames per second against 60 physics ticks per second.
 It also launches isolated host/client processes to check multiplayer ownership,
 joining, movement, loss, capacity, disconnects, and recovery.
 It exits nonzero on a failed assertion.
+
+Use `check --suite launcher` for launcher UI/process changes (it also renders
+screenshots under `artifacts/launcher-ui-checks/`), `--suite core` for portable
+rules/input/name changes, or `--suite game` for game/core/network checks without
+the launcher UI suite. Launcher/core checks do not require Godot. Plain `check`
+retains the complete suite used by CI. See [the testing strategy](docs/testing-strategy.md)
+for when native Windows or actual installer testing adds useful evidence.
 
 For graphical evidence, the game accepts `-- --capture /absolute/path/image.png`
 and saves a viewport screenshot, then exits. This requires a graphical display.

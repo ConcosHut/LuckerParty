@@ -116,6 +116,12 @@ used by party sessions.
 Tests should cover meaningful outcomes and failure cases. Keep the harness
 small; add tools when they remove a recurring source of uncertainty or effort.
 
+Use the [testing strategy](testing-strategy.md) to select focused local checks.
+The default full suite remains the release gate; it is not the edit loop for
+every layout adjustment. Native Windows desktop checks and installed-update
+checks establish different properties and should be triggered by relevant
+changes rather than repeated automatically alongside the same passing CI checks.
+
 ## Human feedback
 
 Automation can verify rules and catch regressions. The team should playtest

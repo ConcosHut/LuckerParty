@@ -33,6 +33,10 @@ From the repository root, with the pinned SDK and Godot .NET editor available:
 - `python tools/dev.py build`: compile and verify the core dependency boundary.
 - `python tools/dev.py check`: build, import, and run movement, 240 FPS camera,
   core input/name, launcher guard, and multi-process networking scenarios.
+- `python tools/dev.py check --suite launcher`: focused launcher control/UI checks,
+  without a game build or Godot import; use for launcher-only iteration.
+- `python tools/dev.py check --suite core`: portable input/name/rule checks only.
+- `python tools/dev.py check --suite game`: game/core/network checks without the launcher UI suite.
 - `python tools/dev.py run`: launch the graphical test bed.
 - `python tools/dev.py export --target windows`: package the Windows x64 build.
 - `python tools/dev.py export --target linux`: package the Linux x64 build.
@@ -40,6 +44,14 @@ From the repository root, with the pinned SDK and Godot .NET editor available:
 Use `--godot` or `GODOT_BIN` for a non-PATH editor. Local tools under `.tools/`
 are discovered automatically. Keep `.tools/`, `.godot/`, and `artifacts/` out
 of Git. Successful export is not evidence of Windows runtime playtesting.
+
+Choose verification by changed behavior; follow [docs/testing-strategy.md](docs/testing-strategy.md).
+For UI-only edits, run the launcher suite and inspect final renders. Use a native
+VM desktop check when chrome, DPI, fonts or Windows integration changes. Do not
+repeat full multiplayer or installed-update suites locally for unchanged game
+or updater code; CI already runs both before publication. Repeat passed checks
+only after relevant edits, failures or new uncertainty. Batch visual adjustments
+before final review; a tool/docs-only change does not need a player release.
 
 Use the dedicated Windows VM on `box` for routine native Windows game,
 launcher, and installed-update checks; follow [docs/windows-vm.md](docs/windows-vm.md).

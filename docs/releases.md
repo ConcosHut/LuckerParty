@@ -109,6 +109,13 @@ valid package can legitimately avoid another download. CI has fresh machines.
 The focused C# checks cover cross-process session locks, orphaned child/PID reuse,
 and Stable discovery when the recent GitHub release page contains only Betas.
 
+For launcher-only iteration, use `python tools/dev.py check --suite launcher`
+and inspect its final renders. Routine layout changes do not need a local
+three-package update cycle in addition to CI's installed-update gate. Run that
+cycle locally for updater, package identity, restart, preferences or installation
+changes. See [testing strategy](testing-strategy.md). Release CI coverage is
+unchanged; tool/docs-only updates need not produce a new player version.
+
 Local packaging defaults to Dev identities. Use `--version`, `--channel`,
 `--feed`, and `--output-dir` for local testing; the retained output directory
 lets Velopack build deltas. The existing [Windows SSH loop](windows-playtesting.md)

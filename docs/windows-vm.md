@@ -28,6 +28,11 @@ replacement/restart therefore survives the SSH command ending. It uses Dev
 package IDs, keeping test installs separate from player installations.
 
 Use `check --suite game` or `check --suite distribution` for a focused run.
+The VM helper's `game` label runs the complete `dev.py check`, including launcher
+checks; it is distinct from `dev.py check --suite game`. Routine launcher-only
+edits normally use the local launcher suite and a targeted native desktop trial
+when Windows-specific behavior changes. Do not repeat the VM's full suites just
+to review layout changes; see [testing strategy](testing-strategy.md).
 Runs are serialized across checkouts. A timeout leaves the guest task running;
 inspect it before retrying. Status and the integration transcript are saved under
 `artifacts/windows-vm/run-<id>/`. The guest retains build artifacts and additional
