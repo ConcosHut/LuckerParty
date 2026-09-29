@@ -526,5 +526,6 @@ action strip places the large Play split button at the bottom right, with a
 thin darker coral edge, subtle top highlight and soft coral shadow. Hover/press
 change elevation; disabled states lose the shadow. Narrow windows reflow the
 actions, while the existing cards, contextual version, Settings selection and
-update/session guards are retained. This is implemented locally, not published
-as a new player release yet.
+update/session guards are retained. This shipped in
+[Beta 27](https://github.com/ConcosHut/LuckerParty/releases/tag/v0.3.0-beta.27)
+from commit `3fea2ca`, after both platforms passed the complete CI release gate.

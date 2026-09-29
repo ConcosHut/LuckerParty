@@ -22,13 +22,20 @@ space usage and Settings navigation, with native verification in the Windows VM.
       placement, both sidebar modes, Settings toggle and Back deselection. The 1160×720
       client fits at (60,16) on the VM's 1280×752 working area in desktop session 6.
 - [x] Close the owned preview, remove its temporary task and stop the idle VM.
-- [ ] Publish a new player version. This UI pass is implemented locally; it does not
-      change updater or gameplay code. Full multiplayer/installed-update suites were
-      not repeated for the visual pass; publication CI runs those checks.
+- [x] Publish Beta 27. This UI pass does not change updater or gameplay code.
+      Full multiplayer/installed-update suites were not repeated locally for the
+      visual pass; publication CI passed those checks on both platforms.
 
 Evidence lives under ignored `artifacts/launcher-ui-checks/` and
 `artifacts/windows-vm/launcher-branding-desktop/`. Protected emblem and wordmark
 SHA-256 values still match `assets/brand/status.json`.
+
+[Beta 27](https://github.com/ConcosHut/LuckerParty/releases/tag/v0.3.0-beta.27)
+was published from commit `3fea2ca` after
+[CI](https://github.com/ConcosHut/LuckerParty/actions/runs/36566964202) passed
+both platform builds, game/launcher checks, real installation/update checks
+and cross-platform draft asset verification. The Windows Setup, Linux AppImage,
+full packages, deltas and Beta feeds are public; Beta 26 remains unchanged.
 
 ## Composition and Settings follow-up
 
