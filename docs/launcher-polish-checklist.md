@@ -85,3 +85,12 @@ addressed with complete Avalonia control themes and custom window chrome.
   Its temporary test task was removed; the player launcher remains open in
   desktop session 1 with no games running. Final native captures are under
   ignored `artifacts/launcher-ui-checks/windows-beta25/`.
+
+## Follow-up found in the Windows VM
+
+- [ ] Recenter or clamp the window position after its startup size is reduced
+  to fit the working area. On the VM's 1280×800 desktop, the 1240×840 initial
+  sidebar window shrinks to 1240×720 but retains its original centered position,
+  leaving the caption buttons above the screen. The client capture renders
+  correctly and Play is ready; the console capture exposes the positioning issue.
+  Evidence: ignored `artifacts/windows-vm/launcher-desktop-trial/`.

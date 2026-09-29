@@ -55,7 +55,7 @@ public partial class NetworkAutomation : Node
         {
             try
             {
-                var message = JsonSerializer.Deserialize<ControlMessage>(File.ReadAllText(ControlPath), _json)!;
+                var message = ReadControl(ControlPath);
                 if (message.Revision != _revision)
                 {
                     _revision = message.Revision; _control = message;
@@ -87,6 +87,16 @@ public partial class NetworkAutomation : Node
         }
         WriteProbe();
         if (ExitAfter > 0 && _elapsed > ExitAfter) GetTree().Quit();
+    }
+
+    private ControlMessage ReadControl(string path)
+    {
+        // The scenario driver atomically replaces this file. Windows readers
+        // must share deletion so an open snapshot does not block that rename.
+        using var stream = new FileStream(path, FileMode.Open, System.IO.FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete);
+        using var reader = new StreamReader(stream);
+        return JsonSerializer.Deserialize<ControlMessage>(reader.ReadToEnd(), _json)!;
     }
 
     private void WriteProbe()

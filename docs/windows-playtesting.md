@@ -1,5 +1,9 @@
 # Windows playtesting from box
 
+Use the [dedicated Windows VM](windows-vm.md) for routine native integration,
+installer/update and launcher desktop tests. This physical-PC connection is for
+requested hardware rendering, controls and high-refresh playtests.
+
 The development connection is configured. Use SSH/SCP from the Linux workspace
 to prepare a Windows build, then trigger the on-demand interactive desktop task.
 A custom watch helper and additional chats are not required for this loop.

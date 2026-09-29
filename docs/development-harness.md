@@ -46,9 +46,12 @@ target architecture.
 When CI is available, run core/build checks on Linux and Windows and produce
 playtest artifacts. Verify Linux-to-Windows export against the selected engine
 version early; provide a native Windows build path as well. Record actual Windows
-runtime results separately from successful compilation/export. Graphical Windows
-playtesting uses the configured SSH connection and interactive desktop task on
-the user's PC; see [Windows playtesting](windows-playtesting.md). The Linux chat
+runtime results separately from successful compilation/export. Routine native
+Windows checks run in the dedicated [QEMU/KVM VM](windows-vm.md), including real
+installation/update tests and desktop launcher inspection. Its private state is
+shared across checkouts; the helper serializes runs and preserves active tests.
+Graphical hardware playtesting uses the configured SSH connection and interactive
+desktop task on the user's PC; see [Windows playtesting](windows-playtesting.md). The Linux chat
 can transfer builds, trigger launch, and inspect Windows status/logs. Process
 launch evidence does not replace a human check of rendering and controls.
 

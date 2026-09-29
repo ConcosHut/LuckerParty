@@ -97,6 +97,9 @@ packages and checks a real silent installation in a path with spaces, offline
 failure, interrupted/corrupt HTTP delivery, old-to-new updates, Stable -> Beta
 -> older Stable, exactly one game launch, and settings/saved sentinel retention.
 It leaves artifacts and logs under `artifacts/update-checks/` for inspection.
+On `box`, use `python tools/windows_vm.py check --suite distribution` with the
+[dedicated VM](windows-vm.md) started. It transfers the current tree and runs
+the installed checks in Windows' interactive desktop session using Dev IDs.
 Use fresh version identities when rerunning failure tests: a previously cached
 valid package can legitimately avoid another download. CI has fresh machines.
 The focused C# checks cover cross-process session locks, orphaned child/PID reuse,

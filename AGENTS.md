@@ -41,6 +41,15 @@ Use `--godot` or `GODOT_BIN` for a non-PATH editor. Local tools under `.tools/`
 are discovered automatically. Keep `.tools/`, `.godot/`, and `artifacts/` out
 of Git. Successful export is not evidence of Windows runtime playtesting.
 
+Use the dedicated Windows VM on `box` for routine native Windows game,
+launcher, and installed-update checks; follow [docs/windows-vm.md](docs/windows-vm.md).
+Run `python tools/windows_vm.py start`, then `check`, then `stop` when idle.
+It shares a private VM home across checkouts and serializes runs. Keep its
+credentials, disk, firmware and TPM state outside Git; never reinstall it for a
+normal test. Desktop work must run through an interactive task, not the SSH session.
+Use `screenshot` for console captures. Hardware rendering/input and high-refresh
+playtesting still use the physical PC when requested.
+
 Windows SSH playtesting is configured from this `box` workspace. Follow
 [docs/windows-playtesting.md](docs/windows-playtesting.md) to send a requested
 build, launch it through the interactive Windows task, and read status/logs.

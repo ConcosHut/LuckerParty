@@ -46,8 +46,11 @@ See [the jitter investigation](docs/movement-jitter.md) for measured results.
 
 ## Develop on Windows or Linux
 
-For development on `box` with remote Windows playtests, the working SSH transfer
-and desktop launch commands are in [docs/windows-playtesting.md](docs/windows-playtesting.md).
+For routine Windows integration checks on `box`, use the dedicated
+[Windows VM](docs/windows-vm.md): `python tools/windows_vm.py start`, then
+`python tools/windows_vm.py check`, then `python tools/windows_vm.py stop`.
+For requested physical-PC playtests, the SSH transfer and desktop launch
+commands are in [docs/windows-playtesting.md](docs/windows-playtesting.md).
 
 Pinned toolchain:
 
