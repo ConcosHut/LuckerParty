@@ -1,10 +1,10 @@
-The launcher footer is more compact, and Settings now behaves like a stationary, pressed-in toggle.
+The launcher gives its four-world arena more space, with an ivory-to-sand background and a larger bottom-right Play action.
 
-- The check mark sits immediately beside “Up to date,” aligned with the text.
-- Empty helper text no longer reserves space below Play; the footer has tighter padding.
-- Settings keeps the same position when its page opens, including narrow layouts and the instance sidebar.
-- A darker face and inset shadow show that Settings is pressed. Click it again or press Escape to return to Play; the redundant Back to Play button is removed.
+- The old tagline is removed, and the approved hero blends into the background without changing its source artwork.
+- Settings moves to an icon-only cog in the top-left control bar. It keeps its pressed-in state; click again or press Escape to return to Play.
+- Play fills the whole action. Update and Retry update expose the dropdown for Play installed version.
+- Download progress fills the disabled button behind Updating, its percentage and a secondary status line. Installation shows its stage without a download percentage; the separate progress bar is removed.
 
 Opening the launcher and selecting Stable/Beta still only checks for updates. Click Update to install, then Play to launch. Updates and channel changes wait until every game instance closes.
 
-Verified locally with launcher interaction checks and final renders at wide and narrow sizes. Publication requires gameplay, launcher and real installation/update checks on Windows and Linux.
+Verified locally with launcher interaction checks, final renders at wide and narrow sizes, and a Windows 11 desktop trial of the caption cog and both sidebar modes. Publication requires gameplay, launcher and real installation/update checks on Windows and Linux.

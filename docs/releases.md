@@ -24,10 +24,16 @@ and Update/Play action. It never automatically installs or starts the game. Clos
 games before changing channels. The installed version and update status are shown
 once beneath the top-right channel selector.
 
-**Settings** is toggleable navigation: click it again to return to Play. Its
+**Settings** is an icon-only cog at the top-left of the window's control bar:
+click it again to return to Play. Its
 warm, pressed-in face and inset shadow stay visible while Settings is open.
 The button keeps the same screen position on both pages. Space activates it;
 Escape also returns home. There is no separate Back to play button.
+The Play dropdown appears only for Update or Retry update, where it provides
+Play installed version. Downloading disables the main action and fills it with
+progress behind Updating, the percentage and a secondary status line.
+Installation shows Installing without a transfer percentage; no separate
+progress bar occupies space below the action.
 
 The launcher stays alive while games run; closing its window during play
 minimizes it so it can be restored from the taskbar. Another invocation defers

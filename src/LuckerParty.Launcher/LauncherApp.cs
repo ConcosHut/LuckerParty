@@ -28,7 +28,8 @@ internal sealed class LauncherApp : Application
 internal sealed partial class LauncherWindow : Window
 {
     private readonly LauncherController _controller;
-    private readonly Grid _shell = new() { ColumnDefinitions = new("Auto,*") };
+    private readonly Grid _shell = new() { ColumnDefinitions = new("Auto,*"), RowDefinitions = new("40,*") };
+    private readonly Grid _mainSurface = new() { RowDefinitions = new("Auto,*,Auto") };
     private readonly StackPanel _instances = new() { Spacing = 12 };
     private readonly Dictionary<int, (Border Card, TextBlock Time)> _cards = new();
     private readonly Border _sidebar;
@@ -39,7 +40,7 @@ internal sealed partial class LauncherWindow : Window
         Text = "Getting ready", FontSize = 12, FontFamily = PartyRoom.Body,
         Foreground = PartyRoom.Muted, TextWrapping = TextWrapping.NoWrap
     };
-    private readonly ProgressBar _progress = new() { Minimum = 0, Maximum = 100, Height = 5, IsVisible = false };
+    private double _downloadProgress;
     private readonly TextBlock _playLabel = PartyRoom.Text("Play", 20, Brushes.White);
     private readonly Button _play, _more, _stable, _beta;
     private readonly TranslateTransform _channelThumb = new()
@@ -69,12 +70,12 @@ internal sealed partial class LauncherWindow : Window
         _home = BuildHome();
         _home.Name = "HomePage";
         _settings = BuildSettings(); _settings.Name = "SettingsPage"; _settings.IsVisible = false;
-        _sidebar = BuildSidebar(); _shell.Children.Add(_sidebar);
-        var main = new Grid { RowDefinitions = new("Auto,*,Auto") };
-        var header = BuildHeader(); header.ZIndex = 2; main.Children.Add(header);
-        var pages = new Grid(); pages.Children.Add(_home); pages.Children.Add(_settings); Grid.SetRow(pages, 1); main.Children.Add(pages);
-        var footer = BuildFooter(); Grid.SetRow(footer, 2); main.Children.Add(footer);
-        Grid.SetColumn(main, 1); _shell.Children.Add(main);
+        _sidebar = BuildSidebar(); Place(_shell, _sidebar, row: 1);
+        var header = BuildHeader(); header.ZIndex = 2; _mainSurface.Children.Add(header);
+        var pages = new Grid(); pages.Children.Add(_home); pages.Children.Add(_settings); Place(_mainSurface, pages, row: 1);
+        Place(_mainSurface, BuildFooter(), row: 2);
+        Place(_shell, _mainSurface, row: 1, column: 1);
+        var caption = BuildCaptionRow(); caption.ZIndex = 3; Grid.SetColumnSpan(caption, 2); Place(_shell, caption);
         Content = _shell;
         ConfigureChrome();
         _more.ContextMenu = new ContextMenu
@@ -184,8 +185,8 @@ internal sealed partial class LauncherWindow : Window
 
     private void StateChanged(LauncherState state)
     {
-        _progress.Value = state.Progress;
-        _progress.IsVisible = state.Activity is LauncherActivity.Downloading or LauncherActivity.Applying;
+        // Download percentages describe transfer only, not installation or restart.
+        _downloadProgress = state.Activity == LauncherActivity.Downloading ? Math.Clamp(state.Progress, 0, 100) : 0;
         _lastStateMessage = state.Message;
         if (state.Message.StartsWith("GAME_EXITED", StringComparison.Ordinal) && !_controller.GameRunning)
         {
@@ -199,6 +200,8 @@ internal sealed partial class LauncherWindow : Window
         _sidebar.IsVisible = _controller.AllowMultipleInstances;
         var canPlay = !_controller.Busy && (!_controller.GameRunning || _controller.AllowMultipleInstances);
         _more.IsEnabled = canPlay;
+        _more.IsVisible = !_controller.Busy && (_controller.UpdateAvailable || _controller.Activity == LauncherActivity.Error);
+        if (!_more.IsVisible) _more.ContextMenu?.Close();
         _play.IsEnabled = canPlay && (!_controller.UpdateAvailable || !_controller.GameRunning);
         _stable.IsEnabled = _beta.IsEnabled = !_controller.Busy && !_controller.GameRunning;
         _multiple.IsEnabled = !_controller.Busy;
@@ -208,22 +211,34 @@ internal sealed partial class LauncherWindow : Window
         var singleGameBlocksPlay = _controller.GameRunning && !_controller.AllowMultipleInstances;
         _playLabel.Text = _controller.Busy ? _controller.Activity switch
         {
-            LauncherActivity.Checking => "Checking…", LauncherActivity.Downloading => "Updating…",
-            LauncherActivity.Applying => "Applying…", _ => "Starting…"
+            LauncherActivity.Checking => "Checking…", LauncherActivity.Downloading => $"Updating · {_downloadProgress:0}%",
+            LauncherActivity.Applying => "Installing…", _ => "Starting…"
         } : singleGameBlocksPlay ? "Running"
           : _controller.Activity == LauncherActivity.Error ? "Retry update"
           : _controller.UpdateAvailable ? "Update" : "Play";
         var updateAction = _controller.UpdateAvailable;
         _play.Classes.Set("update-action", updateAction);
         _more.Classes.Set("update-action", updateAction);
+        var downloading = _controller.Busy && _controller.Activity == LauncherActivity.Downloading;
+        var updating = downloading || _controller.Busy && _controller.Activity == LauncherActivity.Applying;
+        _play.Classes.Set("updating", updating);
+        _playUpdateFill.IsVisible = downloading;
+        _playStatus.Text = _controller.Busy ? _controller.Activity switch
+        {
+            LauncherActivity.Checking => "Checking the selected channel",
+            LauncherActivity.Downloading => "Downloading update…",
+            LauncherActivity.Applying => "Launcher will restart when ready",
+            _ => "Opening game window…"
+        } : "";
+        _playStatus.IsVisible = _controller.Busy;
+        _playIcon.IsVisible = !_controller.Busy;
         _playSplit.Background = updateAction ? PartyRoom.Green : PartyRoom.Coral;
         _playEdge.BorderBrush = PartyRoom.Brush(updateAction ? "#1C6650" : "#CF4F5D");
         _more.BorderBrush = PartyRoom.Brush(updateAction ? "#8ABBAB" : "#FFB7BD");
         _playIcon.Kind = updateAction ? "download" : "play";
         // The same refresh runs after setting changes as after controller events.
         // Helper text therefore cannot retain an obsolete multi-instance hint.
-        _message.Text = _controller.Busy && _controller.Activity is LauncherActivity.Checking or LauncherActivity.Downloading or LauncherActivity.Applying
-            ? _lastStateMessage
+        _message.Text = _controller.Busy ? ""
             : singleGameBlocksPlay ? "Close the game to play again."
             : _controller.Activity == LauncherActivity.Error && _lastStateMessage.StartsWith("LAUNCHER_ERROR: ", StringComparison.Ordinal)
                 ? _lastStateMessage[16..] + " Use Play options to launch the installed version."
@@ -236,6 +251,10 @@ internal sealed partial class LauncherWindow : Window
         ToolTip.SetTip(_stable, channelHint); ToolTip.SetTip(_beta, channelHint);
         AutomationProperties.SetName(_play, _playLabel.Text);
         _updateStatus.Text = _controller.UpdateStatus;
+        // Recompute intrinsic width when the status changes after initial layout.
+        // Otherwise a longer label can retain the startup label's narrow bounds.
+        _updateStatus.InvalidateMeasure();
+        if (_updateStatus.Parent is Control statusRow) statusRow.InvalidateMeasure();
         _updateStatus.Foreground = _controller.UpdateStatus == "Up to date" ? PartyRoom.Green : PartyRoom.Muted;
         _updateCheck.IsVisible = _controller.UpdateStatus == "Up to date";
         UpdateHomeLayout();

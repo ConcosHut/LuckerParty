@@ -232,3 +232,31 @@ no assertion or gameplay code was changed to bypass the timeout.
 is public; both update feeds select its new full package, and release asset
 digests match the published checksum list. Final render capture explicitly
 remeasures controls before drawing to avoid stale text widths in headless frames.
+
+## Gradient, caption Settings and embedded progress
+
+- [x] Keep the existing palette and finalized art; use an ivory-to-sand vertical
+  gradient and Multiply blending to integrate the hero backdrop at render time.
+- [x] Remove the tagline and enlarge Play to 480×88, 440×76 in compact layouts,
+  constrained to the available width.
+- [x] Move Settings to an accessible, tooltip-labelled cog at the top-left of
+  the global caption. It stays fixed across pages and sidebar changes, retaining
+  its pressed-in state and pointer/Space/Escape navigation.
+- [x] Hide and collapse the dropdown in Play/Running/busy states. Expose it for
+  Update and Retry as the explicit installed-version fallback.
+- [x] Embed download fill, percentage and stage text in the disabled action;
+  remove the separate progress bar and suppress transfer percentage on install.
+
+The focused launcher suite passed unchanged controller/child guard scenarios,
+dropdown visibility and keyboard dismissal, and an asynchronous download held at
+62%. The fill remains proportional after compact resizing. Wide, compact,
+sidebar, Update and Updating renders were inspected. A fresh Windows 11 limited
+interactive task verified a real mouse click on the caption cog, repeated toggle,
+pressed Settings and both sidebar modes. The final 1248×720 client fits at (16,16)
+in the VM working area; captures are under ignored
+`artifacts/windows-vm/launcher-gradient-final-desktop/`. The initial native capture
+also exposed stale status-row measurement: refreshing now invalidates that row,
+and the final capture shows its complete text without a test-only remeasurement.
+The trial closed its own launcher and removed its temporary task. The VM was
+shut down after inspection. Full multiplayer/installed-update suites were not
+repeated locally for this UI pass; cross-platform release publication is pending.

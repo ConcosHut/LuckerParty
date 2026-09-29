@@ -103,9 +103,21 @@ internal sealed partial class LauncherWindow
 
     private Control BuildCaptionRow()
     {
-        var row = new Grid { ColumnDefinitions = new("*,Auto"), Height = 40 };
+        var row = new Grid { ColumnDefinitions = new("Auto,*,Auto"), Height = 40 };
+        _settingsNavigation.Content = new LauncherIcon("gear") { Width = 24, Height = 24 };
+        _settingsNavigation.Width = 44; _settingsNavigation.Height = 32;
+        _settingsNavigation.Margin = new Thickness(8, 4, 0, 4);
+        _settingsNavigation.Padding = new Thickness(10, 4);
+        _settingsNavigation.HorizontalContentAlignment = HorizontalAlignment.Center;
+        _settingsNavigation.VerticalContentAlignment = VerticalAlignment.Center;
+        _settingsNavigation.CornerRadius = new CornerRadius(10); _settingsNavigation.Classes.Add("settings-nav");
+        AutomationProperties.SetName(_settingsNavigation, "Settings"); ToolTip.SetTip(_settingsNavigation, "Open launcher settings");
+        _settingsNavigation.IsCheckedChanged += (_, _) => SetSettingsVisible(_settingsNavigation.IsChecked == true);
+        // This is a client button, never part of the draggable caption region.
+        Win32Properties.SetNonClientHitTestResult(_settingsNavigation, Win32Properties.Win32HitTestValue.Client);
+        Place(row, _settingsNavigation);
         var drag = new Border { Background = Brushes.Transparent };
-        ConfigureDragRegion(drag); Place(row, drag);
+        ConfigureDragRegion(drag); Place(row, drag, column: 1);
         var buttons = new StackPanel { Orientation = Orientation.Horizontal };
         var minimize = CaptionButton("Minimize window", "minimize", Win32Properties.Win32HitTestValue.MinButton);
         minimize.Click += (_, _) => WindowState = WindowState.Minimized;
@@ -115,7 +127,7 @@ internal sealed partial class LauncherWindow
         var close = CaptionButton("Close launcher", "close", Win32Properties.Win32HitTestValue.Close);
         close.Classes.Add("caption-close"); close.Click += (_, _) => Close();
         buttons.Children.Add(minimize); buttons.Children.Add(_maximizeButton); buttons.Children.Add(close);
-        Place(row, buttons, column: 1);
+        Place(row, buttons, column: 2);
         return row;
     }
 

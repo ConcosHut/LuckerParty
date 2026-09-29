@@ -45,24 +45,14 @@ internal static class LauncherUiChecks
                     await Save(window, output, "party-room-home.png");
                     var primary = FindButton(window, "Play"); var chevron = FindButton(window, "Play options");
                     var primaryPosition = primary.TranslatePoint(new Point(0, 0), window)!.Value;
-                    var chevronPosition = chevron.TranslatePoint(new Point(0, 0), window)!.Value;
                     Require(primaryPosition.X > window.Bounds.Width * .55 && primaryPosition.Y > window.Bounds.Height * .75,
-                        "Primary action occupies the bottom-right action strip");
+                        "Primary action occupies the bottom-right area");
                     Require(window.Bounds.Height - primaryPosition.Y - primary.Bounds.Height is >= 8 and <= 16,
                         "Empty helper text does not reserve blank padding beneath Play");
-                    Require(primary.Bounds.Width + chevron.Bounds.Width >= 400 && primary.Bounds.Height >= 64,
-                        "Play presents an enlarged primary click target in the full-size layout");
-                    Require(Math.Abs(primary.Bounds.Height - chevron.Bounds.Height) < .1 && Math.Abs(primaryPosition.Y - chevronPosition.Y) < .1,
-                        "Play and chevron have flush top and bottom edges");
-                    Require(Math.Abs(primaryPosition.X + primary.Bounds.Width - chevronPosition.X) < .1,
-                        "Play and chevron join without a gap or overlap");
-                    Require(chevron.Bounds.Width <= chevron.Bounds.Height + 1,
-                        "Chevron segment stays compact beside the larger primary action");
-                    var chevronIcon = chevron.GetVisualDescendants().OfType<LauncherIcon>().Single();
-                    var iconPosition = chevronIcon.TranslatePoint(new Point(0, 0), chevron)!.Value;
-                    Require(Math.Abs(iconPosition.X - (chevron.Bounds.Width - iconPosition.X - chevronIcon.Bounds.Width)) < .1 &&
-                        Math.Abs(iconPosition.Y - (chevron.Bounds.Height - iconPosition.Y - chevronIcon.Bounds.Height)) < .1,
-                        "Chevron icon has equal opposing padding and stays centered");
+                    Require(primary.Bounds.Width >= 440 && primary.Bounds.Height >= 76 && !chevron.IsEffectivelyVisible,
+                        "Play fills the enlarged action with no redundant dropdown");
+                    Require(!window.GetVisualDescendants().OfType<TextBlock>().Any(text => text.Text == "Ready for another round?" || text.Text == "New chaos. Same crew."),
+                        "Home omits the old tagline");
                     window.MouseMove(new Point(primaryPosition.X + primary.Bounds.Width / 2, primaryPosition.Y + primary.Bounds.Height / 2));
                     Dispatcher.UIThread.RunJobs();
                     var playSurface = primary.GetVisualDescendants().OfType<ContentPresenter>().Single(presenter => presenter.Name == "PART_ContentPresenter");
@@ -80,6 +70,9 @@ internal static class LauncherUiChecks
                         "Installed version sits beneath the top-right channel selector");
                     var settingsNavigation = window.GetVisualDescendants().OfType<ToggleButton>().Single(button => button.Name == "SettingsNavigation");
                     var settingsPosition = settingsNavigation.TranslatePoint(new Point(), window)!.Value;
+                    Require(settingsPosition.X < 16 && settingsPosition.Y < 8 && settingsNavigation.Width >= 40 &&
+                        settingsNavigation.Content is LauncherIcon && ToolTip.GetTip(settingsNavigation) is not null,
+                        "Settings is an accessible icon in the top-left caption");
                     var homePage = window.GetVisualDescendants().OfType<Control>().Single(control => control.Name == "HomePage");
                     var settingsPage = window.GetVisualDescendants().OfType<Control>().Single(control => control.Name == "SettingsPage");
                     void RequireSettings(bool open, string message) => Require(settingsNavigation.IsChecked == open &&
@@ -159,15 +152,8 @@ internal static class LauncherUiChecks
                     Require(FindButton(window, "Play").IsEnabled && helper.Text == "Opens another game window",
                         "Turning the preference on immediately restores Play and its correct helper");
                     ToggleSettings(window);
-                    Click(FindButton(window, "Play options"));
-                    Require(FindButton(window, "Play options").ContextMenu!.IsOpen, "Installed-version fallback is behind Play options");
-                    await Save(window, output, "party-room-dropdown.png");
-                    var menu = FindButton(window, "Play options").ContextMenu!;
-                    var menuWindow = TopLevel.GetTopLevel(menu)!;
-                    menuWindow.KeyPress(Key.Escape, RawInputModifiers.None);
-                    menuWindow.KeyRelease(Key.Escape, RawInputModifiers.None);
-                    Dispatcher.UIThread.RunJobs();
-                    Require(!menu.IsOpen, "Installed-version menu retains Escape-key dismissal");
+                    Require(!FindButton(window, "Play options").IsEffectivelyVisible,
+                        "Normal multi-instance Play also hides the redundant dropdown");
                     Click(FindButton(window, "Show instance 1"));
                     await Wait(() => File.Exists(Path.Combine(installation, "game", $"show-{controller.Instances.First().Identity.Pid}")));
                     Click(FindButton(window, "Close instance 2"));
@@ -185,11 +171,8 @@ internal static class LauncherUiChecks
                     Require(play.IsEffectivelyVisible && play.Bounds.Height >= 56 && position.X >= 0 && position.Y >= 0 &&
                         position.X + play.Bounds.Width <= window.Bounds.Width && position.Y + play.Bounds.Height <= window.Bounds.Height,
                         "Primary action keeps a usable click target within the minimum window size");
-                    var compactChevron = FindButton(window, "Play options");
-                    var compactChevronPosition = compactChevron.TranslatePoint(new Point(0, 0), window)!.Value;
-                    Require(Math.Abs(compactChevron.Bounds.Height - play.Bounds.Height) < .1 &&
-                        compactChevronPosition.X + compactChevron.Bounds.Width <= window.Bounds.Width,
-                        "Compact Play options retain the shared height and fit inside the window");
+                    Require(!FindButton(window, "Play options").IsEffectivelyVisible,
+                        "Compact Play fills the button without dropdown space");
                     var version = window.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == controller.Version);
                     var versionPosition = version.TranslatePoint(new Point(0, 0), window)!.Value;
                     Require(version.IsEffectivelyVisible && versionPosition.X + version.Bounds.Width <= window.Bounds.Width,
@@ -203,9 +186,8 @@ internal static class LauncherUiChecks
                     ToggleSettings(window);
                     await Save(window, output, "party-room-small-sidebar.png");
                     position = play.TranslatePoint(new Point(0, 0), window)!.Value;
-                    compactChevronPosition = compactChevron.TranslatePoint(new Point(0, 0), window)!.Value;
                     Require(sidebar.IsVisible && play.IsEffectivelyVisible && play.Bounds.Height >= 56 && position.X >= sidebar.Bounds.Width &&
-                        compactChevronPosition.X + compactChevron.Bounds.Width <= window.Bounds.Width && position.Y + play.Bounds.Height <= window.Bounds.Height,
+                        position.X + play.Bounds.Width <= window.Bounds.Width && position.Y + play.Bounds.Height <= window.Bounds.Height,
                         "Small sidebar layout keeps the complete primary action in the remaining window area");
                     settingsPosition = settingsNavigation.TranslatePoint(new Point(), window)!.Value;
                     ToggleSettings(window);
@@ -246,6 +228,29 @@ internal static class LauncherUiChecks
             await Wait(() => !controller.Busy && controller.AvailableVersion == "2.1.0-beta.1");
             Require(beta.Downloads == 0 && beta.Applies == 0 && !controller.GameRunning,
                 "Clicking Beta changes the target and Update state without installing or launching");
+            await Save(window, output, "party-room-update.png");
+            var chevron = FindButton(window, "Play options");
+            var primary = FindButton(window, "Update");
+            var primaryPosition = primary.TranslatePoint(new Point(), window)!.Value;
+            var chevronPosition = chevron.TranslatePoint(new Point(), window)!.Value;
+            Require(chevron.IsEffectivelyVisible && Math.Abs(primary.Bounds.Height - chevron.Bounds.Height) < .1 &&
+                Math.Abs(primaryPosition.Y - chevronPosition.Y) < .1 &&
+                Math.Abs(primaryPosition.X + primary.Bounds.Width - chevronPosition.X) < .1 &&
+                Math.Abs(chevron.Bounds.Width - chevron.Bounds.Height) < .1,
+                "Update exposes a flush square dropdown within the shared action");
+            var chevronIcon = chevron.GetVisualDescendants().OfType<LauncherIcon>().Single();
+            var iconPosition = chevronIcon.TranslatePoint(new Point(), chevron)!.Value;
+            Require(Math.Abs(iconPosition.X - (chevron.Bounds.Width - iconPosition.X - chevronIcon.Bounds.Width)) < .1 &&
+                Math.Abs(iconPosition.Y - (chevron.Bounds.Height - iconPosition.Y - chevronIcon.Bounds.Height)) < .1,
+                "Update dropdown icon keeps equal padding");
+            Click(chevron);
+            Require(chevron.ContextMenu!.IsOpen, "Update exposes the installed-version fallback");
+            await Save(window, output, "party-room-dropdown.png");
+            var menuWindow = TopLevel.GetTopLevel(chevron.ContextMenu)!;
+            menuWindow.KeyPress(Key.Escape, RawInputModifiers.None);
+            menuWindow.KeyRelease(Key.Escape, RawInputModifiers.None);
+            Dispatcher.UIThread.RunJobs();
+            Require(!chevron.ContextMenu.IsOpen, "Fallback menu retains Escape-key dismissal");
             var updateButton = FindButton(window, "Update");
             var origin = updateButton.TranslatePoint(new Point(), window)!.Value;
             window.MouseMove(new Point(origin.X + updateButton.Bounds.Width / 2, origin.Y + updateButton.Bounds.Height / 2));
@@ -271,6 +276,8 @@ internal static class LauncherUiChecks
             stable.FailCheck = true;
             Click(FindButton(window, "Play"));
             await Wait(() => !controller.Busy && controller.Activity == LauncherActivity.Error);
+            Require(FindButton(window, "Play options").IsEffectivelyVisible,
+                "Failed discovery retains the installed-version fallback");
             stable.FailCheck = false;
             Click(FindButton(window, "Retry update"));
             await Wait(() => !controller.Busy && controller.Activity == LauncherActivity.Ready);
@@ -294,14 +301,32 @@ internal static class LauncherUiChecks
             await Wait(() => !controller.GameRunning && !controller.Busy && stable.Checks > checksBeforeExit && updateButton.IsEnabled);
             Require(FindButton(window, "Update").IsEnabled && stable.Downloads == 0,
                 "Last game exit checks again without automatically updating");
+            stable.DownloadProgress = 62;
+            stable.DownloadGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             Click(FindButton(window, "Update"));
+            await Wait(() => controller.Busy && AutomationProperties.GetName(updateButton) == "Updating · 62%");
+            await Save(window, output, "party-room-updating.png");
+            var fill = updateButton.GetVisualDescendants().OfType<Border>().Single(control => control.Name == "ActionProgressFill");
+            var detail = updateButton.GetVisualDescendants().OfType<TextBlock>().Single(control => control.Name == "ActionStatus");
+            Require(!updateButton.IsEnabled && !chevron.IsEffectivelyVisible && fill.IsEffectivelyVisible &&
+                Math.Abs(fill.Bounds.Width / updateButton.Bounds.Width - .62) < .01 &&
+                detail.IsEffectivelyVisible && detail.Text == "Downloading update…",
+                "Disabled Updating action embeds the actual percentage fill and status line");
+            window.Width = 850; window.Height = 620;
+            await Save(window, output, "party-room-small-updating.png");
+            Require(Math.Abs(fill.Bounds.Width / updateButton.Bounds.Width - .62) < .01,
+                "Embedded progress follows the button after compact resizing");
+            stable.DownloadGate.SetResult();
             await Wait(() => !controller.Busy && stable.Applies == 1);
+            Require(!fill.IsEffectivelyVisible && !detail.IsEffectivelyVisible,
+                "Download percentage disappears when transfer ends");
             Require(stable.Downloads == 1 && !controller.GameRunning &&
                 JsonFiles.Read<Preferences>(Path.Combine(data, "preferences.json"))!.PendingLaunch is { PrepareOnly: true },
                 "Explicit Update installs once and saves restart-to-Play intent");
         }
         finally
         {
+            stable.DownloadGate?.TrySetResult();
             foreach (var game in controller.Instances) await controller.CloseInstanceAsync(game.Identity, force: true);
             await Wait(() => !controller.GameRunning && !controller.Busy);
             window.Close();
@@ -339,7 +364,6 @@ internal static class LauncherUiChecks
     {
         await Task.Delay(200);
         Dispatcher.UIThread.RunJobs();
-        foreach (var control in window.GetVisualDescendants().OfType<Control>()) control.InvalidateMeasure();
         window.UpdateLayout();
         foreach (var visual in window.GetVisualDescendants()) visual.InvalidateVisual();
         AvaloniaHeadlessPlatform.ForceRenderTimerTick(3);

@@ -13,16 +13,19 @@ shapes at small sizes. Its exact SVG paths render through `BrandLogo` without
 an installed logo font or a raster conversion. The hero uses high-quality
 bitmap interpolation when scaled down.
 
-A sand action strip groups the headline and Settings with a large bottom-right
-Play split button: 440×76 normally, 400×64 in compact layouts. Narrow windows
-reflow the actions into additional rows. Play has a restrained coral shadow,
+A vertical ivory-to-sand gradient grounds the arena and the large bottom-right
+Play button: 480×88 normally, 440×76 in compact layouts, constrained by available
+width. The hero uses Multiply blending at render time to integrate its white
+backdrop; the approved PNG is unchanged. The old tagline is removed.
+Play has a restrained coral shadow,
 shared darker edge and subtle top highlight; hover increases elevation,
 pressing lowers it and disabled states remove the shadow. Existing capsule
 instance cards and their controls are retained.
 
 Empty helper text collapses completely, and the action strip uses 16px above
-and 12px below its controls. Settings anchors to the same bottom position on
-the home and Settings pages, including compact/sidebar layouts. Its open state
+and 12px below its controls. Settings is an icon-only cog in the window's global
+top-left caption, with a tooltip and accessible name. It anchors to the same
+position on the home and Settings pages, including compact/sidebar layouts. Its open state
 has a warm, darker face, stronger edge and inset shadow to read as pressed in.
 Clicking it again, Space or Escape returns home; there is no Back button.
 The green check and Up to date text form one closely spaced, centered pair
@@ -44,8 +47,12 @@ also applies to an older launcher's saved launch-after-update intent. Play check
 again before starting one game; a newly discovered mismatch requires a separate
 Update click. The button shows progress or Retry update when appropriate;
 a single-instance running game shows Running.
-Its narrow, flush chevron offers Play installed version as
-the explicit offline fallback. Headless automation retains its explicit
+Play occupies the whole button without a chevron. Update and Retry update expose
+a flush square chevron offering Play installed version as the offline fallback.
+Busy actions hide that chevron. Download progress fills the disabled main button
+behind Updating, its actual percentage and a secondary status line. Checking,
+installation and starting show their stage text without a transfer percentage;
+no separate progress bar remains below the button. Headless automation retains its explicit
 update-and-prepare or update-and-launch commands; `--discover-only` exercises
 the metadata-only path without either side effect. A small updater adapter keeps
 check/download/apply boundaries independently observable in interaction tests.
@@ -101,6 +108,8 @@ keyboard focus, split-button geometry, bottom-right action placement, narrow
 sidebar layout and immediate preference/state changes. Update-policy checks cover
 startup/channel discovery without downloading, explicit Update, retry, legacy
 restart intent, the green hover state and deferral while games use the install.
+An asynchronous fixture holds a download at 62% to verify its disabled action,
+embedded fill, secondary status and proportional progress after resizing.
 PNGs are written
 under ignored `artifacts/launcher-ui-checks/` for visual inspection.
 

@@ -73,6 +73,11 @@
       <Style Selector="^.primary.update-action:disabled /template/ ContentPresenter#PART_ContentPresenter">
         <Setter Property="Background" Value="#718F83" />
       </Style>
+      <!-- Busy update remains vivid behind the embedded progress fill. -->
+      <Style Selector="^.primary.updating:disabled /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="#278568" />
+        <Setter Property="Foreground" Value="White" />
+      </Style>
       <Style Selector="^.primary:focus-visible /template/ Border#KeyboardFocus">
         <Setter Property="BorderBrush" Value="White" />
       </Style>

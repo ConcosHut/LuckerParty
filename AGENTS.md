@@ -84,7 +84,7 @@ Desktop restart always clears launch-after-update intent, including older versio
 saved intent. Headless automation retains explicit prepare/launch behavior;
 `--headless --discover-only` checks metadata without installing or launching.
 Settings is toggleable navigation with a persistent pressed-in face and inset
-shadow. It stays anchored at the same bottom position on both pages; clicking
+shadow. Its icon-only cog stays at the window's top-left caption on both pages; clicking
 it again or pressing Escape returns to play. There is no separate Back button.
 Empty Play helper text collapses rather than reserving footer space; the update
 check mark sits directly beside its right-aligned status text.
@@ -99,8 +99,12 @@ live in separate partial-class files and control themes in Assets/PartyRoomContr
 The finalized Clover Peak/Leafcut SVG sources live in assets/brand/ and render
 natively through BrandLogo.cs. Preserve their geometry and colors. The approved
 four-world hero is Assets/party-room-arena.png; keep regional art fixes intact.
-The home screen uses a sand action strip with a large bottom-right Play button
-and a restrained coral shadow; narrow layouts reflow the actions.
+The home screen uses an ivory-to-sand gradient with the approved hero multiplied
+over it at render time, without altering the asset. The large bottom-right Play
+has a restrained coral shadow; the tagline is removed. Play has no dropdown;
+Update and Retry expose the installed-version fallback. Download progress fills
+the disabled action behind its percentage and status line; installation has no
+percentage. Narrow layouts retain the same action within the remaining width.
 Parallel edits may share a checkout when file ownership is disjoint; run builds
 only after integration. See docs/launcher-polish-checklist.md for the UI pass.
 

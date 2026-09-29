@@ -11,9 +11,21 @@ namespace LuckerParty.Launcher;
 
 internal sealed partial class LauncherWindow
 {
-    private readonly TextBlock _headline = PartyRoom.Heading("Ready for another round?", 28);
-    private readonly TextBlock _subtitle = PartyRoom.Text("New chaos. Same crew.", 17, PartyRoom.Muted);
-    private readonly StackPanel _headlineContent = new() { Spacing = 3, VerticalAlignment = VerticalAlignment.Center };
+    private readonly TextBlock _playStatus = PartyRoom.Text("", 13, Brushes.White);
+    private readonly Border _playUpdateFill = new()
+    {
+        Name = "ActionProgressFill", Background = PartyRoom.Brush("#195943"),
+        HorizontalAlignment = HorizontalAlignment.Left, IsHitTestVisible = false, IsVisible = false
+    };
+    private readonly LinearGradientBrush _homeBackground = new()
+    {
+        StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
+        GradientStops = new GradientStops
+        {
+            new GradientStop(Color.Parse("#FFFDF8"), 0), new GradientStop(Color.Parse("#FFFDF8"), .22),
+            new GradientStop(Color.Parse("#F1E7D7"), 1)
+        }
+    };
     private readonly Image _arena = new() { Name = "HeroArena", Stretch = Stretch.Uniform, IsHitTestVisible = false };
     private readonly BrandLogo _headerLogo = new("logo") { Name = "MainBrand", HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top };
     private readonly Control _headerLockup = Wordmark(48);
@@ -27,8 +39,8 @@ internal sealed partial class LauncherWindow
     private readonly Border _playEdge = new() { CornerRadius = new CornerRadius(22), BorderThickness = new Thickness(1), IsHitTestVisible = false };
     private readonly LauncherIcon _playIcon = new("play") { Width = 24, Height = 24, Foreground = Brushes.White };
     private readonly StackPanel _launchActions = new() { Spacing = 9, VerticalAlignment = VerticalAlignment.Center };
-    private readonly Grid _actionRow = new() { ColumnDefinitions = new("Auto,*,Auto"), RowDefinitions = new("Auto,Auto,Auto"), ColumnSpacing = 24 };
-    private readonly Border _footerSurface = new() { Background = PartyRoom.Sand };
+    private readonly Grid _actionRow = new();
+    private readonly Border _footerSurface = new() { Background = Brushes.Transparent };
     private readonly ToggleButton _settingsNavigation = new() { Name = "SettingsNavigation" };
 
     private static Control Wordmark(double size)
@@ -43,14 +55,13 @@ internal sealed partial class LauncherWindow
     {
         // The stacked logo uses the empty upper-left of the isometric hero.
         // Its fixed header row permits the logo to extend into the stage below.
-        var header = new Grid { RowDefinitions = new("40,84") };
-        Place(header, BuildCaptionRow());
+        var header = new Grid { Height = 84 };
         _headerLogo.Margin = new Thickness(28, -4, 0, 0);
-        Place(header, _headerLogo, 1);
+        Place(header, _headerLogo);
         _headerLockup.HorizontalAlignment = HorizontalAlignment.Left;
         _headerLockup.VerticalAlignment = VerticalAlignment.Top;
         _headerLockup.Margin = new Thickness(28, 0, 0, 0);
-        Place(header, _headerLockup, 1);
+        Place(header, _headerLockup);
         var channel = new StackPanel { Spacing = 3, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(24, 3, 24, 5) };
         channel.Children.Add(ChannelSelector());
         var version = PartyRoom.Text(_controller.Version, 12, PartyRoom.Muted);
@@ -60,7 +71,7 @@ internal sealed partial class LauncherWindow
             HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 0, 8, 0) };
         _updateCheck.VerticalAlignment = VerticalAlignment.Center;
         status.Children.Add(_updateCheck); status.Children.Add(_updateStatus);
-        channel.Children.Add(status); Place(header, channel, 1);
+        channel.Children.Add(status); Place(header, channel);
         return header;
     }
 
@@ -69,9 +80,12 @@ internal sealed partial class LauncherWindow
         using var stream = AssetLoader.Open(new Uri("avares://LuckerParty.Launcher/Assets/party-room-arena.png"));
         _arena.Source = new Bitmap(stream);
         RenderOptions.SetBitmapInterpolationMode(_arena, BitmapInterpolationMode.HighQuality);
+        // White in the approved art becomes the warm backdrop; the source PNG
+        // and every regional correction remain untouched.
+        RenderOptions.SetBitmapBlendingMode(_arena, BitmapBlendingMode.Multiply);
         _arena.VerticalAlignment = VerticalAlignment.Bottom;
         _arena.HorizontalAlignment = HorizontalAlignment.Center;
-        return new Grid { Margin = new Thickness(22, 0, 22, 0), Children = { _arena } };
+        return new Grid { Children = { _arena } };
     }
 
     private void UpdateHomeLayout()
@@ -80,41 +94,24 @@ internal sealed partial class LauncherWindow
         var height = Bounds.Height > 0 ? Bounds.Height : Height;
         var settings = _settings?.IsVisible == true;
         var compact = height < 780 || width < 1000;
-        var stacked = width < 680;
-        var secondarySettingsRow = width < 960;
         _headerLogo.IsVisible = !settings && !_controller.AllowMultipleInstances;
         _headerLockup.IsVisible = !_headerLogo.IsVisible;
         _headerLogo.Width = _headerLogo.Height = compact ? 180 : 228;
         _headerLockup.Width = width < 680 ? 220 : 307;
         _headerLockup.Height = width < 680 ? 60 : 79;
-        _headline.FontSize = compact ? 24 : 28;
-        _subtitle.FontSize = compact ? 15 : 17;
         _arena.Margin = new Thickness(0, compact ? 14 : 0, 0, 0);
-        var playHeight = compact ? 64d : 76d;
-        _playSplit.Width = Math.Min(compact ? 400 : 440, Math.Max(0, width - 56));
+        var playHeight = compact ? 76d : 88d;
+        _playSplit.Width = Math.Min(compact ? 440 : 480, Math.Max(0, width - 56));
         _playSplit.Height = _playSections.Height = _play.Height = _more.Height = playHeight;
         _launchActions.Width = _playSplit.Width;
         _more.Width = playHeight;
         _more.Padding = new Thickness((playHeight - 24) / 2);
-        _playSections.ColumnDefinitions[1].Width = new GridLength(playHeight);
-        _playLabel.FontSize = compact ? 24 : 28;
-        _footerSurface.Background = settings ? PartyRoom.Ivory : PartyRoom.Sand;
-        _headlineContent.IsVisible = _launchActions.IsVisible = !settings;
+        _playSections.ColumnDefinitions[1].Width = new GridLength(_more.IsVisible ? playHeight : 0);
+        _playUpdateFill.Width = (_playSplit.Width - (_more.IsVisible ? playHeight : 0)) * _downloadProgress / 100;
+        _playLabel.FontSize = compact ? 28 : 32;
+        _mainSurface.Background = settings ? PartyRoom.Ivory : _homeBackground;
+        _footerSurface.IsVisible = _launchActions.IsVisible = !settings;
         _actionRow.Margin = new Thickness(28, 16, 28, 12);
-        // Keep the grid's cell count stable during Settings/resize layout passes.
-        _actionRow.ColumnDefinitions[0].Width = !settings && secondarySettingsRow ? new GridLength(1, GridUnitType.Star) : GridLength.Auto;
-        _actionRow.ColumnDefinitions[1].Width = !settings && secondarySettingsRow ? GridLength.Auto : new GridLength(1, GridUnitType.Star);
-        _actionRow.ColumnDefinitions[2].Width = !settings && !secondarySettingsRow ? GridLength.Auto : new GridLength(0);
-        _settingsNavigation.Margin = !settings && secondarySettingsRow ? new Thickness(0, 12, 0, 0) : default;
-        _launchActions.Margin = !settings && stacked ? new Thickness(0, 12, 0, 0) : default;
-        Grid.SetRow(_settingsNavigation, !settings && stacked ? 2 : !settings && secondarySettingsRow ? 1 : 0);
-        Grid.SetColumn(_settingsNavigation, 0);
-        Grid.SetRow(_headlineContent, 0);
-        Grid.SetColumn(_headlineContent, secondarySettingsRow ? 0 : 1);
-        Grid.SetColumnSpan(_headlineContent, stacked ? 2 : 1);
-        Grid.SetRow(_launchActions, stacked ? 1 : 0);
-        Grid.SetColumn(_launchActions, stacked ? 0 : secondarySettingsRow ? 1 : 2);
-        Grid.SetColumnSpan(_launchActions, stacked ? 2 : 1);
         _launchActions.HorizontalAlignment = HorizontalAlignment.Right;
         UpdatePlayShadow();
     }
@@ -160,10 +157,16 @@ internal sealed partial class LauncherWindow
 
     private Control BuildFooter()
     {
-        _headlineContent.Children.Add(_headline); _headlineContent.Children.Add(_subtitle);
         var playContent = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
         playContent.Children.Add(_playIcon);
-        playContent.Children.Add(_playLabel); _play.Content = playContent;
+        playContent.Children.Add(_playLabel);
+        _playStatus.Name = "ActionStatus"; _playStatus.TextAlignment = Avalonia.Media.TextAlignment.Center;
+        var text = new StackPanel { Spacing = 3, VerticalAlignment = VerticalAlignment.Center, IsHitTestVisible = false };
+        text.Children.Add(playContent); text.Children.Add(_playStatus);
+        var content = new Grid(); content.Children.Add(_playUpdateFill); content.Children.Add(text);
+        _play.Content = content; _play.Padding = default;
+        _play.HorizontalContentAlignment = HorizontalAlignment.Stretch;
+        _play.VerticalContentAlignment = VerticalAlignment.Stretch;
         _play.HorizontalAlignment = _more.HorizontalAlignment = HorizontalAlignment.Stretch;
         _play.VerticalAlignment = _more.VerticalAlignment = VerticalAlignment.Stretch;
         _play.CornerRadius = _more.CornerRadius = new CornerRadius(0);
@@ -187,23 +190,8 @@ internal sealed partial class LauncherWindow
         };
         _launchActions.Children.Add(_playSplit);
         _message.TextAlignment = TextAlignment.Right;
-        _launchActions.Children.Add(_message); _launchActions.Children.Add(_progress);
-        var settingsContent = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10 };
-        settingsContent.Children.Add(new LauncherIcon("gear") { Width = 24, Height = 24 });
-        var label = PartyRoom.Text("Settings", 17); label.FontWeight = FontWeight.Bold; settingsContent.Children.Add(label);
-        _settingsNavigation.Content = settingsContent;
-        _settingsNavigation.HorizontalAlignment = HorizontalAlignment.Left;
-        // Anchor to the footer bottom on both pages, even when hidden home
-        // actions collapse or compact layouts place Settings on its own row.
-        _settingsNavigation.VerticalAlignment = VerticalAlignment.Bottom;
-        _settingsNavigation.HorizontalContentAlignment = HorizontalAlignment.Center;
-        _settingsNavigation.VerticalContentAlignment = VerticalAlignment.Center;
-        _settingsNavigation.Padding = new Thickness(18, 12);
-        _settingsNavigation.Height = 50; _settingsNavigation.MinWidth = 154;
-        _settingsNavigation.CornerRadius = new CornerRadius(16); _settingsNavigation.Classes.Add("settings-nav");
-        Avalonia.Automation.AutomationProperties.SetName(_settingsNavigation, "Settings");
-        _settingsNavigation.IsCheckedChanged += (_, _) => SetSettingsVisible(_settingsNavigation.IsChecked == true);
-        Place(_actionRow, _settingsNavigation); Place(_actionRow, _headlineContent); Place(_actionRow, _launchActions);
+        _launchActions.Children.Add(_message);
+        Place(_actionRow, _launchActions);
         _footerSurface.Child = _actionRow;
         UpdateHomeLayout();
         return _footerSurface;
