@@ -27,7 +27,9 @@ Players collide with the world; they pass through each other in this iteration.
 Names may duplicate and are display names, not authenticated accounts.
 
 Esc opens the session menu. Change your name there, resume, leave, or close your
-hosted lobby. Your menu/focus loss stops your inputs without pausing everybody.
+hosted lobby. Alt-Tab does not open a menu or pause the sandbox. While unfocused,
+local controls and the mouse are released; they return on focus if you had not
+opened the menu yourself. Remote players and physics continue uninterrupted.
 Closing the host ends that lobby and returns clients to the main menu. There is
 no host migration. A failed connection returns to an editable, usable menu.
 **Practice offline** retains the existing movement/diagnostic test bed. F5's

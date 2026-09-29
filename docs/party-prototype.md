@@ -31,7 +31,8 @@ earns 0. Ties share an award and skip occupied places (1, 1, 3). Equal final
 totals crown joint winners; all missing participants produce no champion.
 
 Tab displays standings; Esc toggles the session menu. Name changes, resume and
-leave are available there. Opening the menu/focus loss never pauses shared clocks.
+leave are available there. Alt-Tab keeps the current party screen visible; it
+never opens the menu. Opening the menu never pauses shared clocks.
 Late joins spectate this party and can join players in the next lobby. A departed
 player's results remain visible during play, but a new connection cannot inherit
 them or receive its crown. Below two active players the current game cancels
@@ -127,3 +128,7 @@ cancelled before publication to include the keyboard shortcut fix.
 Choose Beta in the launcher and Update, then Play. Every participant must use
 the new protocol-2 build. Human friend/WAN playtesting remains outstanding.
 The dedicated Windows VM was shut down after verification.
+
+The later [party UI concepts](design/party-ui-concepts/README.md) explore a
+simpler Home → Join → Lobby flow and a compact in-party menu. They are mockups;
+the shipped UI still uses the native PartyShell scene.

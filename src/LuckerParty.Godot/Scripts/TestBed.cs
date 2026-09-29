@@ -14,6 +14,7 @@ public partial class TestBed : Node3D
     private readonly Queue<double> _frameTimes = new();
     private double _diagnosticTimer;
     private bool _paused;
+    private bool _windowFocused = true;
 
     public override void _Ready()
     {
@@ -271,7 +272,16 @@ public partial class TestBed : Node3D
 
     public override void _Notification(int what)
     {
-        if (what == NotificationApplicationFocusOut && _player is not null) SetPaused(true);
+        if (_player is null) return;
+        if (what == NotificationApplicationFocusOut) _windowFocused = false;
+        else if (what == NotificationApplicationFocusIn) _windowFocused = true;
+        else return;
+
+        // Alt-Tab only releases local input and the cursor. The arena and
+        // multiplayer session keep running, and an explicitly opened menu
+        // remains in the state the player chose.
+        _player.ControlsEnabled = !_paused && _windowFocused;
+        Input.MouseMode = _paused || !_windowFocused ? Input.MouseModeEnum.Visible : Input.MouseModeEnum.Captured;
     }
 
     public void SetPaused(bool paused)
@@ -280,10 +290,10 @@ public partial class TestBed : Node3D
         _pauseMenu.Visible = paused;
         if (_player is not null)
         {
-            _player.ControlsEnabled = !paused;
+            _player.ControlsEnabled = !paused && _windowFocused;
             if (Session is null) _player.SetPhysicsProcess(!paused);
         }
-        Input.MouseMode = paused ? Input.MouseModeEnum.Visible : Input.MouseModeEnum.Captured;
+        Input.MouseMode = paused || !_windowFocused ? Input.MouseModeEnum.Visible : Input.MouseModeEnum.Captured;
     }
 
     private async void CaptureFrame(string path)

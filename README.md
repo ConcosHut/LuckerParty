@@ -37,13 +37,15 @@ play. This build targets normal Intel/AMD 64-bit Windows PCs.
 | R | Reset position and view |
 | Escape | Open/close menu; shared multiplayer time keeps running |
 | Tab | Show party standings while held |
+| Alt-Tab | Switch windows without opening a game menu |
 | F3 | Show frame timing and movement diagnostics |
 | F4 | Compare smooth camera translation with the original stepping |
 | F5 | Practice only: switch physics between 60 Hz and a diagnostic 10 Hz |
 
-Switching away from the game opens the menu. Use Resume when you return.
-The movement controls below apply to Sandbox/Practice; the Party uses on-screen
-choices and server-owned timers.
+Alt-Tab leaves the current screen visible and the party running. In the 3D
+sandbox it releases local controls and the mouse; switching back restores them
+unless you explicitly opened the menu with Escape. The movement controls below
+apply to Sandbox/Practice; the Party uses on-screen choices and server-owned timers.
 Walk into boxes to check collision, and jump onto the low green step.
 
 The camera now interpolates player position between physics ticks while mouse

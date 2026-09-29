@@ -92,7 +92,12 @@ public partial class PartyView : CanvasLayer
     }
 
     public override void _Notification(int what)
-    { if (what == NotificationApplicationFocusOut) { _menu = true; _standings = false; if (_state is not null) DrawState(); } }
+    {
+        // A released Tab cannot reach the game after Alt-Tab. Clear only that
+        // temporary overlay; do not replace the current screen with a menu.
+        if (what == NotificationApplicationFocusOut && _standings)
+        { _standings = false; DrawState(); }
+    }
 
     private void DrawState()
     {

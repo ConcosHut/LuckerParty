@@ -128,3 +128,6 @@ keep sandbox movement separate. Server snapshots contain only permitted private
 state. Late joins spectate, host departure ends the session and below two active
 players cancels the game without an award. Shared clocks never pause for menus.
 Preserve held button presses and open name fields during roster refreshes.
+Alt-Tab must not open menus or pause sessions. In first-person Sandbox/Practice,
+release local controls and the mouse while unfocused and restore them on focus
+unless the menu was explicitly opened.
