@@ -288,4 +288,10 @@ full-width action geometry and existing multi-instance/update guards. Wide,
 compact, sidebar, Update and Updating renders were reviewed under ignored
 `artifacts/launcher-ui-checks/`; no artwork, fonts, chrome, gameplay or updater
 logic changed. No additional VM/full installed cycle was needed locally.
-Release verification runs both platforms in CI before publication.
+[Beta 32 CI](https://github.com/ConcosHut/LuckerParty/actions/runs/36585774485)
+passed gameplay/launcher checks, real installation/update checks and player
+packaging on Windows and Linux, then published both platforms together for
+`ae4e034`. [Beta 32](https://github.com/ConcosHut/LuckerParty/releases/tag/v0.3.0-beta.32)
+is public. Its source revision, both current update feeds and all published
+asset digests were verified against the checksum list. The VM remains stopped;
+this UI-only pass did not touch the physical PC.
