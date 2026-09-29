@@ -21,7 +21,12 @@ Desired session experiences:
 - Practice: select a game and retry it quickly.
 - Sandbox: experiment, debug games, or hang out with friends.
 
-Themed playlists are a proposed addition, not a settled requirement.
+The intended direction includes playlists selected randomly, by pack or by tag.
+Each minigame can use its own art style and characters to faithfully capture a
+small, recognizable part of a familiar game. Party UI, names, scores and optional
+player colors provide continuity; a universal player character is not required.
+Game-wide and individual positive/negative modifiers apply only where supported
+by that game's rules. Profiles and persistent statistics are longer-term features.
 
 ## Technical direction
 
@@ -54,3 +59,11 @@ server-owned movement, named capsules and a menu. See [multiplayer](multiplayer.
 Multiplayer is a core design principle: gameplay rules must define network
 ownership and late-join/disconnect behavior. Complete minigames, matchmaking,
 relays and the full party framework follow later.
+
+## Next milestone (planned)
+
+The [multiplayer party MVP plan](party-mvp-plan.md) reviews the legacy lobby/UI
+and proposes a real lobby, portable party/scoring flow and three small games:
+rock-paper-scissors, lucky doors and a 2D dodge game. Build one complete party
+with RPS first, then extend it to multiple game presentations. The shipped
+sandbox remains the starting point; these features are not implemented yet.

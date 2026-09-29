@@ -114,3 +114,8 @@ Multiplayer architecture, command-line servers, connection requirements, and
 verification are in [docs/multiplayer.md](docs/multiplayer.md). Network physics
 stays at 60 Hz. Preserve the independent camera presentation history during
 reconciliation; resetting it on every snapshot causes high-refresh stepping.
+
+The next gameplay milestone is proposed in [docs/party-mvp-plan.md](docs/party-mvp-plan.md),
+based on the legacy lobby/UI and the broader minigame vision. Implement a real
+lobby and one complete RPS-only party before expanding to luck and 2D games;
+the plan is not evidence these features already exist.
