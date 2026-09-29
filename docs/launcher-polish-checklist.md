@@ -264,4 +264,10 @@ and real installation/update tests on both platforms, but Windows failed fetchin
 the previous release: its default cp1252 decoder rejected UTF-8 curly quotes in
 GitHub JSON. `tools/releases.py` now explicitly decodes GitHub CLI output as
 UTF-8. A read-only API check preserved the prior release's curly quotes.
-Cross-platform release publication with that build-script fix is pending.
+[Beta 31 CI](https://github.com/ConcosHut/LuckerParty/actions/runs/36583044017)
+passed full game/launcher checks, real installation/update checks, packaging and
+joint publication on both platforms for `2bbf4a1`, including the corrected
+Windows UTF-8 reader. [Beta 31](https://github.com/ConcosHut/LuckerParty/releases/tag/v0.3.0-beta.31)
+is public; its source revision, both feeds and published asset digests were
+verified against the checksum list. Beta 30 was not published. The Windows VM
+remains stopped, and no physical-PC application was touched.
