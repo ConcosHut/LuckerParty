@@ -4,8 +4,8 @@ Scope: approved Party Room mockups, the screenshot review, and the seven user
 additions. Keep Avalonia and the existing C# updater/process controller. Work
 in parallel on separate files, then verify the combined result before release.
 
-Implementation and local verification are complete. Windows/Linux release CI
-and publication remain pending at this source revision.
+Implementation and verification are complete. Beta 25 is published, and the
+updated Windows launcher is open and ready to play.
 
 ## Window, composition and brand — layout agent
 
@@ -50,10 +50,10 @@ and publication remain pending at this source revision.
       segmented selection and hover/focus behavior, and split-button geometry.
 - [x] Render both sidebar modes, Settings, small window, hover and dropdown states.
 - [x] Preserve targeted Show/Close, force-close recovery and all-child update guards.
-- [ ] Run game/launcher checks and real installed updates on Windows and Linux.
+- [x] Run game/launcher checks and real installed updates on Windows and Linux.
 - [x] Verify Windows native custom chrome and DPI layout without interrupting
       an active playtest; identify any unverified native window behavior.
-- [ ] Update documentation/assets provenance, commit, publish a new Beta, and
+- [x] Update documentation/assets provenance, commit, publish a new Beta, and
       update/open it on Windows when no active playtest blocks replacement.
 
 Optional design copy such as Push / Dodge / Outplay / Together is not required
@@ -75,3 +75,13 @@ addressed with complete Avalonia control themes and custom window chrome.
   the desktop and its temporary task unregistered.
 - Captures use ignored `artifacts/launcher-ui-checks/` and `windows-polish/`.
   The final wide composition was reviewed separately from the native frame test.
+- [Beta 25 CI](https://github.com/ConcosHut/LuckerParty/actions/runs/36500754878)
+  passed both platform builds, game/launcher checks, real installation/update
+  checks and publication for source commit `8b726f0`.
+- [Beta 25](https://github.com/ConcosHut/LuckerParty/releases/tag/v0.3.0-beta.25)
+  was installed through the actual Windows updater. Restart intent was consumed
+  without starting a game. The installed native launcher repeated the 150% DPI,
+  frame, two-instance, Running/helper and targeted Show/Close checks successfully.
+  Its temporary test task was removed; the player launcher remains open in
+  desktop session 1 with no games running. Final native captures are under
+  ignored `artifacts/launcher-ui-checks/windows-beta25/`.
