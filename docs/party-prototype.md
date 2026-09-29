@@ -99,9 +99,10 @@ Playtest those with friends before balancing or expanding the playlist.
   scenarios alongside the new party flow. The final focused party pass completed
   37 real-process scenarios, including viewport pointer clicks and Tab/Esc
   routing after a button has focus.
-- Native Windows 11 VM run `run-1790697204394564875` passed 37 scenarios using
+- Native Windows 11 VM run `run-1790697614725049584` passed 43 scenarios using
   normal gameplay clocks, one rendered host and headless clients. Reviewed the
   1280×720 menu, lobby, instructions, private choice and joint-podium captures.
+  Tab/Esc were tested through the viewport input pipeline after a button had focus.
 - The standalone component preview loads headlessly without errors. Core checks
   include eight-member capacity/unique colors, all RPS outcomes, secrecy,
   timeout boundaries, tied awards, replay and disconnect policies.
@@ -113,3 +114,16 @@ A graphical timeout assertion initially allowed exactly the sum of the normal
 choice/reveal/results clocks; it now adds scheduling/replication allowance.
 Keep these checks focused; the normal two-platform CI release gates still cover
 launcher and installed-update behavior.
+
+## Published build
+
+[Beta 34 — 0.3.0-beta.34](https://github.com/ConcosHut/LuckerParty/releases/tag/v0.3.0-beta.34)
+ships this milestone from commit `396b23c8f778b075ccf8c6a6af58227c4d841e19`.
+[Release CI](https://github.com/ConcosHut/LuckerParty/actions/runs/36594543590)
+passed the full game/launcher checks, real installed updates and player packaging
+on Linux and Windows before publishing both platforms together. Beta 33 was
+cancelled before publication to include the keyboard shortcut fix.
+
+Choose Beta in the launcher and Update, then Play. Every participant must use
+the new protocol-2 build. Human friend/WAN playtesting remains outstanding.
+The dedicated Windows VM was shut down after verification.
