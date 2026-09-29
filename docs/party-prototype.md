@@ -132,3 +132,19 @@ The dedicated Windows VM was shut down after verification.
 The later [party UI concepts](design/party-ui-concepts/README.md) explore a
 simpler Home → Join → Lobby flow and a compact in-party menu. They are mockups;
 the shipped UI still uses the native PartyShell scene.
+
+## Alt-Tab follow-up — Beta 36
+
+[Beta 36](https://github.com/ConcosHut/LuckerParty/releases/tag/v0.3.0-beta.36)
+removes the automatic focus-loss menu in Party and the first-person test bed.
+Party keeps its current screen; Sandbox/Practice release local movement and mouse
+capture while unfocused, then restore them on focus unless Esc was used to open
+the menu. Existing multiplayer simulation and clocks continue.
+
+The Linux game suite passed the movement, sandbox network and 37 party scenarios.
+Windows VM party integration passed 43 scenarios and rendered the native UI.
+[Release CI](https://github.com/ConcosHut/LuckerParty/actions/runs/36601085924)
+passed complete game/launcher and installed-update checks on Windows and Linux
+before publishing both platforms. The Windows VM check did not physically switch
+between two foreground game windows; the two-instance Alt-Tab feel still needs a
+human playtest. The VM is stopped and its persistent state preserved.

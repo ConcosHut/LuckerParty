@@ -104,3 +104,12 @@ needed; no new updater version is required for a harness selection change.
 These are larger harness changes; measure each separately rather than bundling
 them with a visual feature. This pass adds focused commands and local policy
 without removing tests or changing release CI coverage.
+
+## Windows scenario control files
+
+The game/party test drivers hand JSON commands to local Godot processes through
+atomic file replacement. A Windows reader may briefly hold the previous file,
+causing `os.replace` to return WinError 5. `tools/test_control_files.py` retries
+only this transient `PermissionError` on Windows for up to two seconds; persistent
+permission failures still fail the check. Linux retains the direct atomic replace.
+This changes test-driver reliability, not game networking or saved player files.

@@ -27,7 +27,7 @@ concrete forms while preserving the UI hierarchy.
 
 | State | Primary action | Contextual controls and information |
 | --- | --- | --- |
-| Home | Host Party or Join Party | Edit display name in one compact profile control. Practice/Sandbox and Quit are quiet secondary options. No address field yet. |
+| Home | Host Party or Join Party | Edit display name in one compact profile control. Practice and multiplayer Sandbox are quiet secondary options. No address field yet. Host uses UDP 27015 by default; expose a small pre-host network setting for nondefault ports before binding the server. |
 | Join step | Connect | Address is required; UDP port defaults to 27015 under Advanced. Back preserves the typed address. A future combined `host:port` paste should match the host's Copy invite action. |
 | Party lobby | Ready (each player); Start (host when eligible) | Show roster with each player's ready state, selected game, throw count and invite address. Put own role/color beside own name; only host sees game settings. Explain exactly who is blocking Start. Changing settings resets readiness, with visible feedback. Spectators can join players here. |
 | Countdown and instructions | Read objective | Show next game, rules and timer. No misleading Play/Skip control. Tab standings and Esc menu remain available. |
@@ -49,7 +49,10 @@ the menu.
   the Esc overlay's small set of actions and visible live game underneath.
 - **Revise:** the home background is exploratory, not a new game world. Its
   profile avatar, button symbols and logo drawing are generated approximations;
-  use the canonical SVG and intentional art assets in code.
+  use a name/color chip rather than inventing a persistent character, and use
+  the canonical SVG and intentional art assets in code. The plain “Sandbox”
+  label should say that it hosts a multiplayer sandbox until an offline
+  sandbox entry exists.
 - **Revise:** the lobby image colors “Waiting for Bob” like an enabled action.
   That state should have a disabled Start face or a separate neutral status,
   paired with the reason. Its address Copy action implies an `IP:port` paste flow
