@@ -18,7 +18,7 @@ space usage and Settings navigation, with native verification in the Windows VM.
 - [x] Fit and recenter startup windows using the display's actual scaling and working area.
 - [x] Verify actual pointer/keyboard toggling, page visibility and split-button geometry.
 - [x] Verify native Windows placement, both sidebar modes and Settings selection.
-- [ ] Verify installed updates on Windows and Linux and publish the resulting Beta.
+- [x] Verify installed updates on Windows and Linux and publish the resulting Beta.
 
 ## Window, composition and brand — layout agent
 
@@ -128,3 +128,19 @@ addressed with complete Avalonia control themes and custom window chrome.
   captures/status are under ignored `artifacts/windows-vm/launcher-final-desktop/`;
   headless large, small, selected, hover and multi-instance captures are under
   `artifacts/launcher-ui-checks/`.
+
+- [Beta 26 CI](https://github.com/ConcosHut/LuckerParty/actions/runs/36513208552)
+  passed game/launcher checks, actual installation/update checks and packaging
+  on both platforms for commit `ce3a54e`, then published both together. The first
+  Windows attempt stopped on a Godot editor `_EDITOR_GET` error during its
+  second import; a failed-job retry passed without changing or suppressing checks.
+- [Beta 26](https://github.com/ConcosHut/LuckerParty/releases/tag/v0.3.0-beta.26)
+  contains the composition and Settings iteration. Both platform packages and
+  their checksums are public; Beta 25 remains unchanged.
+- The published Windows Setup checksum was verified on box and again in the
+  guest, then installed as a separate player app at `C:\LuckerParty\beta26-player`.
+  A limited interactive task passed Settings toggle/Back selection, both sidebar
+  modes and enabled Play. The 1000×720 client fits at (140,16) in the VM working
+  area. Captures/status are under ignored
+  `artifacts/windows-vm/launcher-beta26-desktop/`. Its launcher was closed and
+  temporary task removed; no physical-PC applications were touched.

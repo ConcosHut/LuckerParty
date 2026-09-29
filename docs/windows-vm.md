@@ -247,10 +247,26 @@ removed its temporary task. `launcher.png`, `console.png` and `status.json` are
 under ignored `artifacts/windows-vm/launcher-desktop-trial/`. QEMU PNG console
 capture works without a separate image-conversion dependency.
 
-The VM's 1280×800 desktop exposes a launcher positioning issue: startup reduces
-window height to fit but does not recenter the original position, leaving the
-caption above the screen. This is recorded in the
-[launcher checklist](launcher-polish-checklist.md). The full client capture
-renders correctly; this result does not establish physical GPU or input quality.
+The VM's 1280×800 desktop initially exposed a launcher positioning issue:
+startup reduced window height without recentering the original position, leaving
+the caption above the screen. Commit `ce3a54e` fixes this using the display's
+scaling and working area. A later native trial verified the 1240×720 client at
+(20,16), entirely within the 1280×752 working area. Final composition, both
+sidebar modes and Settings selection captures are under ignored
+`artifacts/windows-vm/launcher-final-desktop/`. See the
+[launcher checklist](launcher-polish-checklist.md) for the full verification.
+This does not establish physical GPU or input quality.
 After collecting the follow-up run, graceful shutdown completed normally. The
 VM is stopped and can be reused with the normal `start` command.
+
+## Player launcher trial
+
+Beta 26 was downloaded from the published release, verified against its
+`SHA256SUMS.txt` on box and inside the guest, and installed separately at
+`C:\LuckerParty\beta26-player\current\LuckerParty.Launcher.exe`. This uses
+the production Windows package ID; integration suites still use Dev IDs.
+Native Settings toggle/Back, both sidebar modes, Play readiness and window
+placement passed. Evidence is under ignored
+`artifacts/windows-vm/launcher-beta26-desktop/`. The temporary desktop task
+closed its own launcher and was removed; the installation remains available
+for future player-update tests. Graceful VM shutdown followed the trial.

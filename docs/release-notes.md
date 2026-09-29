@@ -1,21 +1,9 @@
-# Party Room launcher and multiplayer sandbox
+The Party Room launcher uses more of the window for its arena artwork and gives its main controls larger click targets.
 
-- Standalone launcher with automatic updates before play.
-- Stable and Beta channels, with offline launch after an update failure.
-- First-person test arena with smooth interpolated movement.
-- Preferences and logs use the user data directory, including fresh Linux installs.
-- The in-game HUD and window title show the installed release version.
+- Settings toggles open and closed, with a persistent lilac selected state. Space, Back to play and Escape keep navigation in sync.
+- Larger Play and per-instance Show/Close buttons, clearer card text, and responsive layouts for shorter windows.
+- Startup windows fit and recenter inside the display's working area, keeping caption buttons visible.
 
-- Main menu with saved names, direct-IP Host/Join, and practice.
-- Up to eight named capsules, server-owned movement and smooth prediction.
-- Late joins, rename, disconnect recovery, and optional headless hosting.
-- Launcher Settings with a saved opt-in for multiple simultaneous games.
-- Play again for local multiplayer testing; updates wait for all games to close.
+The eight-player direct-IP multiplayer sandbox, saved names, practice mode, Stable/Beta channels and automatic updates remain available. Updates and channel changes wait until every game instance closes.
 
-- Party Room launcher artwork, bundled fonts, and Stable/Beta segmented selector.
-- Startup updates leave Play ready; the Play chevron offers the installed-version fallback.
-- Settings controls a conditional sidebar with per-instance Show and Close actions.
-- Closing the launcher during play minimizes it for taskbar restoration.
-- Flush window/sidebar styling, shaded instance cards and clearer status/actions.
-- Coral hover states, a compact flush Play dropdown and contextual channel/version information.
-- Running state and immediate helper updates when multiple instances are disabled.
+Verified with launcher interaction/rendering checks, real installed updates on Windows and Linux, and native Windows VM desktop captures.
