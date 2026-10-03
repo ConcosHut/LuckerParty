@@ -115,6 +115,11 @@ def phase(peer, value):
 
 try:
     host, alice, bob, observer = [Peer(name) for name in ('host', 'alice', 'bob', 'observer')]
+    host.send(action='ui-join')
+    wait('Join has its own address step', lambda: host.read().get('menuPage') == 'join')
+    host.capture('join')
+    host.send(action='ui-home')
+    wait('Back returns to home before hosting', lambda: host.read().get('menuPage') == 'home')
     host.send(action='host', name='Host', party=True, fastParty=not args.graphical)
     wait('Party host opens a real lobby without a sandbox avatar', lambda: phase(host, 0) and len(host.read().get('players', [])) == 1 and host.read()['players'][0]['x'] is None)
     alice.send(action='join', name='Alice')
@@ -140,6 +145,7 @@ try:
     wait('Releasing Tab returns to the current party screen', lambda: not host.read().get('partyStandings', True))
     host.send(action='ui-key', command='Escape', value=1)
     wait('Escape opens the session menu', lambda: host.read().get('partyMenu'))
+    host.capture('party-menu')
     host.send(action='ui-key', command='Escape', value=0)
     wait('Escape key release does not toggle the menu', lambda: host.read().get('revision') == host.revision and host.read().get('partyMenu'))
     host.send(action='ui-key', command='Escape', value=1)
@@ -157,6 +163,14 @@ try:
     host.click('Rock')
     wait('One locked hand remains private on every other peer', lambda: member(alice, 'Host').get('submitted') and host.state().get('yourChoice') == 0 and
          alice.state().get('yourChoice') is None and all(m['choice'] is None for m in alice.state()['members']))
+    host.send(action='ui-key', command='Escape', value=1)
+    wait('Esc overlays the live choice state', lambda: host.read().get('partyMenu') and phase(host, 3))
+    host.capture('party-menu-choosing')
+    host.send(action='ui-key', command='Escape', value=0)
+    wait('Esc release leaves live choice overlay open', lambda: host.read().get('revision') == host.revision and host.read().get('partyMenu'))
+    host.send(action='ui-key', command='Escape', value=1)
+    wait('Esc resumes the live choice state', lambda: not host.read().get('partyMenu') and phase(host, 3))
+    host.send(action='ui-key', command='Escape', value=0)
     observer.send(action='join', name='Observer')
     wait('Mid-game join gets complete state as a spectator', lambda: phase(observer, 3) and member(observer, 'Observer').get('role') == 1 and len(observer.state().get('members', [])) == 4)
     observer.command('choice', 1)

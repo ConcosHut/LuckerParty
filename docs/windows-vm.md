@@ -126,6 +126,13 @@ must allow `FileShare.Delete` while reading a snapshot; otherwise the driver's
 `os.replace` can fail with `PermissionError` / WinError 5. `NetworkAutomation`
 now shares deletion explicitly. Normal game launches do not read these files.
 
+During the party UI iteration, a fresh editor import faulted with `0xc0000005`
+while importing the first font. A clean baseline source imported normally.
+Changing eager static Godot `Color` fields in the new UI helper to computed
+properties made the modified source import and pass on the same VM. Avoid
+constructing Godot values in static field initializers of new editor-scanned
+scripts; verify a clean Windows import when adding such helpers.
+
 ## Configuration
 
 - VM home: `~/.local/share/lucker-party/windows-vm`, shared by box's checkouts.

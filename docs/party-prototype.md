@@ -6,8 +6,10 @@ Lucky Doors and Dodge Drop remain the next additions in
 
 ## Play
 
-1. Enter a display name and choose **Host party**, or enter the host's address
-   and port and choose **Join**. Default UDP port remains 27015.
+1. Set a display name on Home and choose **Host Party**, or choose **Join Party**
+   to enter the host's address. Join keeps UDP port 27015 under **Advanced**;
+   a copied `host:port` invite can be pasted into the address field. Home has
+   optional host network settings for a nondefault port.
 2. Choose an unused player color. Clients may choose **Spectate** or **Join players**
    while in the lobby; the listen host remains an active player.
 3. Every active player chooses **Ready up**, including the host. With at least
@@ -30,8 +32,9 @@ third earn 10/6/3 points; other valid participants earn 1, and no participation
 earns 0. Ties share an award and skip occupied places (1, 1, 3). Equal final
 totals crown joint winners; all missing participants produce no champion.
 
-Tab displays standings; Esc toggles the session menu. Name changes, resume and
-leave are available there. Alt-Tab keeps the current party screen visible; it
+Tab displays standings; Esc toggles a compact overlay over the current party
+screen. Resume, collapsed name editing and Leave are available there. The
+listen host confirms before closing the room for everyone. Alt-Tab keeps the current party screen visible; it
 never opens the menu. Opening the menu never pauses shared clocks.
 Late joins spectate this party and can join players in the next lobby. A departed
 player's results remain visible during play, but a new connection cannot inherit
@@ -59,7 +62,9 @@ without a participating host is follow-up work.
 - Party heartbeats keep idle UI/spectators alive independently of movement input.
   State changes and one-second clock refreshes use reliable, bounded snapshots.
 - UI: editable `UI/PartyShell.tscn`, shared `PartyTheme.tres`, bundled brand/fonts
-  and `PartyView.cs`. Pointer presses survive roster refreshes; open menu fields retain focus and
+  and `PartyView.cs`. Home and Join are native Control pages in
+  `GameRootMenu.cs`. The lobby shows readiness, game settings and a copyable
+  invite. The Esc overlay keeps the current screen visible. Pointer presses survive roster refreshes; open menu fields retain focus and
   Tab/Esc shortcuts run before GUI navigation; choice callbacks
   retain the displayed party/throw identity. Connections/scores outlive screens.
 
@@ -129,9 +134,9 @@ Choose Beta in the launcher and Update, then Play. Every participant must use
 the new protocol-2 build. Human friend/WAN playtesting remains outstanding.
 The dedicated Windows VM was shut down after verification.
 
-The later [party UI concepts](design/party-ui-concepts/README.md) explore a
-simpler Home → Join → Lobby flow and a compact in-party menu. They are mockups;
-the shipped UI still uses the native PartyShell scene.
+The later [party UI concepts](design/party-ui-concepts/README.md) informed the
+native Home → Join → Lobby flow and compact in-party menu. The mockups remain
+reference art; the shipped UI uses Godot controls.
 
 ## Alt-Tab follow-up — Beta 36
 
@@ -148,3 +153,19 @@ passed complete game/launcher and installed-update checks on Windows and Linux
 before publishing both platforms. The Windows VM check did not physically switch
 between two foreground game windows; the two-instance Alt-Tab feel still needs a
 human playtest. The VM is stopped and its persistent state preserved.
+
+## Party UI implementation
+
+The native Home screen prioritizes Host and Join. Join preserves its typed
+address when returning Home; host and join UDP ports persist separately. The roster-first lobby identifies unready players,
+keeps the selected game and own color visible, and copies a `host:port` invite.
+The host alone can edit the throw count; changing it resets readiness. The
+compact Esc overlay has Resume, collapsed name editing and Leave, with an extra
+confirmation before the listen host disconnects everyone. Shared clocks and
+network state continue behind it.
+
+Native Windows VM run `run-1790705120325431494` exercised and captured Home,
+Join, lobby, Esc over a live RPS choice, and results (51 scenarios). The final
+Linux game suite passed all 45 sandbox networking and 42 party scenarios. The
+Windows VM was shut down afterward. A physical multiplayer playtest is still
+useful for assessing usability and display sizes beyond the VM's 1280×720 canvas.

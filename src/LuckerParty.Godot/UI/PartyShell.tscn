@@ -73,7 +73,7 @@ size_flags_vertical = 3
 theme_override_constants/separation = 24
 
 [node name="RosterPanel" type="PanelContainer" parent="Margin/Column/Body"]
-custom_minimum_size = Vector2(310, 0)
+custom_minimum_size = Vector2(425, 0)
 layout_mode = 2
 
 [node name="Scroll" type="ScrollContainer" parent="Margin/Column/Body/RosterPanel"]

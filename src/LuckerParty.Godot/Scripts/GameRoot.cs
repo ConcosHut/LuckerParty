@@ -6,10 +6,6 @@ namespace LuckerParty.Godot;
 public partial class GameRoot : Node
 {
     private CanvasLayer _menu = null!;
-    private LineEdit _name = null!, _address = null!;
-    private SpinBox _port = null!;
-    private Label _message = null!;
-    private Button _host = null!, _join = null!, _practice = null!, _cancel = null!, _sandbox = null!;
     private PartyView? _party;
     private bool _automationMode;
     public MultiplayerSession Session { get; private set; } = null!;
@@ -48,80 +44,17 @@ public partial class GameRoot : Node
     private static string? Argument(string[] args, string key)
     { var index = Array.IndexOf(args, key); return index >= 0 && index + 1 < args.Length ? args[index + 1] : null; }
 
-    private void BuildMenu()
-    {
-        GetWindow().Title = $"Lucker Party — {GameBuild.Version}";
-        Input.MouseMode = Input.MouseModeEnum.Visible;
-        _menu = new CanvasLayer(); AddChild(_menu);
-        var backdrop = new ColorRect { Color = new Color("fffdf8") };
-        backdrop.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect); _menu.AddChild(backdrop);
-        var scroll = new ScrollContainer { HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled };
-        scroll.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect); _menu.AddChild(scroll);
-        var center = new CenterContainer { Theme = GD.Load<Theme>("res://UI/PartyTheme.tres"),
-            SizeFlagsHorizontal = Control.SizeFlags.ExpandFill, SizeFlagsVertical = Control.SizeFlags.ExpandFill }; scroll.AddChild(center);
-        var panel = new PanelContainer { CustomMinimumSize = new Vector2(600, 0) }; center.AddChild(panel);
-        var margin = new MarginContainer();
-        foreach (var side in new[] { "left", "right", "top", "bottom" }) margin.AddThemeConstantOverride("margin_" + side, 12);
-        panel.AddChild(margin);
-        var column = new VBoxContainer(); column.AddThemeConstantOverride("separation", 8); margin.AddChild(column);
-        column.AddChild(new TextureRect { Texture = GD.Load<Texture2D>("res://UI/Assets/Brand.svg"), CustomMinimumSize = new Vector2(0, 80),
-            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize, StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered });
-        column.AddChild(new Label { Text = $"{GameBuild.Version}  /  Your next little party" });
-        column.AddChild(new Label { Text = "Display name" });
-        _name = new LineEdit { Text = "Player", MaxLength = PlayerNames.MaxLength, PlaceholderText = "Your name" }; column.AddChild(_name);
-        column.AddChild(new Label { Text = "Server IP or hostname (for Join)" });
-        _address = new LineEdit { Text = "127.0.0.1", PlaceholderText = "192.168.1.100", MaxLength = 253 }; column.AddChild(_address);
-        var portRow = new HBoxContainer(); column.AddChild(portRow);
-        portRow.AddChild(new Label { Text = "Port" });
-        _port = new SpinBox { MinValue = 1024, MaxValue = 65535, Value = MultiplayerSession.DefaultPort, Step = 1 }; portRow.AddChild(_port);
-        var buttons = new HBoxContainer(); buttons.AddThemeConstantOverride("separation", 12); column.AddChild(buttons);
-        _host = new Button { Text = "Host party", SizeFlagsHorizontal = Control.SizeFlags.ExpandFill };
-        _join = new Button { Text = "Join", SizeFlagsHorizontal = Control.SizeFlags.ExpandFill };
-        buttons.AddChild(_host); buttons.AddChild(_join);
-        _host.Pressed += () => { SaveProfile(); Session.Host(_name.Text, (int)_port.Value, party: true); };
-        _join.Pressed += () => { SaveProfile(); Session.Join(_name.Text, _address.Text, (int)_port.Value); };
-        _address.TextSubmitted += _ => { if (!_join.Disabled) { SaveProfile(); Session.Join(_name.Text, _address.Text, (int)_port.Value); } };
-        var secondary = new HBoxContainer(); column.AddChild(secondary);
-        _practice = new Button { Text = "Practice offline", SizeFlagsHorizontal = Control.SizeFlags.ExpandFill }; secondary.AddChild(_practice); _practice.Pressed += Practice;
-        _sandbox = new Button { Text = "Multiplayer sandbox", SizeFlagsHorizontal = Control.SizeFlags.ExpandFill }; secondary.AddChild(_sandbox);
-        _sandbox.Pressed += () => { SaveProfile(); Session.Host(_name.Text, (int)_port.Value); };
-        _cancel = new Button { Text = "Cancel connection", Visible = false }; column.AddChild(_cancel);
-        _cancel.Pressed += () => Session.Leave("Connection cancelled.");
-        column.AddChild(new Label { Text = "2–8 party players. Join 127.0.0.1 to test on this PC.\nLAN: host's local IP. Internet: forward this UDP port.", AutowrapMode = TextServer.AutowrapMode.WordSmart });
-        _message = new Label { AutowrapMode = TextServer.AutowrapMode.WordSmart, Visible = false }; column.AddChild(_message);
-        var quit = new Button { Text = "Quit" }; column.AddChild(quit); quit.Pressed += () => GetTree().Quit();
-        var profile = new ConfigFile();
-        if (!_automationMode && profile.Load("user://profile.cfg") == Error.Ok)
-        {
-            _name.Text = PlayerNames.Clean(profile.GetValue("player", "name", "Player").AsString());
-            _address.Text = profile.GetValue("connection", "address", "127.0.0.1").AsString();
-            _port.Value = profile.GetValue("connection", "port", MultiplayerSession.DefaultPort).AsInt32();
-        }
-    }
-
-    private void SaveProfile()
-    {
-        if (_automationMode) return;
-        var profile = new ConfigFile();
-        profile.SetValue("player", "name", PlayerNames.Clean(_name.Text));
-        profile.SetValue("connection", "address", _address.Text.Trim());
-        profile.SetValue("connection", "port", (int)_port.Value);
-        var error = profile.Save("user://profile.cfg");
-        if (error != Error.Ok) GD.PushWarning($"Could not save profile: {error}");
-    }
-    public void SaveName(string name) { _name.Text = name; SaveProfile(); }
-    public void SetMessage(string message) { LastMessage = message; _message.Text = message; _message.Visible = message.Length > 0; }
-    public void SetConnecting(string message)
-    { SetMessage(message); _host.Disabled = _join.Disabled = _practice.Disabled = _sandbox.Disabled = true; _cancel.Visible = true; }
     public void EnterParty()
     {
         if (_party is not null) return;
+        _connecting = false;
         _menu.Visible = false;
         _party = new PartyView { Name = "PartyUi", Root = this }; AddChild(_party);
     }
     public void EnterArena()
     {
         if (World is not null) return;
+        _connecting = false;
         _menu.Visible = false;
         World = new TestBed { Name = "Arena", Session = Session }; AddChild(World);
     }
@@ -141,7 +74,10 @@ public partial class GameRoot : Node
             World.QueueFree(); World = null;
         }
         Engine.PhysicsTicksPerSecond = 60;
-        _menu.Visible = true; _host.Disabled = _join.Disabled = _practice.Disabled = _sandbox.Disabled = false; _cancel.Visible = false;
+        _menu.Visible = true;
+        if (_connecting) ShowJoin(); else ShowHome();
+        _connecting = false;
+        SetMenuBusy(false);
         Input.MouseMode = Input.MouseModeEnum.Visible;
         GetWindow().Title = $"Lucker Party — {GameBuild.Version}";
         SetMessage(message);
@@ -166,7 +102,6 @@ public partial class GameRoot : Node
 
     public async void CaptureUi(string path)
     {
-        _party?.ShowParty();
         for (var i = 0; i < 3; i++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
         await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
         var error = GetViewport().GetTexture().GetImage().SavePng(path);

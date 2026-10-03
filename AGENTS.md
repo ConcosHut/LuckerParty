@@ -8,7 +8,7 @@ instructions are in [README.md](README.md).
 
 The first multiplayer sandbox uses Godot 4.5.2 .NET and C# on .NET 8 (SDK 8.0.425). It implements
 a first-person sandbox with a main menu, eight-player direct-IP ENet lobbies,
-server-owned movement, prediction and names. Practice retains F3/F4/F5 diagnostics. The first party adds a real lobby and
+server-owned movement, prediction and names. Practice retains F3/F4/F5 diagnostics. The first party adds a two-step Home/Join flow, ready-state lobby, live Esc overlay and
 one complete RPS minigame with hidden hands, scoring, joint winners and replay.
 See [docs/party-prototype.md](docs/party-prototype.md). The original s&box project
 is https://github.com/ConcosHut/LuckerParty.

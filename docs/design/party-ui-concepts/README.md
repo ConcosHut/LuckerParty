@@ -1,8 +1,9 @@
 # Party UI concepts — September 29, 2026
 
 These four images are **review mockups**, generated with the built-in imagegen
-tool from native Windows captures of Beta 34. They are not implemented screens or
-production assets. The finalized logo in `assets/brand/` remains canonical;
+tool from native Windows captures of Beta 34. Their Home → Join → Lobby → Esc
+hierarchy now informs native Godot screens, though the images are not pixel-for-pixel
+specifications or production assets. The finalized logo in `assets/brand/` remains canonical;
 generated approximations of its shape, new slogans, avatars and decorative
 backgrounds are not design decisions.
 
@@ -60,6 +61,6 @@ the menu.
 - **Revise:** the Esc image repeats the logo. One small brand mark is enough;
   prioritize current game context and clear Resume/Leave hierarchy.
 
-These are directions to select and refine before reworking the UI. Implement
-them as Godot `Control` scenes and theme resources once the behavior is agreed;
-image pixels should not become the UI implementation.
+The implemented flow lives in `GameRootMenu.cs`, `PartyView.cs`,
+`PartyShell.tscn`, and `PartyUiStyle.cs`. Further visual polish can build on
+native controls without turning image pixels into the UI implementation.

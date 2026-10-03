@@ -16,10 +16,11 @@ release promotion, and recovery are covered in [the release runbook](docs/releas
 Older Stable packages still include the legacy launcher; choose Beta for the
 current Party Room interface and multiplayer party prototype.
 
-For multiplayer play, choose Beta in the launcher, enter your display name, then
-Host party or enter the host IP and Join. Every active player readies up, then
+For multiplayer play, choose Beta in the launcher, set your display name on the
+game's Home screen, then choose Host Party or Join Party. Join accepts a host
+IP/hostname or a copied `host:port` invite; UDP 27015 is the default. Every active player readies up, then
 the host starts the party. See [the party guide](docs/party-prototype.md) for rules
-and scoring. The default port is UDP 27015.
+and scoring.
 See [the multiplayer runbook](docs/multiplayer.md) for LAN/internet hosting,
 server commands, architecture, and verification.
 
